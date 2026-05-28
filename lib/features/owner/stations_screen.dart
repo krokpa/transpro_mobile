@@ -32,14 +32,12 @@ class StationsScreen extends ConsumerWidget {
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.invalidate(_stationsProvider),
           ),
+          IconButton(
+            icon: const Icon(Icons.add_location_alt_outlined),
+            tooltip: 'Ajouter une gare',
+            onPressed: () => _showAddSheet(context, ref),
+          ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddSheet(context, ref),
-        icon: const Icon(Icons.add_location_alt_outlined),
-        label: const Text('Ajouter'),
-        backgroundColor: brandOrange,
-        foregroundColor: Colors.white,
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),

@@ -33,14 +33,12 @@ class StaffScreen extends ConsumerWidget {
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.invalidate(_staffProvider),
           ),
+          IconButton(
+            icon: const Icon(Icons.person_add_outlined),
+            tooltip: 'Inviter un agent',
+            onPressed: () => _showInviteSheet(context, ref),
+          ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showInviteSheet(context, ref),
-        icon: const Icon(Icons.person_add_outlined),
-        label: const Text('Inviter'),
-        backgroundColor: brandOrange,
-        foregroundColor: Colors.white,
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),

@@ -26,13 +26,15 @@ class OwnerRoutesScreen extends ConsumerWidget {
     final routesAsync = ref.watch(_routesProvider);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Réseau')),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddRouteSheet(context, ref),
-        icon: const Icon(Icons.add),
-        label: const Text('Ajouter'),
-        backgroundColor: brandOrange,
-        foregroundColor: Colors.white,
+      appBar: AppBar(
+        title: const Text('Réseau'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: 'Ajouter un itinéraire',
+            onPressed: () => _showAddRouteSheet(context, ref),
+          ),
+        ],
       ),
       body: routesAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),

@@ -31,14 +31,12 @@ class SchedulesScreen extends ConsumerWidget {
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.invalidate(_schedulesProvider),
           ),
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: 'Ajouter un horaire',
+            onPressed: () => _showAddSheet(context, ref),
+          ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddSheet(context, ref),
-        icon: const Icon(Icons.add),
-        label: const Text('Ajouter'),
-        backgroundColor: brandOrange,
-        foregroundColor: Colors.white,
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),

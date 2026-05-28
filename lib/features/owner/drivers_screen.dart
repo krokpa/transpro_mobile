@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
 
@@ -24,14 +25,12 @@ class DriversScreen extends ConsumerWidget {
             icon: const Icon(Icons.refresh),
             onPressed: () => ref.invalidate(_driversProvider),
           ),
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: 'Ajouter un conducteur',
+            onPressed: () => _showAddSheet(context, ref),
+          ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddSheet(context, ref),
-        icon: const Icon(Icons.add),
-        label: const Text('Ajouter'),
-        backgroundColor: brandOrange,
-        foregroundColor: Colors.white,
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -54,6 +53,7 @@ class DriversScreen extends ConsumerWidget {
                 itemBuilder: (_, i) => _DriverCard(
                   driver: drivers[i],
                   onToggle: (id, activate) => _toggle(id, activate, ref, context),
+                  onDetail: (id) => context.push('/owner/drivers/$id'),
                 ),
               ),
       ),
@@ -90,7 +90,8 @@ class DriversScreen extends ConsumerWidget {
 class _DriverCard extends StatelessWidget {
   final Map<String, dynamic> driver;
   final void Function(String, bool) onToggle;
-  const _DriverCard({required this.driver, required this.onToggle});
+  final void Function(String) onDetail;
+  const _DriverCard({required this.driver, required this.onToggle, required this.onDetail});
 
   @override
   Widget build(BuildContext context) {
@@ -142,15 +143,27 @@ class _DriverCard extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(height: 6),
-            Transform.scale(
-              scale: 0.8,
-              child: Switch(
-                value: isActive,
-                onChanged: (v) => onToggle(id, v),
-                activeColor: brandOrange,
+            const SizedBox(height: 4),
+            Row(mainAxisSize: MainAxisSize.min, children: [
+              TextButton(
+                onPressed: () => onDetail(id),
+                style: TextButton.styleFrom(
+                  foregroundColor: brandOrange,
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  minimumSize: const Size(0, 28),
+                  textStyle: const TextStyle(fontSize: 11),
+                ),
+                child: const Text('Détail'),
               ),
-            ),
+              Transform.scale(
+                scale: 0.75,
+                child: Switch(
+                  value: isActive,
+                  onChanged: (v) => onToggle(id, v),
+                  activeColor: brandOrange,
+                ),
+              ),
+            ]),
           ]),
         ]),
       ),
