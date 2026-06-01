@@ -278,7 +278,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get onboarding2Body =>
-      'Pick your spot in the bus according to your preferences. Window, aisle, VIP — all at your fingertips.';
+      'Pick your spot in the véhicule according to your preferences. Window, aisle, VIP — all at your fingertips.';
 
   @override
   String get onboarding3Title => 'Pay securely';

@@ -44,7 +44,7 @@ class _TripTrackingScreenState extends ConsumerState<TripTrackingScreen>
   bool _followBus = true; // false when user pans manually
   bool _userPanned = false;
 
-  // Pulsing animation for the bus marker
+  // Pulsing animation for the véhicule marker
   late final AnimationController _pulseCtrl;
   late final Animation<double> _pulseAnim;
 
@@ -132,7 +132,7 @@ class _TripTrackingScreenState extends ConsumerState<TripTrackingScreen>
       } catch (_) {}
     });
 
-    // Real-time bus location from driver
+    // Real-time véhicule location from driver
     _socket!.on('bus:location', (data) {
       if (_disposed || !mounted) return;
       try {
@@ -402,7 +402,7 @@ class _MapLayer extends StatelessWidget {
   }
 }
 
-// Animated rotating bus marker
+// Animated rotating véhicule marker
 class _BusMarker extends AnimatedWidget {
   final double heading;
   const _BusMarker({

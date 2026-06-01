@@ -280,7 +280,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get onboarding2Body =>
-      'Sélectionnez votre place dans le bus selon vos préférences. Fenêtre, couloir, classe VIP — tout est à portée de main.';
+      'Sélectionnez votre place dans le véhicule selon vos préférences. Fenêtre, couloir, classe VIP — tout est à portée de main.';
 
   @override
   String get onboarding3Title => 'Payez en toute sécurité';

@@ -629,7 +629,7 @@ abstract class AppLocalizations {
   /// No description provided for @onboarding2Body.
   ///
   /// In en, this message translates to:
-  /// **'Pick your spot in the bus according to your preferences. Window, aisle, VIP — all at your fingertips.'**
+  /// **'Pick your spot in the véhicule according to your preferences. Window, aisle, VIP — all at your fingertips.'**
   String get onboarding2Body;
 
   /// No description provided for @onboarding3Title.

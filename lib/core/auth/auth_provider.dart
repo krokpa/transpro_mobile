@@ -148,6 +148,7 @@ class AuthNotifier extends Notifier<AuthState> {
     required String email,
     required String phone,
     required String password,
+    required String phoneVerificationToken,
   }) async {
     final dio = ref.read(dioProvider);
     final response = await dio.post('/auth/register', data: {
@@ -156,6 +157,7 @@ class AuthNotifier extends Notifier<AuthState> {
       'email': email,
       'phone': phone,
       'password': password,
+      'phoneVerificationToken': phoneVerificationToken,
     });
     final data = extractData(response.data);
     final user = User.fromJson(data['user']);
