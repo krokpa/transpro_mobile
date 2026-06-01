@@ -12,7 +12,7 @@ final notificationsProvider = FutureProvider.autoDispose<List<AppNotification>>(
 final unreadCountProvider = FutureProvider.autoDispose<int>((ref) async {
   final dio  = ref.read(dioProvider);
   final res  = await dio.get('/notifications/my/count');
-  final data = res.data;
+  final data = extractData(res.data);
   if (data is Map) return (data['count'] ?? data['unread'] ?? 0) as int;
   return 0;
 });

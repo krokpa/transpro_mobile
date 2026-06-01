@@ -10,6 +10,7 @@ import '../../core/auth/auth_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/offline/manifest_cache.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/fade_slide.dart';
 import '../../core/widgets/notification_bell.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -96,7 +97,10 @@ class DeparturesScreen extends ConsumerWidget {
             child: ListView.builder(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 90),
               itemCount: trips.length,
-              itemBuilder: (_, i) => _DepartureCard(trip: trips[i]),
+              itemBuilder: (_, i) => FadeSlideIn(
+                delay: Duration(milliseconds: (i * 60).clamp(0, 240)),
+                child: _DepartureCard(trip: trips[i]),
+              ),
             ),
           );
         },
@@ -436,6 +440,17 @@ class _DepartureCardState extends ConsumerState<_DepartureCard> {
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 8),
                     ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton.icon(
+                  onPressed: () => context.push('/agent/luggage/${trip.id}'),
+                  icon: const Icon(Icons.luggage_outlined, size: 15),
+                  label: const Text('Bagages'),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: const Color(0xFF7C3AED),
+                    side: const BorderSide(color: Color(0xFFDDD6FE)),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                   ),
                 ),
                 const SizedBox(width: 8),

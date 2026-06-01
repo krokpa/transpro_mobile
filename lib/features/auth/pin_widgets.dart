@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:local_auth/local_auth.dart';
+import '../../core/auth/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
 
 class PinDot extends StatelessWidget {
@@ -14,7 +16,7 @@ class PinDot extends StatelessWidget {
       shape: BoxShape.circle,
       color: filled ? brandOrange : Colors.transparent,
       border: Border.all(
-        color: filled ? brandOrange : const Color(0xFFCBD5E1),
+        color: filled ? brandOrange : context.divider,
         width: 2,
       ),
     ),
@@ -25,34 +27,42 @@ class PinKeypad extends StatelessWidget {
   final void Function(String) onKey;
   final VoidCallback onBackspace;
   final VoidCallback? onBiometric;
+  /// Type biométrique détecté — détermine l'icône affichée.
+  final BiometricType? biometricType;
 
   const PinKeypad({
     super.key,
     required this.onKey,
     required this.onBackspace,
     this.onBiometric,
+    this.biometricType,
   });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _buildRow(['1', '2', '3']),
-        _buildRow(['4', '5', '6']),
-        _buildRow(['7', '8', '9']),
+        _buildRow(context, ['1', '2', '3']),
+        _buildRow(context, ['4', '5', '6']),
+        _buildRow(context, ['7', '8', '9']),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            onBiometric != null
-                ? _KeyButton(
-                    onTap: onBiometric!,
-                    child: const Icon(Icons.fingerprint, color: brandOrange, size: 32),
-                  )
-                : const SizedBox(width: 80, height: 80),
+            if (onBiometric != null)
+              _KeyButton(
+                onTap: onBiometric!,
+                child: Icon(
+                  biometricIcon(biometricType),
+                  color: brandOrange,
+                  size: 32,
+                ),
+              )
+            else
+              const SizedBox(width: 80, height: 80),
             _DigitKey(digit: '0', onTap: onKey),
             _KeyButton(
               onTap: onBackspace,
-              child: const Icon(Icons.backspace_outlined, color: brandDark),
+              child: Icon(Icons.backspace_outlined, color: context.textPrimary),
             ),
           ],
         ),
@@ -60,7 +70,7 @@ class PinKeypad extends StatelessWidget {
     );
   }
 
-  Widget _buildRow(List<String> digits) => Row(
+  Widget _buildRow(BuildContext context, List<String> digits) => Row(
     mainAxisAlignment: MainAxisAlignment.center,
     children: digits.map((d) => _DigitKey(digit: d, onTap: onKey)).toList(),
   );
@@ -80,7 +90,7 @@ class _DigitKey extends StatelessWidget {
       onPressed: () => onTap(digit),
       style: TextButton.styleFrom(
         shape: const CircleBorder(),
-        foregroundColor: brandDark,
+        foregroundColor: context.textPrimary,
       ),
       child: Text(digit, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w500)),
     ),

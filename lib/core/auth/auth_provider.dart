@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
@@ -11,6 +13,9 @@ import '../push/push_service.dart';
 // ── Helpers biométrie publics ─────────────────────────────────────────────────
 
 /// Retourne le type de biométrie préféré sur cet appareil, ou null si aucun.
+/// Note : canCheckBiometrics ne détecte que les biométries STRONG (empreinte, iris).
+/// Sur Android, le déverrouillage facial est souvent WEAK → non retourné par canCheckBiometrics
+/// mais bien présent dans getAvailableBiometrics(). On utilise donc uniquement cette méthode.
 Future<BiometricType?> resolveAvailableBiometric() async {
   try {
     final auth = LocalAuthentication();
@@ -101,12 +106,23 @@ class AuthNotifier extends Notifier<AuthState> {
         _storage.read(key: 'pin_hash'),
         _storage.read(key: 'biometric_enabled'),
       ]);
-      final token = results[0];
-      final refresh = results[1];
+      final token    = results[0];
+      final refresh  = results[1];
       final userJson = results[2];
-      final pinHash = results[3];
-      final bioEnabled = results[4];
+      final pinHash  = results[3];
+      final bioRaw   = results[4];
+
       if (token != null && userJson != null) {
+        // Cross-check : biométrie activée en storage mais plus disponible sur l'appareil
+        bool bioEnabled = bioRaw == '1';
+        if (bioEnabled) {
+          final available = await resolveAvailableBiometric();
+          if (available == null) {
+            bioEnabled = false;
+            await _storage.write(key: 'biometric_enabled', value: '0');
+          }
+        }
+
         final user = User.fromJson(jsonDecode(userJson));
         state = AuthState(
           user: user,
@@ -115,7 +131,7 @@ class AuthNotifier extends Notifier<AuthState> {
           isLoading: false,
           hasPinSet: pinHash != null,
           pinVerified: false,
-          biometricEnabled: bioEnabled == '1',
+          biometricEnabled: bioEnabled,
         );
         return;
       }
@@ -216,19 +232,34 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<bool> unlockBiometric() async {
+    final auth = LocalAuthentication();
     try {
-      final auth = LocalAuthentication();
-      // Détecte le type disponible pour adapter le message et l'icône système
       final type = await resolveAvailableBiometric();
       if (type == null) return false;
       final ok = await auth.authenticate(
         localizedReason: biometricReason(type),
-        options: const AuthenticationOptions(biometricOnly: true, stickyAuth: true),
+        options: const AuthenticationOptions(
+          biometricOnly: true,
+          stickyAuth: true,
+          sensitiveTransaction: true,
+        ),
       );
       if (ok) state = state.copyWith(pinVerified: true);
       return ok;
-    } catch (_) {
+    } on PlatformException catch (e) {
+      // Codes connus : NotAvailable, NotEnrolled, LockedOut, PermanentlyLockedOut, PasscodeNotSet
+      debugPrint('[Biometric] PlatformException ${e.code}: ${e.message}');
+      if (e.code == 'LockedOut' || e.code == 'PermanentlyLockedOut') {
+        // Désactiver automatiquement après verrouillage définitif
+        await setBiometricEnabled(false);
+      }
       return false;
+    } catch (e) {
+      debugPrint('[Biometric] Erreur inattendue: $e');
+      return false;
+    } finally {
+      // Annule tout dialogue biométrique en cours si le widget est détruit
+      auth.stopAuthentication();
     }
   }
 

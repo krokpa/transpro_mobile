@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
+import '../../l10n/app_localizations.dart';
 
 class PaymentSuccessScreen extends ConsumerStatefulWidget {
   final String bookingId;
@@ -36,10 +37,10 @@ class _State extends ConsumerState<PaymentSuccessScreen> {
     try {
       final dio = ref.read(dioProvider);
       final res = await dio.get('/bookings/my/${widget.bookingId}');
-      final data = res.data as Map<String, dynamic>;
+      final data = extractData(res.data) as Map<String, dynamic>;
       if (!mounted) return;
       setState(() {
-        _booking = data;
+        _booking   = data;
         _confirmed = data['status'] == 'CONFIRMED';
       });
       if (_confirmed) _timer?.cancel();
@@ -68,16 +69,16 @@ class _LoadingBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Center(
+    final l10n = AppLocalizations.of(context);
+    return Center(
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        CircularProgressIndicator(color: brandOrange),
-        SizedBox(height: 20),
-        Text('Confirmation du paiement…',
-            style: TextStyle(
-                fontWeight: FontWeight.w700, fontSize: 16, color: brandDark)),
-        SizedBox(height: 8),
-        Text('Merci de patienter quelques instants.',
-            style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13)),
+        const CircularProgressIndicator(color: brandOrange),
+        const SizedBox(height: 20),
+        Text(l10n.paymentConfirming,
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: context.textPrimary)),
+        const SizedBox(height: 8),
+        Text(l10n.paymentPleaseWait,
+            style: TextStyle(color: context.textMuted, fontSize: 13)),
       ]),
     );
   }
@@ -92,85 +93,76 @@ class _SuccessBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fmt = NumberFormat('#,###', 'fr_FR');
-    final trip = booking['trip'] as Map<String, dynamic>?;
-    final route = trip?['route'] as Map<String, dynamic>?;
+    final l10n   = AppLocalizations.of(context);
+    final locale = Localizations.localeOf(context).toString();
+    final fmt    = NumberFormat('#,###', 'fr_FR');
+    final trip   = booking['trip'] as Map<String, dynamic>?;
+    final route  = trip?['route'] as Map<String, dynamic>?;
     final origin = route?['originCity']?['name'] ?? '';
-    final dest = route?['destinationCity']?['name'] ?? '';
-    final dep = trip != null
-        ? DateTime.tryParse(trip['departureAt'] ?? '')
-        : null;
-    final seats = List<String>.from(booking['seatNumbers'] ?? []);
+    final dest   = route?['destinationCity']?['name'] ?? '';
+    final dep    = trip != null ? DateTime.tryParse(trip['departureAt'] ?? '') : null;
+    final seats  = List<String>.from(booking['seatNumbers'] ?? []);
     final amount = (booking['totalAmount'] as num?)?.toInt() ?? 0;
 
     return Column(children: [
       const Spacer(),
 
-      // Icon
       Container(
-        width: 88,
-        height: 88,
-        decoration: const BoxDecoration(
-            color: Color(0xFFDCFCE7), shape: BoxShape.circle),
-        child: const Icon(Icons.check_circle_outline,
-            color: Color(0xFF16A34A), size: 48),
+        width: 88, height: 88,
+        decoration: const BoxDecoration(color: Color(0xFFDCFCE7), shape: BoxShape.circle),
+        child: const Icon(Icons.check_circle_outline, color: Color(0xFF16A34A), size: 48),
       ),
       const SizedBox(height: 20),
 
-      const Text('Paiement réussi !',
-          style: TextStyle(
-              fontSize: 24, fontWeight: FontWeight.w800, color: brandDark)),
+      Text(l10n.paymentSuccess,
+          style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800, color: context.textPrimary)),
       const SizedBox(height: 8),
-      const Text('Votre billet est confirmé et prêt.',
-          style: TextStyle(color: Color(0xFF64748B), fontSize: 14)),
+      Text(l10n.paymentTicketReady,
+          style: TextStyle(color: context.textSecondary, fontSize: 14)),
 
       const Spacer(),
 
-      // Summary card
       Container(
         width: double.infinity,
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0))),
+          color: context.cardBg,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: context.divider),
+        ),
         child: Column(children: [
           if (origin.isNotEmpty)
-            _Row('Trajet', '$origin → $dest'),
+            _Row(l10n.paymentTripLabel, '$origin → $dest'),
           if (dep != null)
-            _Row('Date',
-                DateFormat('EEE d MMM · HH:mm', 'fr_FR').format(dep.toLocal())),
-          if (seats.isNotEmpty) _Row('Sièges', seats.join(', ')),
+            _Row(l10n.date, DateFormat('EEE d MMM · HH:mm', locale).format(dep.toLocal())),
+          if (seats.isNotEmpty)
+            _Row(l10n.paymentSeatsLabel, seats.join(', ')),
           const Divider(height: 20),
           Row(children: [
-            const Text('Total payé',
-                style: TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+            Text(l10n.paymentTotalPaidLabel,
+                style: TextStyle(color: context.textSecondary, fontSize: 13)),
             const Spacer(),
             Text('${fmt.format(amount)} FCFA',
                 style: const TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF16A34A),
-                    fontSize: 16)),
+                    fontWeight: FontWeight.w800, color: Color(0xFF16A34A), fontSize: 16)),
           ]),
         ]),
       ),
 
       const Spacer(),
 
-      // CTA
       SizedBox(
         width: double.infinity,
         child: ElevatedButton.icon(
           icon: const Icon(Icons.confirmation_num_outlined),
-          label: const Text('Voir mon billet'),
+          label: Text(l10n.paymentGoToTicket),
           onPressed: () => context.go('/passenger/booking/$bookingId'),
         ),
       ),
       const SizedBox(height: 12),
       TextButton(
         onPressed: () => context.go('/passenger'),
-        child: const Text("Retour à l'accueil",
-            style: TextStyle(color: Color(0xFF94A3B8))),
+        child: Text(l10n.paymentGoHome, style: TextStyle(color: context.textMuted)),
       ),
     ]);
   }
@@ -185,15 +177,11 @@ class _Row extends StatelessWidget {
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.symmetric(vertical: 5),
         child: Row(children: [
-          Text(label,
-              style:
-                  const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+          Text(label, style: TextStyle(color: context.textSecondary, fontSize: 13)),
           const Spacer(),
           Text(value,
-              style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                  color: brandDark)),
+              style: TextStyle(
+                  fontWeight: FontWeight.w600, fontSize: 13, color: context.textPrimary)),
         ]),
       );
 }

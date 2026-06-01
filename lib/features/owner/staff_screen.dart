@@ -161,7 +161,7 @@ class _StaffCard extends StatelessWidget {
             child: Switch(
               value: isActive,
               onChanged: (v) => onToggle(id, v),
-              activeColor: brandOrange,
+              activeThumbColor: brandOrange,
             ),
           ),
         ]),
@@ -257,7 +257,7 @@ class _InviteStaffSheetState extends ConsumerState<_InviteStaffSheet> {
             ),
             const SizedBox(height: 14),
             DropdownButtonFormField<String>(
-              value: _role,
+              initialValue: _role,
               decoration: const InputDecoration(labelText: 'Rôle'),
               items: const [
                 DropdownMenuItem(value: 'COMPANY_AGENT', child: Text('Agent guichet')),
@@ -268,9 +268,9 @@ class _InviteStaffSheetState extends ConsumerState<_InviteStaffSheet> {
             const SizedBox(height: 14),
             stationsAsync.when(
               loading: () => const SizedBox.shrink(),
-              error: (_, __) => const SizedBox.shrink(),
+              error: (_, _) => const SizedBox.shrink(),
               data: (stations) => DropdownButtonFormField<String>(
-                value: _stationId,
+                initialValue: _stationId,
                 decoration: const InputDecoration(labelText: 'Gare assignée (optionnel)'),
                 items: [
                   const DropdownMenuItem(value: null, child: Text('Aucune')),

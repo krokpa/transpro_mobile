@@ -151,7 +151,7 @@ class _ScheduleCard extends StatelessWidget {
                 child: Switch(
                   value: isActive,
                   onChanged: (v) => onToggle(id, v),
-                  activeColor: brandOrange,
+                  activeThumbColor: brandOrange,
                 ),
               ),
             ]),
@@ -251,7 +251,7 @@ class _AddScheduleSheetState extends ConsumerState<_AddScheduleSheet> {
               loading: () => const LinearProgressIndicator(),
               error: (e, _) => Text('Erreur routes: $e', style: const TextStyle(color: Colors.red)),
               data: (routes) => DropdownButtonFormField<String>(
-                value: _routeId,
+                initialValue: _routeId,
                 decoration: const InputDecoration(labelText: 'Itinéraire'),
                 items: routes.map((r) {
                   final name = r['name'] as String? ??
@@ -310,7 +310,7 @@ class _AddScheduleSheetState extends ConsumerState<_AddScheduleSheet> {
             const SizedBox(height: 14),
             // Class
             DropdownButtonFormField<String>(
-              value: _tripClass,
+              initialValue: _tripClass,
               decoration: const InputDecoration(labelText: 'Classe'),
               items: _classes.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
               onChanged: (v) { if (v != null) setState(() => _tripClass = v); },

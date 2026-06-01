@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/auth/auth_provider.dart';
 import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
@@ -21,6 +22,7 @@ const _statusCfg = {
   'COLLECTED':  (label: 'Pris en charge', color: Color(0xFF3B82F6)),
   'IN_TRANSIT': (label: 'En transit',     color: Color(0xFF8B5CF6)),
   'ARRIVED':    (label: 'Arrivé',         color: Color(0xFFF59E0B)),
+  'DELIVERING': (label: 'En livraison',   color: Color(0xFFEA580C)),
   'DELIVERED':  (label: 'Livré',          color: Color(0xFF16A34A)),
   'RETURNED':   (label: 'Retourné',       color: Color(0xFFEF4444)),
 };
@@ -113,12 +115,12 @@ class _EmptyState extends StatelessWidget {
 
 // ── Parcel card ───────────────────────────────────────────────────────────────
 
-class _ParcelCard extends StatelessWidget {
+class _ParcelCard extends ConsumerWidget {
   final Map<String, dynamic> parcel;
   const _ParcelCard({required this.parcel});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final status = parcel['status'] as String? ?? 'PENDING';
     final cfg    = _statusCfg[status] ?? _statusCfg['PENDING']!;
     final code   = parcel['trackingCode'] as String? ?? '';
@@ -194,6 +196,33 @@ class _ParcelCard extends StatelessWidget {
               // Mini progress bar
               _MiniProgress(status: status),
               const SizedBox(height: 8),
+              // Home delivery CTA for ARRIVED/DELIVERING
+              if (status == 'ARRIVED' || status == 'DELIVERING') ...[
+                const SizedBox(height: 4),
+                GestureDetector(
+                  onTap: () => context.push('/delivery-request/${Uri.encodeComponent(code)}'),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF7ED),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: const Color(0xFFFBBF24).withValues(alpha: 0.4)),
+                    ),
+                    child: Row(children: [
+                      const Icon(Icons.home_outlined, size: 14, color: Color(0xFFF97316)),
+                      const SizedBox(width: 6),
+                      Expanded(child: Text(
+                        status == 'DELIVERING'
+                            ? 'En cours de livraison à domicile'
+                            : 'Demander la livraison à domicile',
+                        style: const TextStyle(fontSize: 12, color: Color(0xFF92400E), fontWeight: FontWeight.w600),
+                      )),
+                      const Icon(Icons.chevron_right, size: 14, color: Color(0xFFF97316)),
+                    ]),
+                  ),
+                ),
+                const SizedBox(height: 8),
+              ],
               // Date + fee
               Row(
                 children: [
@@ -224,7 +253,7 @@ class _ParcelCard extends StatelessWidget {
 
 // ── Mini progress ─────────────────────────────────────────────────────────────
 
-const _progressSteps = ['PENDING', 'COLLECTED', 'IN_TRANSIT', 'ARRIVED', 'DELIVERED'];
+const _progressSteps = ['PENDING', 'COLLECTED', 'IN_TRANSIT', 'ARRIVED', 'DELIVERING', 'DELIVERED'];
 
 class _MiniProgress extends StatelessWidget {
   final String status;

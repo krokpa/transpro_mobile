@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../../core/theme/app_theme.dart';
+import '../../l10n/app_localizations.dart';
 
 class PaymentWebViewScreen extends StatefulWidget {
   final String checkoutUrl;
@@ -47,20 +48,21 @@ class _State extends State<PaymentWebViewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Paiement sécurisé'),
+        title: Text(l10n.paymentSecureTitle),
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.close),
-          tooltip: 'Annuler',
+          tooltip: l10n.cancel,
           onPressed: () =>
               context.go('/passenger/payment/error/${widget.bookingId}'),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
-            tooltip: 'Recharger',
+            tooltip: l10n.reload,
             onPressed: () => _controller.reload(),
           ),
         ],
@@ -68,12 +70,12 @@ class _State extends State<PaymentWebViewScreen> {
       body: Stack(children: [
         WebViewWidget(controller: _controller),
         if (_loading)
-          const Center(
+          Center(
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              CircularProgressIndicator(color: brandOrange),
-              SizedBox(height: 12),
-              Text('Chargement du paiement…',
-                  style: TextStyle(color: Color(0xFF64748B), fontSize: 13)),
+              const CircularProgressIndicator(color: brandOrange),
+              const SizedBox(height: 12),
+              Text(l10n.paymentLoadingWebview,
+                  style: TextStyle(color: context.textSecondary, fontSize: 13)),
             ]),
           ),
       ]),

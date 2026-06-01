@@ -57,7 +57,7 @@ class _VehicleDetailScreenState extends ConsumerState<VehicleDetailScreen>
       appBar: AppBar(
         title: vehicleAsync.when(
           loading: () => const Text('Véhicule'),
-          error: (_, __) => const Text('Véhicule'),
+          error: (_, _) => const Text('Véhicule'),
           data: (v) => Text(
             '${v['plate'] ?? ''} · ${v['brand'] ?? ''} ${v['model'] ?? ''}',
             style: const TextStyle(fontSize: 16),
@@ -626,7 +626,7 @@ class _AddMaintenanceSheetState extends State<_AddMaintenanceSheet> {
               style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: brandDark)),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _type,
+              initialValue: _type,
               decoration: const InputDecoration(labelText: 'Type'),
               items: widget.typeLabel.entries
                   .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))

@@ -4,12 +4,14 @@ import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/payment_logo.dart';
+import '../../l10n/app_localizations.dart';
 
 final _caisseProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, String>((ref, dateStr) async {
   final user = ref.read(authProvider).user!;
   final dio  = ref.read(dioProvider);
   final res  = await dio.get('/stations/${user.stationId}/caisse', queryParameters: {'date': dateStr});
-  return res.data as Map<String, dynamic>;
+  return extractData(res.data) as Map<String, dynamic>;
 });
 
 class CaisseScreen extends ConsumerStatefulWidget {
@@ -27,29 +29,31 @@ class _State extends ConsumerState<CaisseScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final async = ref.watch(_caisseProvider(_dateStr));
+    final l10n    = AppLocalizations.of(context);
+    final locale  = Localizations.localeOf(context).toString();
+    final async   = ref.watch(_caisseProvider(_dateStr));
     final isToday = DateFormat('yyyy-MM-dd').format(DateTime.now()) == _dateStr;
 
     return Scaffold(
       appBar: AppBar(
         title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Text('Rapport de caisse'),
+          Text(l10n.caisseDailyReport),
           Text(ref.read(authProvider).user?.stationName ?? '',
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: Color(0xFF94A3B8))),
+            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: context.textMuted)),
         ]),
       ),
       body: Column(children: [
-        // Date nav
         Container(
-          color: Colors.white,
+          color: context.cardBg,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(children: [
             IconButton(icon: const Icon(Icons.chevron_left), onPressed: () => _changeDay(-1)),
             Expanded(child: Text(
-              isToday ? 'Aujourd\'hui — ${DateFormat('d MMM', 'fr_FR').format(_date)}'
-                      : DateFormat('EEEE d MMMM yyyy', 'fr_FR').format(_date),
+              isToday
+                  ? '${l10n.caisseTodayLabel} — ${DateFormat('d MMM', locale).format(_date)}'
+                  : DateFormat('EEEE d MMMM yyyy', locale).format(_date),
               textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
+              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: context.textPrimary),
             )),
             IconButton(
               icon: const Icon(Icons.chevron_right),
@@ -60,7 +64,7 @@ class _State extends ConsumerState<CaisseScreen> {
         const Divider(height: 1),
         Expanded(child: async.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Erreur: $e')),
+          error: (e, _) => Center(child: Text('${l10n.error}: $e')),
           data: (data) => _CaisseContent(data: data),
         )),
       ]),
@@ -74,38 +78,41 @@ class _CaisseContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final revenue = (data['totalRevenue'] as num?)?.toDouble() ?? 0;
-    final billets = (data['totalTickets'] as num?)?.toInt() ?? 0;
+    final l10n       = AppLocalizations.of(context);
+    final locale     = Localizations.localeOf(context).toString();
+    final revenue    = (data['totalRevenue'] as num?)?.toDouble() ?? 0;
+    final billets    = (data['totalTickets'] as num?)?.toInt() ?? 0;
     final passengers = (data['totalPassengers'] as num?)?.toInt() ?? 0;
-    final methods = (data['byMethod'] as List?) ?? [];
+    final methods    = (data['byMethod'] as List?) ?? [];
     final transactions = (data['transactions'] as List?) ?? [];
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        // KPIs
         Row(children: [
           Expanded(child: _KpiCard(
-            label: 'Recettes', value: '${_fmt(revenue)} F',
+            label: l10n.caisseRevenueLabel,
+            value: '${_fmt(revenue, locale)} F',
             icon: Icons.payments_outlined, color: brandOrange,
           )),
           const SizedBox(width: 12),
           Expanded(child: _KpiCard(
-            label: 'Billets', value: '$billets',
+            label: l10n.caisseTicketsLabel,
+            value: '$billets',
             icon: Icons.confirmation_num_outlined, color: const Color(0xFF6366F1),
           )),
           const SizedBox(width: 12),
           Expanded(child: _KpiCard(
-            label: 'Passagers', value: '$passengers',
+            label: l10n.dashboardPassengers,
+            value: '$passengers',
             icon: Icons.people_outline, color: const Color(0xFF0EA5E9),
           )),
         ]),
         const SizedBox(height: 20),
 
-        // By payment method
         if (methods.isNotEmpty) ...[
-          const Text('Par mode de paiement',
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: brandDark)),
+          Text(l10n.caisseByMethod,
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: context.textPrimary)),
           const SizedBox(height: 10),
           ...methods.map((m) {
             final amt = (m['amount'] as num?)?.toDouble() ?? 0;
@@ -114,18 +121,23 @@ class _CaisseContent extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 10),
               child: Column(children: [
                 Row(children: [
-                  Text(_methodLabel(m['method']), style: const TextStyle(fontWeight: FontWeight.w500)),
-                  const Spacer(),
-                  Text('${_fmt(amt)} F', style: const TextStyle(fontWeight: FontWeight.w600, color: brandDark)),
+                  PaymentLogo(method: m['method'] as String? ?? 'CASH', size: 22),
                   const SizedBox(width: 8),
-                  Text('${(pct * 100).toStringAsFixed(0)}%', style: TextStyle(color: Colors.grey[400], fontSize: 12)),
+                  Text(_methodLabel(m['method'], l10n),
+                      style: TextStyle(fontWeight: FontWeight.w500, color: context.textPrimary)),
+                  const Spacer(),
+                  Text('${_fmt(amt, locale)} F',
+                      style: TextStyle(fontWeight: FontWeight.w600, color: context.textPrimary)),
+                  const SizedBox(width: 8),
+                  Text('${(pct * 100).toStringAsFixed(0)}%',
+                      style: TextStyle(color: context.textMuted, fontSize: 12)),
                 ]),
                 const SizedBox(height: 4),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
                     value: pct, minHeight: 6,
-                    backgroundColor: const Color(0xFFE2E8F0),
+                    backgroundColor: context.divider,
                     valueColor: const AlwaysStoppedAnimation(brandOrange),
                   ),
                 ),
@@ -135,26 +147,29 @@ class _CaisseContent extends StatelessWidget {
           const SizedBox(height: 20),
         ],
 
-        // Transactions
         if (transactions.isNotEmpty) ...[
-          const Text('Transactions',
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: brandDark)),
+          Text(l10n.caisseTransactionsLabel,
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: context.textPrimary)),
           const SizedBox(height: 10),
           ...transactions.map((t) => _TransactionTile(tx: t)),
         ] else
           Center(child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 32),
-            child: Text('Aucune transaction', style: TextStyle(color: Colors.grey[400])),
+            child: Text(l10n.caisseNoTransactions, style: TextStyle(color: context.textMuted)),
           )),
       ]),
     );
   }
 
-  String _fmt(double v) => NumberFormat('#,###', 'fr_FR').format(v.toInt());
-  String _methodLabel(String? m) => {
-    'CASH': 'Espèces', 'ORANGE_MONEY': 'Orange Money',
-    'MTN_MOMO': 'MTN MoMo', 'WAVE': 'Wave',
-  }[m] ?? m ?? '—';
+  static String _fmt(double v, String locale) => NumberFormat('#,###', locale).format(v.toInt());
+
+  static String _methodLabel(String? m, AppLocalizations l10n) => switch (m) {
+    'CASH'         => l10n.payMethodCash,
+    'ORANGE_MONEY' => 'Orange Money',
+    'MTN_MOMO'     => 'MTN MoMo',
+    'WAVE'         => 'Wave',
+    _              => m ?? '—',
+  };
 }
 
 class _KpiCard extends StatelessWidget {
@@ -176,7 +191,7 @@ class _KpiCard extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(value, style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: color)),
-        Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
+        Text(label, style: TextStyle(fontSize: 11, color: context.textMuted)),
       ]),
     ),
   );
@@ -188,6 +203,7 @@ class _TransactionTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final locale = Localizations.localeOf(context).toString();
     final time = tx['createdAt'] != null
         ? DateFormat('HH:mm').format(DateTime.parse(tx['createdAt']).toLocal()) : '—';
     final amt = (tx['amount'] as num?)?.toDouble() ?? 0;
@@ -195,19 +211,20 @@ class _TransactionTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: context.cardBg,
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: context.divider),
       ),
       child: Row(children: [
         Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(tx['booking']?['reference'] ?? '—',
-            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13, fontFamily: 'monospace')),
-          Text(time, style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13,
+                fontFamily: 'monospace', color: context.textPrimary)),
+          Text(time, style: TextStyle(color: context.textMuted, fontSize: 12)),
         ]),
         const Spacer(),
-        Text('${NumberFormat('#,###', 'fr_FR').format(amt.toInt())} F',
-          style: const TextStyle(fontWeight: FontWeight.w700, color: brandDark)),
+        Text('${NumberFormat('#,###', locale).format(amt.toInt())} F',
+          style: TextStyle(fontWeight: FontWeight.w700, color: context.textPrimary)),
       ]),
     );
   }

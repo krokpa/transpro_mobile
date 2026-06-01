@@ -6,6 +6,7 @@ import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/providers/notification_providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../l10n/app_localizations.dart';
 
 class AgentShell extends ConsumerStatefulWidget {
   final Widget child;
@@ -18,12 +19,12 @@ class AgentShell extends ConsumerStatefulWidget {
 class _AgentShellState extends ConsumerState<AgentShell> {
   io.Socket? _socket;
 
-  static const _tabs = [
-    ('/agent',         Icons.departure_board_outlined, Icons.departure_board,        'Départs'),
-    ('/agent/scanner', Icons.qr_code_scanner_outlined, Icons.qr_code_scanner,        'Scanner'),
-    ('/agent/guichet', Icons.point_of_sale_outlined,   Icons.point_of_sale_rounded,  'Guichet'),
-    ('/agent/caisse',  Icons.bar_chart_outlined,        Icons.bar_chart_rounded,      'Caisse'),
-    ('/agent/profile', Icons.person_outline_rounded,   Icons.person_rounded,         'Profil'),
+  static const _tabDefs = [
+    ('/agent',         Icons.departure_board_outlined, Icons.departure_board),
+    ('/agent/scanner', Icons.qr_code_scanner_outlined, Icons.qr_code_scanner),
+    ('/agent/guichet', Icons.point_of_sale_outlined,   Icons.point_of_sale_rounded),
+    ('/agent/caisse',  Icons.bar_chart_outlined,        Icons.bar_chart_rounded),
+    ('/agent/profile', Icons.person_outline_rounded,   Icons.person_rounded),
   ];
 
   @override
@@ -87,20 +88,23 @@ class _AgentShellState extends ConsumerState<AgentShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final labels = [l10n.navDepartures, l10n.navScanner, l10n.navGuichet, l10n.navCaisse, l10n.navProfile];
+
     final location = GoRouterState.of(context).matchedLocation;
-    final idx = _tabs.indexWhere((t) => location == t.$1);
+    final idx = _tabDefs.indexWhere((t) => location == t.$1);
     final current = idx == -1 ? 0 : idx;
 
     return Scaffold(
       body: widget.child,
       bottomNavigationBar: NavigationBar(
         selectedIndex: current,
-        onDestinationSelected: (i) => context.go(_tabs[i].$1),
-        destinations: _tabs.map((t) => NavigationDestination(
-          icon: Icon(t.$2),
-          selectedIcon: Icon(t.$3),
-          label: t.$4,
-        )).toList(),
+        onDestinationSelected: (i) => context.go(_tabDefs[i].$1),
+        destinations: List.generate(_tabDefs.length, (i) => NavigationDestination(
+          icon: Icon(_tabDefs[i].$2),
+          selectedIcon: Icon(_tabDefs[i].$3),
+          label: labels[i],
+        )),
       ),
     );
   }

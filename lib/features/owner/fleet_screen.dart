@@ -401,7 +401,7 @@ class _AddVehicleSheetState extends State<_AddVehicleSheet> {
                 const SizedBox(width: 12),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    value: _class,
+                    initialValue: _class,
                     decoration: InputDecoration(labelText: l10n.fleetClass),
                     items: _classes
                         .map((c) => DropdownMenuItem(value: c, child: Text(c)))

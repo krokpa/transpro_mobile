@@ -6,6 +6,7 @@ import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/providers/notification_providers.dart';
 import '../../core/theme/app_theme.dart';
+import '../../l10n/app_localizations.dart';
 
 class OwnerShell extends ConsumerStatefulWidget {
   final Widget child;
@@ -18,12 +19,12 @@ class OwnerShell extends ConsumerStatefulWidget {
 class _OwnerShellState extends ConsumerState<OwnerShell> {
   io.Socket? _socket;
 
-  static const _tabs = [
-    ('/owner',         Icons.bar_chart_outlined,       Icons.bar_chart_rounded,      'Dashboard'),
-    ('/owner/trips',   Icons.departure_board_outlined, Icons.departure_board,        'Voyages'),
-    ('/owner/fleet',   Icons.directions_bus_outlined,  Icons.directions_bus_rounded, 'Flotte'),
-    ('/owner/routes',  Icons.alt_route_outlined,       Icons.alt_route_rounded,      'Réseau'),
-    ('/owner/profile', Icons.person_outline_rounded,   Icons.person_rounded,         'Profil'),
+  static const _tabDefs = [
+    ('/owner',         Icons.bar_chart_outlined,       Icons.bar_chart_rounded),
+    ('/owner/trips',   Icons.departure_board_outlined, Icons.departure_board),
+    ('/owner/fleet',   Icons.directions_bus_outlined,  Icons.directions_bus_rounded),
+    ('/owner/routes',  Icons.alt_route_outlined,       Icons.alt_route_rounded),
+    ('/owner/profile', Icons.person_outline_rounded,   Icons.person_rounded),
   ];
 
   @override
@@ -70,7 +71,7 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
             Text(message, style: const TextStyle(fontSize: 13)),
         ]),
         action: SnackBarAction(
-          label: 'Voir',
+          label: AppLocalizations.of(context).see,
           textColor: Colors.white,
           onPressed: () => context.push('/owner/notifications'),
         ),
@@ -87,20 +88,23 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final labels = [l10n.navDashboard, l10n.navTrips, l10n.navFleet, l10n.navRoutes, l10n.navProfile];
+
     final location = GoRouterState.of(context).matchedLocation;
-    final idx = _tabs.indexWhere((t) => location == t.$1);
+    final idx = _tabDefs.indexWhere((t) => location == t.$1);
     final current = idx == -1 ? 0 : idx;
 
     return Scaffold(
       body: widget.child,
       bottomNavigationBar: NavigationBar(
         selectedIndex: current,
-        onDestinationSelected: (i) => context.go(_tabs[i].$1),
-        destinations: _tabs.map((t) => NavigationDestination(
-          icon: Icon(t.$2),
-          selectedIcon: Icon(t.$3),
-          label: t.$4,
-        )).toList(),
+        onDestinationSelected: (i) => context.go(_tabDefs[i].$1),
+        destinations: List.generate(_tabDefs.length, (i) => NavigationDestination(
+          icon: Icon(_tabDefs[i].$2),
+          selectedIcon: Icon(_tabDefs[i].$3),
+          label: labels[i],
+        )),
       ),
     );
   }

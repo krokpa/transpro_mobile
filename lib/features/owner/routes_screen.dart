@@ -269,7 +269,7 @@ class _AddRouteSheetState extends ConsumerState<_AddRouteSheet> {
             error: (e, _) => Text('Erreur villes: $e'),
             data: (cities) => Row(children: [
               Expanded(child: DropdownButtonFormField<City>(
-                value: _origin,
+                initialValue: _origin,
                 hint: const Text('Départ', style: TextStyle(fontSize: 13)),
                 decoration: const InputDecoration(labelText: 'Ville départ'),
                 items: cities.map((c) => DropdownMenuItem(value: c, child: Text(c.name, style: const TextStyle(fontSize: 13)))).toList(),
@@ -281,7 +281,7 @@ class _AddRouteSheetState extends ConsumerState<_AddRouteSheet> {
                 child: Icon(Icons.arrow_forward, color: Color(0xFF94A3B8)),
               ),
               Expanded(child: DropdownButtonFormField<City>(
-                value: _dest,
+                initialValue: _dest,
                 hint: const Text('Arrivée', style: TextStyle(fontSize: 13)),
                 decoration: const InputDecoration(labelText: 'Ville arrivée'),
                 items: cities.map((c) => DropdownMenuItem(value: c, child: Text(c.name, style: const TextStyle(fontSize: 13)))).toList(),

@@ -1,28 +1,53 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_provider.dart';
+import '../../core/l10n/locale_provider.dart';
+import '../../core/widgets/user_avatar.dart';
+import '../../l10n/app_localizations.dart';
 
-class AgentProfileScreen extends ConsumerWidget {
+class AgentProfileScreen extends ConsumerStatefulWidget {
   const AgentProfileScreen({super.key});
+  @override
+  ConsumerState<AgentProfileScreen> createState() => _AgentProfileScreenState();
+}
+
+class _AgentProfileScreenState extends ConsumerState<AgentProfileScreen> {
+  bool _uploadingAvatar = false;
+
+  Future<void> _pickAvatar() async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 512, maxHeight: 512, imageQuality: 82);
+    if (picked == null || !mounted) return;
+    setState(() => _uploadingAvatar = true);
+    try {
+      final b64 = 'data:image/jpeg;base64,${base64Encode(await picked.readAsBytes())}';
+      await ref.read(authProvider.notifier).updateAvatar(b64);
+    } catch (_) {} finally {
+      if (mounted) setState(() => _uploadingAvatar = false);
+    }
+  }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authProvider).user!;
-    final initials = '${user.firstName[0]}${user.lastName[0]}'.toUpperCase();
+  Widget build(BuildContext context) {
+    final l10n      = AppLocalizations.of(context);
+    final user      = ref.watch(authProvider).user!;
+    final themeMode = ref.watch(themeModeProvider);
+    final locale    = ref.watch(localeProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
       body: CustomScrollView(
         slivers: [
-          // ── Hero header ─────────────────────────────────────────────────
           SliverAppBar(
             expandedHeight: 240,
             pinned: true,
             backgroundColor: brandCanvas,
             scrolledUnderElevation: 0,
             automaticallyImplyLeading: false,
-            title: const Text('Mon profil', style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
+            title: Text(l10n.profileTitle,
+                style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
             flexibleSpace: FlexibleSpaceBar(
               collapseMode: CollapseMode.pin,
               background: Container(
@@ -50,25 +75,39 @@ class AgentProfileScreen extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const SizedBox(height: 24),
-                          Container(
-                            width: 76, height: 76,
-                            decoration: BoxDecoration(
-                              color: brandOrange,
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 3),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: brandOrange.withValues(alpha: 0.4),
-                                  blurRadius: 20,
-                                  offset: const Offset(0, 8),
+                          Stack(children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 3),
+                                boxShadow: [BoxShadow(color: brandOrange.withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 8))],
+                              ),
+                              child: UserAvatarWidget(
+                                firstName: user.firstName,
+                                lastName: user.lastName,
+                                avatar: user.avatar,
+                                size: 76,
+                                onTap: _uploadingAvatar ? null : _pickAvatar,
+                              ),
+                            ),
+                            Positioned(
+                              right: 0, bottom: 0,
+                              child: GestureDetector(
+                                onTap: _uploadingAvatar ? null : _pickAvatar,
+                                child: Container(
+                                  width: 26, height: 26,
+                                  decoration: BoxDecoration(
+                                    color: _uploadingAvatar ? Colors.grey : brandOrange,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(color: Colors.white, width: 2),
+                                  ),
+                                  child: _uploadingAvatar
+                                      ? const SizedBox(width: 12, height: 12, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                                      : const Icon(Icons.camera_alt_rounded, size: 13, color: Colors.white),
                                 ),
-                              ],
+                              ),
                             ),
-                            child: Center(
-                              child: Text(initials,
-                                style: const TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800)),
-                            ),
-                          ),
+                          ]),
                           const SizedBox(height: 12),
                           Text(user.fullName,
                             style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
@@ -84,8 +123,8 @@ class AgentProfileScreen extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(20),
                                 border: Border.all(color: brandOrange.withValues(alpha: 0.4)),
                               ),
-                              child: const Text('Agent',
-                                style: TextStyle(color: brandOrange, fontWeight: FontWeight.w600, fontSize: 12)),
+                              child: Text(l10n.agentRole,
+                                style: const TextStyle(color: brandOrange, fontWeight: FontWeight.w600, fontSize: 12)),
                             ),
                             if (user.stationName != null) ...[
                               const SizedBox(width: 8),
@@ -114,23 +153,26 @@ class AgentProfileScreen extends ConsumerWidget {
             ),
           ),
 
-          // ── Body ────────────────────────────────────────────────────────
           SliverPadding(
             padding: const EdgeInsets.all(20),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                _Section(title: 'Informations', children: [
-                  _InfoTile(icon: Icons.email_outlined, label: 'Email', value: user.email),
+                _Section(title: l10n.agentInfoSection, children: [
+                  _InfoTile(icon: Icons.email_outlined, label: l10n.emailLabel, value: user.email),
                   if (user.phone != null && user.phone!.isNotEmpty)
-                    _InfoTile(icon: Icons.phone_outlined, label: 'Téléphone', value: user.phone!),
+                    _InfoTile(icon: Icons.phone_outlined, label: l10n.phoneLabel, value: user.phone!),
                   if (user.stationName != null)
-                    _InfoTile(icon: Icons.location_on_outlined, label: 'Gare affectée', value: user.stationName!),
+                    _InfoTile(icon: Icons.location_on_outlined, label: l10n.agentStationLabel, value: user.stationName!),
                 ]),
                 const SizedBox(height: 16),
-                _Section(title: 'Compte', children: [
+                _Section(title: l10n.settingsAppearance, children: [
+                  _AppearanceTiles(themeMode: themeMode, locale: locale, ref: ref),
+                ]),
+                const SizedBox(height: 16),
+                _Section(title: l10n.profileAccountSettings, children: [
                   _ActionTile(
                     icon: Icons.lock_outline,
-                    label: 'Changer le mot de passe',
+                    label: l10n.settingsChangePassword,
                     onTap: () => _showChangePassword(context, ref),
                   ),
                 ]),
@@ -145,10 +187,10 @@ class AgentProfileScreen extends ConsumerWidget {
                       ),
                       child: const Icon(Icons.logout_rounded, color: Color(0xFFDC2626), size: 18),
                     ),
-                    title: const Text('Déconnexion',
-                      style: TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.w600)),
+                    title: Text(l10n.settingsLogout,
+                      style: const TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.w600)),
                     trailing: const Icon(Icons.chevron_right, color: Color(0xFFDC2626)),
-                    onTap: () => _confirmLogout(context, ref),
+                    onTap: () => _confirmLogout(context, ref, l10n),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -172,15 +214,18 @@ class AgentProfileScreen extends ConsumerWidget {
     );
   }
 
-  void _confirmLogout(BuildContext context, WidgetRef ref) {
+  void _confirmLogout(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Déconnexion', style: TextStyle(fontWeight: FontWeight.w800)),
-        content: const Text('Voulez-vous vraiment vous déconnecter ?'),
+        title: Text(l10n.settingsLogout, style: const TextStyle(fontWeight: FontWeight.w800)),
+        content: Text(l10n.settingsLogoutBody),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Annuler')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.settingsLogoutCancel),
+          ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFFDC2626),
@@ -191,7 +236,7 @@ class AgentProfileScreen extends ConsumerWidget {
               Navigator.pop(context);
               ref.read(authProvider.notifier).logout();
             },
-            child: const Text('Déconnecter'),
+            child: Text(l10n.settingsLogoutConfirm),
           ),
         ],
       ),
@@ -208,7 +253,8 @@ class _Section extends StatelessWidget {
     Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 8),
       child: Text(title,
-        style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF64748B), letterSpacing: 0.5)),
+        style: TextStyle(fontWeight: FontWeight.w700, fontSize: 12,
+            color: context.textSecondary, letterSpacing: 0.5)),
     ),
     Card(child: Column(children: children)),
   ]);
@@ -223,11 +269,12 @@ class _InfoTile extends StatelessWidget {
   Widget build(BuildContext context) => ListTile(
     leading: Container(
       width: 36, height: 36,
-      decoration: BoxDecoration(color: brandLight, borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(color: context.tagBg, borderRadius: BorderRadius.circular(10)),
       child: Icon(icon, color: brandOrange, size: 18),
     ),
-    title: Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF94A3B8))),
-    subtitle: Text(value, style: const TextStyle(color: brandDark, fontWeight: FontWeight.w600, fontSize: 14)),
+    title: Text(label, style: TextStyle(fontSize: 11, color: context.textMuted)),
+    subtitle: Text(value,
+        style: TextStyle(color: context.textPrimary, fontWeight: FontWeight.w600, fontSize: 14)),
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
   );
 }
@@ -241,14 +288,81 @@ class _ActionTile extends StatelessWidget {
   Widget build(BuildContext context) => ListTile(
     leading: Container(
       width: 36, height: 36,
-      decoration: BoxDecoration(color: brandLight, borderRadius: BorderRadius.circular(10)),
+      decoration: BoxDecoration(color: context.tagBg, borderRadius: BorderRadius.circular(10)),
       child: Icon(icon, color: brandOrange, size: 18),
     ),
-    title: Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: brandDark)),
-    trailing: const Icon(Icons.chevron_right_rounded, color: Color(0xFF94A3B8)),
+    title: Text(label,
+        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.textPrimary)),
+    trailing: Icon(Icons.chevron_right_rounded, color: context.textMuted),
     onTap: onTap,
     contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
   );
+}
+
+class _AppearanceTiles extends StatelessWidget {
+  final ThemeMode themeMode;
+  final Locale? locale;
+  final WidgetRef ref;
+  const _AppearanceTiles({required this.themeMode, required this.locale, required this.ref});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final currentLocale = locale?.languageCode ?? 'system';
+    return Column(children: [
+      ListTile(
+        leading: Container(
+          width: 36, height: 36,
+          decoration: BoxDecoration(color: context.tagBg, borderRadius: BorderRadius.circular(10)),
+          child: const Icon(Icons.palette_outlined, color: brandOrange, size: 18),
+        ),
+        title: Text(l10n.settingsTheme,
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.textPrimary)),
+        trailing: DropdownButton<ThemeMode>(
+          value: themeMode,
+          underline: const SizedBox.shrink(),
+          isDense: true,
+          items: [
+            DropdownMenuItem(value: ThemeMode.system, child: Text(l10n.settingsThemeSystem, style: const TextStyle(fontSize: 13))),
+            DropdownMenuItem(value: ThemeMode.light,  child: Text(l10n.settingsThemeLight,  style: const TextStyle(fontSize: 13))),
+            DropdownMenuItem(value: ThemeMode.dark,   child: Text(l10n.settingsThemeDark,   style: const TextStyle(fontSize: 13))),
+          ],
+          onChanged: (v) { if (v != null) ref.read(themeModeProvider.notifier).setMode(v); },
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      ),
+      Divider(height: 1, indent: 56, color: context.divider),
+      ListTile(
+        leading: Container(
+          width: 36, height: 36,
+          decoration: BoxDecoration(color: context.tagBg, borderRadius: BorderRadius.circular(10)),
+          child: const Icon(Icons.language_outlined, color: brandOrange, size: 18),
+        ),
+        title: Text(l10n.settingsLanguage,
+          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.textPrimary)),
+        trailing: DropdownButton<String>(
+          value: currentLocale,
+          underline: const SizedBox.shrink(),
+          isDense: true,
+          items: [
+            DropdownMenuItem(value: 'system', child: Text(l10n.languageAuto, style: const TextStyle(fontSize: 13))),
+            ...localeLabels.entries.map((e) => DropdownMenuItem(
+              value: e.key,
+              child: Text(e.value, style: const TextStyle(fontSize: 13)),
+            )),
+          ],
+          onChanged: (v) {
+            if (v == null || v == 'system') {
+              ref.read(localeProvider.notifier).setLocale(null);
+            } else {
+              ref.read(localeProvider.notifier).setLocale(Locale(v));
+            }
+          },
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
+      ),
+    ]);
+  }
 }
 
 class _ChangePasswordSheet extends StatefulWidget {
@@ -283,15 +397,19 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
         newPassword:     _newPwd.text,
       );
       if (mounted) {
+        final l10n = AppLocalizations.of(context);
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Mot de passe modifié'), backgroundColor: Color(0xFF16A34A)),
+          SnackBar(content: Text(l10n.profilePasswordChanged), backgroundColor: const Color(0xFF16A34A)),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text('${AppLocalizations.of(context).error}: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {
@@ -301,6 +419,7 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
       child: SingleChildScrollView(
@@ -313,38 +432,38 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
               alignment: Alignment.center,
               child: Container(
                 width: 40, height: 4,
-                decoration: BoxDecoration(color: const Color(0xFFE2E8F0), borderRadius: BorderRadius.circular(2)),
+                decoration: BoxDecoration(color: context.divider, borderRadius: BorderRadius.circular(2)),
               ),
             ),
-            const Text('Changer le mot de passe',
-              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20, color: brandDark)),
+            Text(l10n.settingsChangePassword,
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 20, color: context.textPrimary)),
             const SizedBox(height: 20),
             TextFormField(
               controller: _current,
               obscureText: !_showCur,
               decoration: InputDecoration(
-                labelText: 'Mot de passe actuel',
+                labelText: l10n.profileCurrentPassword,
                 suffixIcon: IconButton(
                   icon: Icon(_showCur ? Icons.visibility_off : Icons.visibility),
                   onPressed: () => setState(() => _showCur = !_showCur),
                 ),
               ),
-              validator: (v) => (v == null || v.isEmpty) ? 'Requis' : null,
+              validator: (v) => (v == null || v.isEmpty) ? l10n.required : null,
             ),
             const SizedBox(height: 14),
             TextFormField(
               controller: _newPwd,
               obscureText: !_showNew,
               decoration: InputDecoration(
-                labelText: 'Nouveau mot de passe',
+                labelText: l10n.profileNewPassword,
                 suffixIcon: IconButton(
                   icon: Icon(_showNew ? Icons.visibility_off : Icons.visibility),
                   onPressed: () => setState(() => _showNew = !_showNew),
                 ),
               ),
               validator: (v) {
-                if (v == null || v.isEmpty) return 'Requis';
-                if (v.length < 6) return 'Minimum 6 caractères';
+                if (v == null || v.isEmpty) return l10n.required;
+                if (v.length < 6) return l10n.profilePasswordMin;
                 return null;
               },
             ),
@@ -353,13 +472,13 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
               controller: _confirm,
               obscureText: !_showCon,
               decoration: InputDecoration(
-                labelText: 'Confirmer le nouveau mot de passe',
+                labelText: l10n.profileConfirmNewPassword,
                 suffixIcon: IconButton(
                   icon: Icon(_showCon ? Icons.visibility_off : Icons.visibility),
                   onPressed: () => setState(() => _showCon = !_showCon),
                 ),
               ),
-              validator: (v) => v != _newPwd.text ? 'Les mots de passe ne correspondent pas' : null,
+              validator: (v) => v != _newPwd.text ? l10n.passwordMismatch : null,
             ),
             const SizedBox(height: 24),
             SizedBox(
@@ -367,8 +486,9 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
               child: ElevatedButton(
                 onPressed: _loading ? null : _save,
                 child: _loading
-                    ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                    : const Text('Modifier le mot de passe'),
+                    ? const SizedBox(height: 20, width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : Text(l10n.settingsChangePassword),
               ),
             ),
           ]),

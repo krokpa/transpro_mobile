@@ -67,7 +67,7 @@ class _DriverDetailScreenState extends ConsumerState<DriverDetailScreen>
       appBar: AppBar(
         title: driverAsync.when(
           loading: () => const Text('Conducteur'),
-          error: (_, __) => const Text('Conducteur'),
+          error: (_, _) => const Text('Conducteur'),
           data: (d) => Text(
             '${d['firstName'] ?? ''} ${d['lastName'] ?? ''}',
             style: const TextStyle(fontSize: 16),
@@ -678,7 +678,7 @@ class _AddAbsenceSheetState extends State<_AddAbsenceSheet> {
           style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: brandDark)),
         const SizedBox(height: 16),
         DropdownButtonFormField<String>(
-          value: _type,
+          initialValue: _type,
           decoration: const InputDecoration(labelText: 'Type'),
           items: widget.typeLabel.entries
               .map((e) => DropdownMenuItem(value: e.key, child: Text(e.value)))

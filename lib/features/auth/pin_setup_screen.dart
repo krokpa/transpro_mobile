@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:local_auth/local_auth.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../l10n/app_localizations.dart';
 import 'pin_widgets.dart';
 
 class PinSetupScreen extends ConsumerStatefulWidget {
@@ -19,9 +21,9 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
   String _currentPin = '';
   bool _isConfirming = false;
   String? _error;
-  bool _biometricAvailable = false;
   bool _enableBiometric = false;
   bool _loading = false;
+  BiometricType? _biometricType;
 
   @override
   void initState() {
@@ -30,8 +32,8 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
   }
 
   Future<void> _checkBiometric() async {
-    final available = await ref.read(authProvider.notifier).isBiometricAvailable();
-    if (mounted) setState(() => _biometricAvailable = available);
+    final type = await resolveAvailableBiometric();
+    if (mounted) setState(() => _biometricType = type);
   }
 
   void _onKey(String digit) {
@@ -48,6 +50,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
   }
 
   void _advance() {
+    final l10n = AppLocalizations.of(context);
     if (!_isConfirming) {
       setState(() {
         _phase1Pin = _currentPin;
@@ -59,7 +62,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
         _complete();
       } else {
         setState(() {
-          _error = 'Les codes PIN ne correspondent pas. Réessayez.';
+          _error = l10n.pinMismatch;
           _currentPin = '';
           _isConfirming = false;
           _phase1Pin = '';
@@ -69,6 +72,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
   }
 
   Future<void> _complete() async {
+    final l10n = AppLocalizations.of(context);
     setState(() => _loading = true);
     try {
       await ref.read(authProvider.notifier).setupPin(_currentPin, biometric: _enableBiometric);
@@ -78,12 +82,13 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
       else if (auth.user!.isAgent) context.go('/agent');
       else context.go('/owner');
     } catch (_) {
-      if (mounted) setState(() { _loading = false; _error = 'Erreur lors de la configuration.'; });
+      if (mounted) setState(() { _loading = false; _error = l10n.error; });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -93,8 +98,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
             children: [
               const SizedBox(height: 60),
               Container(
-                width: 56,
-                height: 56,
+                width: 56, height: 56,
                 decoration: BoxDecoration(
                   color: brandOrange,
                   borderRadius: BorderRadius.circular(14),
@@ -103,20 +107,18 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                _isConfirming ? 'Confirmez votre code PIN' : 'Choisissez un code PIN',
-                style: const TextStyle(
+                _isConfirming ? l10n.pinConfirmTitle : l10n.pinSetupTitle,
+                style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
-                  color: brandDark,
+                  color: context.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
-                _isConfirming
-                    ? 'Saisissez à nouveau le même code à 4 chiffres'
-                    : 'Ce code sécurisera l\'accès à l\'application',
-                style: TextStyle(color: Colors.grey[500], fontSize: 14),
+                _isConfirming ? l10n.pinConfirmSubtitle : l10n.pinSetupSubtitle,
+                style: TextStyle(color: context.textSecondary, fontSize: 14),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
@@ -138,19 +140,23 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
                 ),
               ),
               const SizedBox(height: 24),
-              if (_biometricAvailable && _isConfirming)
+              if (_biometricType != null && _isConfirming)
                 Card(
                   margin: const EdgeInsets.only(bottom: 16),
                   child: SwitchListTile(
                     value: _enableBiometric,
                     onChanged: (v) => setState(() => _enableBiometric = v),
-                    title: const Text(
-                      'Activer la biométrie',
-                      style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
+                    title: Text(
+                      _biometricType == BiometricType.face
+                          ? 'Activer Face ID'
+                          : _biometricType == BiometricType.iris
+                              ? "Activer la reconnaissance de l'iris"
+                              : l10n.pinSetupBiometricLabel,
+                      style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
                     ),
-                    subtitle: const Text('Empreinte digitale / Face ID'),
-                    activeColor: brandOrange,
-                    secondary: const Icon(Icons.fingerprint, color: brandOrange),
+                    subtitle: Text(l10n.pinSetupBiometricSub),
+                    activeThumbColor: brandOrange,
+                    secondary: Icon(biometricIcon(_biometricType), color: brandOrange, size: 28),
                   ),
                 ),
               if (_loading)
@@ -169,7 +175,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
                     _currentPin = '';
                     _error = null;
                   }),
-                  child: const Text('Recommencer'),
+                  child: Text(l10n.pinRetry),
                 ),
             ],
           ),

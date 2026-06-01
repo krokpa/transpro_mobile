@@ -289,7 +289,7 @@ class _AddStationSheetState extends ConsumerState<_AddStationSheet> {
               loading: () => const LinearProgressIndicator(),
               error: (e, _) => Text('Erreur: $e', style: const TextStyle(color: Colors.red)),
               data: (cities) => DropdownButtonFormField<String>(
-                value: _cityId,
+                initialValue: _cityId,
                 decoration: const InputDecoration(labelText: 'Ville'),
                 items: cities.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
                 onChanged: (v) => setState(() => _cityId = v),
@@ -308,7 +308,7 @@ class _AddStationSheetState extends ConsumerState<_AddStationSheet> {
                 style: TextStyle(fontSize: 12)),
               value: _isPrimary,
               onChanged: (v) => setState(() => _isPrimary = v),
-              activeColor: brandOrange,
+              activeThumbColor: brandOrange,
               contentPadding: EdgeInsets.zero,
             ),
             const SizedBox(height: 24),

@@ -160,7 +160,7 @@ class _DriverCard extends StatelessWidget {
                 child: Switch(
                   value: isActive,
                   onChanged: (v) => onToggle(id, v),
-                  activeColor: brandOrange,
+                  activeThumbColor: brandOrange,
                 ),
               ),
             ]),

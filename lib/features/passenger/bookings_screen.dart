@@ -4,13 +4,26 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/models/models.dart';
+import '../../core/offline/ticket_cache.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/fade_slide.dart';
+import '../../l10n/app_localizations.dart';
 
-final _myBookingsProvider = FutureProvider.autoDispose<List<Booking>>((ref) async {
-  final dio = ref.read(dioProvider);
-  final res = await dio.get('/bookings/my');
-  final items = extractData(res.data);
-  return (items as List).map((e) => Booking.fromJson(e)).toList();
+final _myBookingsProvider = FutureProvider.autoDispose<({List<Booking> bookings, bool isOffline})>((ref) async {
+  try {
+    final dio = ref.read(dioProvider);
+    final res = await dio.get('/bookings/my');
+    final items = extractData(res.data) as List;
+    await TicketCache.saveBookingList(items);
+    final bookings = items.map((e) => Booking.fromJson(e as Map<String, dynamic>)).toList();
+    return (bookings: bookings, isOffline: false);
+  } catch (_) {
+    final cached = TicketCache.getBookings();
+    if (cached.isNotEmpty) {
+      return (bookings: cached.map((e) => Booking.fromJson(e)).toList(), isOffline: true);
+    }
+    rethrow;
+  }
 });
 
 class BookingsScreen extends ConsumerWidget {
@@ -18,43 +31,75 @@ class BookingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n  = AppLocalizations.of(context);
     final async = ref.watch(_myBookingsProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Mes billets')),
+      appBar: AppBar(title: Text(l10n.bookingsTitle)),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Erreur: $e')),
-        data: (bookings) => bookings.isEmpty
-            ? Center(
-                child: Column(mainAxisSize: MainAxisSize.min, children: [
-                  Container(
-                    width: 80, height: 80,
-                    decoration: const BoxDecoration(color: Color(0xFFF1F5F9), shape: BoxShape.circle),
-                    child: const Icon(Icons.confirmation_num_outlined, size: 36, color: Color(0xFF94A3B8)),
+        error: (e, _) => Center(child: Text('$e')),
+        data: (result) {
+          final bookings  = result.bookings;
+          final isOffline = result.isOffline;
+
+          if (bookings.isEmpty) {
+            return Center(
+              child: Column(mainAxisSize: MainAxisSize.min, children: [
+                Container(
+                  width: 80, height: 80,
+                  decoration: BoxDecoration(color: context.inputFill, shape: BoxShape.circle),
+                  child: Icon(Icons.confirmation_num_outlined, size: 36, color: context.textMuted),
+                ),
+                const SizedBox(height: 16),
+                Text(l10n.bookingsNoBookings,
+                  style: TextStyle(fontWeight: FontWeight.w700, color: context.textPrimary, fontSize: 16)),
+                const SizedBox(height: 6),
+                Text(l10n.bookingsNoBookingsSub,
+                  style: TextStyle(color: context.textMuted, fontSize: 13)),
+                const SizedBox(height: 20),
+                ElevatedButton.icon(
+                  onPressed: () => context.go('/passenger/search'),
+                  icon: const Icon(Icons.search_rounded),
+                  label: Text(l10n.bookingsSearchTrips),
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: Size.zero,
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
-                  const SizedBox(height: 16),
-                  const Text('Aucun billet',
-                    style: TextStyle(fontWeight: FontWeight.w700, color: brandDark, fontSize: 16)),
-                  const SizedBox(height: 6),
-                  const Text('Réservez votre premier voyage dès maintenant.',
-                    style: TextStyle(color: Color(0xFF94A3B8), fontSize: 13)),
-                  const SizedBox(height: 20),
-                  ElevatedButton.icon(
-                    onPressed: () => context.go('/passenger/search'),
-                    icon: const Icon(Icons.search_rounded),
-                    label: const Text('Rechercher un voyage'),
-                    style: ElevatedButton.styleFrom(minimumSize: Size.zero, padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12)),
-                  ),
-                ]),
-              )
-            : RefreshIndicator(
-                onRefresh: () => ref.refresh(_myBookingsProvider.future),
+                ),
+              ]),
+            );
+          }
+
+          return RefreshIndicator(
+            onRefresh: () => ref.refresh(_myBookingsProvider.future),
+            child: Column(children: [
+              if (isOffline)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  color: const Color(0xFFFEF9C3),
+                  child: Row(children: [
+                    const Icon(Icons.wifi_off_rounded, size: 16, color: Color(0xFFCA8A04)),
+                    const SizedBox(width: 8),
+                    Expanded(child: Text(
+                      l10n.bookingsOfflineMode,
+                      style: const TextStyle(color: Color(0xFF92400E), fontSize: 12, fontWeight: FontWeight.w500),
+                    )),
+                  ]),
+                ),
+              Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: bookings.length,
-                  itemBuilder: (_, i) => _BookingCard(booking: bookings[i]),
+                  itemBuilder: (_, i) => FadeSlideIn(
+                    delay: Duration(milliseconds: (i * 60).clamp(0, 240)),
+                    child: _BookingCard(booking: bookings[i]),
+                  ),
                 ),
               ),
+            ]),
+          );
+        },
       ),
     );
   }
@@ -64,19 +109,29 @@ class _BookingCard extends StatelessWidget {
   final Booking booking;
   const _BookingCard({required this.booking});
 
-  static const _statusConfig = {
-    'CONFIRMED': (Color(0xFFDCFCE7), Color(0xFF16A34A), 'Confirmé',    Icons.check_circle_outline),
-    'PENDING':   (Color(0xFFFEF9C3), Color(0xFFCA8A04), 'En attente',  Icons.schedule_outlined),
-    'CANCELLED': (Color(0xFFFEE2E2), Color(0xFFDC2626), 'Annulé',      Icons.cancel_outlined),
-    'COMPLETED': (Color(0xFFF0F9FF), Color(0xFF0369A1), 'Terminé',     Icons.done_all_rounded),
+  static const _statusColors = <String, (Color, Color, IconData)>{
+    'CONFIRMED': (Color(0xFFDCFCE7), Color(0xFF16A34A), Icons.check_circle_outline),
+    'PENDING':   (Color(0xFFFEF9C3), Color(0xFFCA8A04), Icons.schedule_outlined),
+    'CANCELLED': (Color(0xFFFEE2E2), Color(0xFFDC2626), Icons.cancel_outlined),
+    'COMPLETED': (Color(0xFFF0F9FF), Color(0xFF0369A1), Icons.done_all_rounded),
+  };
+
+  String _statusLabel(String status, AppLocalizations l10n) => switch (status) {
+    'CONFIRMED' => l10n.bookingStatusConfirmed,
+    'PENDING'   => l10n.bookingStatusPending,
+    'CANCELLED' => l10n.bookingStatusCancelled,
+    'COMPLETED' => l10n.bookingStatusCompleted,
+    _           => status,
   };
 
   @override
   Widget build(BuildContext context) {
-    final cfg = _statusConfig[booking.status] ?? _statusConfig['PENDING']!;
-    final trip = booking.trip;
+    final l10n      = AppLocalizations.of(context);
+    final cfg       = _statusColors[booking.status] ?? _statusColors['PENDING']!;
+    final trip      = booking.trip;
     final isPending = booking.status == 'PENDING';
-    final isActive = trip != null && (trip.status == 'BOARDING' || trip.status == 'DEPARTED');
+    final isActive  = trip != null && (trip.status == 'BOARDING' || trip.status == 'DEPARTED');
+    final locale    = Localizations.localeOf(context).toString();
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
@@ -90,36 +145,37 @@ class _BookingCard extends StatelessWidget {
               Row(children: [
                 Expanded(child: Text(
                   trip?.routeName ?? '—',
-                  style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: brandDark),
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: context.textPrimary),
                 )),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(color: cfg.$1, borderRadius: BorderRadius.circular(20)),
                   child: Row(mainAxisSize: MainAxisSize.min, children: [
-                    Icon(cfg.$4, size: 12, color: cfg.$2),
+                    Icon(cfg.$3, size: 12, color: cfg.$2),
                     const SizedBox(width: 4),
-                    Text(cfg.$3, style: TextStyle(color: cfg.$2, fontSize: 12, fontWeight: FontWeight.w600)),
+                    Text(_statusLabel(booking.status, l10n),
+                      style: TextStyle(color: cfg.$2, fontSize: 12, fontWeight: FontWeight.w600)),
                   ]),
                 ),
               ]),
               if (trip != null) ...[
                 const SizedBox(height: 6),
                 Row(children: [
-                  const Icon(Icons.calendar_today_outlined, size: 12, color: Color(0xFF94A3B8)),
+                  Icon(Icons.calendar_today_outlined, size: 12, color: context.textMuted),
                   const SizedBox(width: 4),
                   Text(
-                    DateFormat('EEE d MMM yyyy • HH:mm', 'fr_FR').format(trip.departureAt.toLocal()),
-                    style: const TextStyle(color: Color(0xFF64748B), fontSize: 12),
+                    DateFormat('EEE d MMM yyyy • HH:mm', locale).format(trip.departureAt.toLocal()),
+                    style: TextStyle(color: context.textSecondary, fontSize: 12),
                   ),
                 ]),
               ],
               const Divider(height: 18),
               Row(children: [
-                const Icon(Icons.confirmation_num_outlined, size: 14, color: Color(0xFF94A3B8)),
+                Icon(Icons.confirmation_num_outlined, size: 14, color: context.textMuted),
                 const SizedBox(width: 6),
                 Text(
                   booking.reference,
-                  style: const TextStyle(color: Color(0xFF64748B), fontSize: 12, fontFamily: 'monospace'),
+                  style: TextStyle(color: context.textSecondary, fontSize: 12, fontFamily: 'monospace'),
                 ),
                 const Spacer(),
                 Text(
@@ -130,7 +186,6 @@ class _BookingCard extends StatelessWidget {
             ]),
           ),
 
-          // Pending payment banner
           if (isPending) ...[
             Container(
               width: double.infinity,
@@ -145,10 +200,10 @@ class _BookingCard extends StatelessWidget {
               child: Row(children: [
                 const Icon(Icons.payments_outlined, size: 14, color: Color(0xFFCA8A04)),
                 const SizedBox(width: 6),
-                const Expanded(
+                Expanded(
                   child: Text(
-                    'Paiement en attente — appuyez pour payer',
-                    style: TextStyle(color: Color(0xFFCA8A04), fontSize: 12, fontWeight: FontWeight.w500),
+                    l10n.bookingsPendingPay,
+                    style: const TextStyle(color: Color(0xFFCA8A04), fontSize: 12, fontWeight: FontWeight.w500),
                   ),
                 ),
                 const Icon(Icons.chevron_right_rounded, size: 16, color: Color(0xFFCA8A04)),
@@ -156,7 +211,28 @@ class _BookingCard extends StatelessWidget {
             ),
           ],
 
-          // Live tracking button for active trips
+          // Luggage status shortcut
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 6),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => context.push(
+                  '/passenger/booking/${booking.id}/luggage?ref=${booking.reference}',
+                ),
+                icon: const Icon(Icons.luggage_outlined, size: 15),
+                label: const Text('Mes bagages'),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: const Color(0xFF7C3AED),
+                  side: const BorderSide(color: Color(0xFFDDD6FE)),
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
+              ),
+            ),
+          ),
+
           if (isActive && !isPending) ...[
             Padding(
               padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -169,7 +245,7 @@ class _BookingCard extends StatelessWidget {
                     size: 16,
                   ),
                   label: Text(
-                    trip.status == 'DEPARTED' ? 'Suivre en direct' : 'Embarquement — Suivre',
+                    trip.status == 'DEPARTED' ? l10n.bookingsTrackLive : l10n.bookingsTrackBoarding,
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: trip.status == 'DEPARTED' ? const Color(0xFF16A34A) : brandOrange,

@@ -4,17 +4,18 @@ import 'package:intl/intl.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/payment_logo.dart';
 
 final _revenueProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, String>((ref, period) async {
   final dio = ref.read(dioProvider);
   final res = await dio.get('/reports/revenue', queryParameters: {'period': period});
-  return res.data as Map<String, dynamic>;
+  return extractData(res.data) as Map<String, dynamic>;
 });
 
 final _bookingsReportProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, String>((ref, period) async {
   final dio = ref.read(dioProvider);
   final res = await dio.get('/reports/bookings', queryParameters: {'period': period});
-  return res.data as Map<String, dynamic>;
+  return extractData(res.data) as Map<String, dynamic>;
 });
 
 class ReportsScreen extends ConsumerStatefulWidget {
@@ -44,7 +45,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         '/reports/export',
         queryParameters: {'period': _period, 'format': format},
       );
-      final data = res.data;
+      final data = extractData(res.data);
       final map = data is Map<String, dynamic> ? data : null;
       final content = data is String ? data
           : map?['url'] as String? ?? map?['data'] as String? ?? '';
@@ -267,12 +268,14 @@ class _PaymentBreakdown extends StatelessWidget {
             style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: brandDark)),
           const SizedBox(height: 10),
           ...data.entries.map((e) => Padding(
-            padding: const EdgeInsets.only(bottom: 6),
+            padding: const EdgeInsets.only(bottom: 8),
             child: Row(children: [
-              Text(_labels[e.key] ?? e.key, style: const TextStyle(fontSize: 13)),
+              PaymentLogo(method: e.key, size: 24),
+              const SizedBox(width: 8),
+              Text(_labels[e.key] ?? e.key, style: TextStyle(fontSize: 13, color: context.textPrimary)),
               const Spacer(),
               Text('${fmt.format((e.value as num?)?.toInt() ?? 0)} F',
-                style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: brandDark)),
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: context.textPrimary)),
             ]),
           )),
         ]),

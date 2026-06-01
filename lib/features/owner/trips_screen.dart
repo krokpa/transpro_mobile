@@ -4,6 +4,8 @@ import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/fade_slide.dart';
+import '../../l10n/app_localizations.dart';
 
 final _ownerTripsProvider = FutureProvider.autoDispose.family<List<Trip>, String>((ref, date) async {
   final dio = ref.read(dioProvider);
@@ -30,32 +32,35 @@ class _State extends ConsumerState<OwnerTripsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final tripsAsync = ref.watch(_ownerTripsProvider(_date));
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Gestion des voyages')),
+      appBar: AppBar(title: Text(l10n.tripsManageTitle)),
       body: Column(children: [
-        // Tab bar
         Container(
-          color: Colors.white,
+          color: context.cardBg,
           child: Row(children: [
-            _Tab(label: "Aujourd'hui", index: 0, current: _tab, onTap: (i) => setState(() => _tab = i)),
-            _Tab(label: 'Demain',       index: 1, current: _tab, onTap: (i) => setState(() => _tab = i)),
-            _Tab(label: 'Cette semaine',index: 2, current: _tab, onTap: (i) => setState(() => _tab = i)),
+            _Tab(label: l10n.tripsToday,    index: 0, current: _tab, onTap: (i) => setState(() => _tab = i)),
+            _Tab(label: l10n.tripsTomorrow, index: 1, current: _tab, onTap: (i) => setState(() => _tab = i)),
+            _Tab(label: l10n.tripsThisWeek, index: 2, current: _tab, onTap: (i) => setState(() => _tab = i)),
           ]),
         ),
         const Divider(height: 1),
         Expanded(child: tripsAsync.when(
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (e, _) => Center(child: Text('Erreur: $e')),
+          error: (e, _) => Center(child: Text('${l10n.error}: $e')),
           data: (trips) => trips.isEmpty
-              ? Center(child: Text('Aucun voyage', style: TextStyle(color: Colors.grey[400])))
+              ? Center(child: Text(l10n.tripsNone, style: TextStyle(color: context.textMuted)))
               : ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: trips.length,
-                  itemBuilder: (_, i) => _TripRow(
-                    trip: trips[i],
-                    onStatusChange: (status) => _updateStatus(trips[i].id, status, ref),
+                  itemBuilder: (_, i) => FadeSlideIn(
+                    delay: Duration(milliseconds: (i * 60).clamp(0, 240)),
+                    child: _TripRow(
+                      trip: trips[i],
+                      onStatusChange: (status) => _updateStatus(trips[i].id, status, ref),
+                    ),
                   ),
                 ),
         )),
@@ -70,7 +75,7 @@ class _State extends ConsumerState<OwnerTripsScreen> {
       ref.invalidate(_ownerTripsProvider(_date));
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
+        SnackBar(content: Text('${AppLocalizations.of(context).error}: $e'), backgroundColor: Colors.red),
       );
     }
   }
@@ -95,7 +100,7 @@ class _Tab extends StatelessWidget {
         ),
         child: Text(label, textAlign: TextAlign.center,
           style: TextStyle(
-            color: sel ? brandOrange : const Color(0xFF94A3B8),
+            color: sel ? brandOrange : context.textMuted,
             fontWeight: sel ? FontWeight.w600 : FontWeight.normal,
             fontSize: 13,
           )),
@@ -110,11 +115,11 @@ class _TripRow extends StatelessWidget {
   const _TripRow({required this.trip, required this.onStatusChange});
 
   static const _statusCfg = {
-    'SCHEDULED': (Color(0xFFF1F5F9), Color(0xFF64748B), 'Planifié'),
-    'BOARDING':  (Color(0xFFFEF9C3), Color(0xFFCA8A04), 'Embarquement'),
-    'DEPARTED':  (Color(0xFFDCFCE7), Color(0xFF16A34A), 'Parti'),
-    'ARRIVED':   (Color(0xFFF0F9FF), Color(0xFF0369A1), 'Arrivé'),
-    'CANCELLED': (Color(0xFFFEE2E2), Color(0xFFDC2626), 'Annulé'),
+    'SCHEDULED': (Color(0xFFF1F5F9), Color(0xFF64748B)),
+    'BOARDING':  (Color(0xFFFEF9C3), Color(0xFFCA8A04)),
+    'DEPARTED':  (Color(0xFFDCFCE7), Color(0xFF16A34A)),
+    'ARRIVED':   (Color(0xFFF0F9FF), Color(0xFF0369A1)),
+    'CANCELLED': (Color(0xFFFEE2E2), Color(0xFFDC2626)),
   };
 
   static const _transitions = {
@@ -125,6 +130,7 @@ class _TripRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final cfg = _statusCfg[trip.status] ?? _statusCfg['SCHEDULED']!;
     final actions = _transitions[trip.status] ?? [];
 
@@ -139,14 +145,15 @@ class _TripRow extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('${trip.originCity} → ${trip.destinationCity}',
-                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: brandDark)),
+                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 14, color: context.textPrimary)),
               Text('${trip.tripClass} · ${trip.vehiclePlate ?? '—'}',
-                style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 12)),
+                style: TextStyle(color: context.textMuted, fontSize: 12)),
             ])),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(color: cfg.$1, borderRadius: BorderRadius.circular(20)),
-              child: Text(cfg.$3, style: TextStyle(color: cfg.$2, fontSize: 11, fontWeight: FontWeight.w600)),
+              child: Text(_tripStatusLabel(trip.status, l10n),
+                style: TextStyle(color: cfg.$2, fontSize: 11, fontWeight: FontWeight.w600)),
             ),
           ]),
           if (actions.isNotEmpty) ...[
@@ -164,7 +171,7 @@ class _TripRow extends StatelessWidget {
                     textStyle: const TextStyle(fontSize: 12),
                   ),
                   onPressed: () => onStatusChange(s),
-                  child: Text(c.$3),
+                  child: Text(_tripStatusLabel(s, l10n)),
                 ),
               );
             }).toList()),
@@ -174,3 +181,12 @@ class _TripRow extends StatelessWidget {
     );
   }
 }
+
+String _tripStatusLabel(String s, AppLocalizations l10n) => switch (s) {
+  'SCHEDULED' => l10n.tripStatusScheduled,
+  'BOARDING'  => l10n.tripStatusBoarding,
+  'DEPARTED'  => l10n.tripStatusDeparted,
+  'ARRIVED'   => l10n.tripStatusArrived,
+  'CANCELLED' => l10n.tripStatusCancelled,
+  _ => s,
+};
