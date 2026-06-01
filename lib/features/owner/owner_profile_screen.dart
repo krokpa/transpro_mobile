@@ -1,22 +1,51 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/theme_provider.dart';
+import '../../core/l10n/locale_provider.dart';
+import '../../core/widgets/user_avatar.dart';
+import '../../l10n/app_localizations.dart';
 
 final _tenantProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final dio = ref.read(dioProvider);
   final res = await dio.get('/tenants/me');
-  return res.data as Map<String, dynamic>;
+  return extractData(res.data) as Map<String, dynamic>;
 });
 
-class OwnerProfileScreen extends ConsumerWidget {
+class OwnerProfileScreen extends ConsumerStatefulWidget {
   const OwnerProfileScreen({super.key});
+  @override
+  ConsumerState<OwnerProfileScreen> createState() => _OwnerProfileScreenState();
+}
+
+class _OwnerProfileScreenState extends ConsumerState<OwnerProfileScreen> {
+  bool _uploadingAvatar = false;
+
+  Future<void> _pickAvatar() async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, maxWidth: 512, maxHeight: 512, imageQuality: 82);
+    if (picked == null || !mounted) return;
+    setState(() => _uploadingAvatar = true);
+    try {
+      final b64 = 'data:image/jpeg;base64,${base64Encode(await picked.readAsBytes())}';
+      await ref.read(authProvider.notifier).updateAvatar(b64);
+    } catch (_) {} finally {
+      if (mounted) setState(() => _uploadingAvatar = false);
+    }
+  }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(authProvider).user!;
+  Widget build(BuildContext context) {
+    final auth = ref.watch(authProvider);
+    final user = auth.user!;
     final tenantAsync = ref.watch(_tenantProvider);
+    final themeMode = ref.watch(themeModeProvider);
+    final locale    = ref.watch(localeProvider);
+    final l10n      = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(title: const Text('Profil')),
@@ -28,13 +57,13 @@ class OwnerProfileScreen extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Row(children: [
-                CircleAvatar(
-                  radius: 28,
-                  backgroundColor: brandLight,
-                  child: Text(
-                    '${user.firstName[0]}${user.lastName[0]}'.toUpperCase(),
-                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: brandOrange),
-                  ),
+                UserAvatarWidget(
+                  firstName: user.firstName,
+                  lastName: user.lastName,
+                  avatar: user.avatar,
+                  size: 56,
+                  onTap: _uploadingAvatar ? null : _pickAvatar,
+                  showEditOverlay: true,
                 ),
                 const SizedBox(width: 14),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -97,6 +126,67 @@ class OwnerProfileScreen extends ConsumerWidget {
                 ),
               ),
             ]),
+          ),
+          const SizedBox(height: 20),
+
+          // Appearance
+          Text(l10n.settingsAppearance,
+            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: brandDark)),
+          const SizedBox(height: 8),
+          Card(
+            child: Column(children: [
+              ListTile(
+                leading: const Icon(Icons.palette_outlined, color: brandOrange),
+                title: Text(l10n.settingsTheme, style: const TextStyle(fontWeight: FontWeight.w500)),
+                trailing: DropdownButton<ThemeMode>(
+                  value: themeMode,
+                  underline: const SizedBox.shrink(),
+                  isDense: true,
+                  items: [
+                    DropdownMenuItem(value: ThemeMode.system, child: Text(l10n.themeSystem, style: const TextStyle(fontSize: 13))),
+                    DropdownMenuItem(value: ThemeMode.light,  child: Text(l10n.themeLight,  style: const TextStyle(fontSize: 13))),
+                    DropdownMenuItem(value: ThemeMode.dark,   child: Text(l10n.themeDark,   style: const TextStyle(fontSize: 13))),
+                  ],
+                  onChanged: (v) {
+                    if (v != null) ref.read(themeModeProvider.notifier).setMode(v);
+                  },
+                ),
+              ),
+              const Divider(height: 1, indent: 56),
+              ListTile(
+                leading: const Icon(Icons.language_outlined, color: brandOrange),
+                title: Text(l10n.settingsLanguage, style: const TextStyle(fontWeight: FontWeight.w500)),
+                trailing: DropdownButton<String>(
+                  value: locale?.languageCode ?? '',
+                  underline: const SizedBox.shrink(),
+                  isDense: true,
+                  items: [
+                    DropdownMenuItem(value: '', child: Text(l10n.languageAuto, style: const TextStyle(fontSize: 13))),
+                    ...localeLabels.entries.map((e) =>
+                      DropdownMenuItem(value: e.key, child: Text(e.value, style: const TextStyle(fontSize: 13))),
+                    ),
+                  ],
+                  onChanged: (v) {
+                    if (v == null) return;
+                    final newLocale = v.isEmpty ? null : Locale(v);
+                    ref.read(localeProvider.notifier).setLocale(newLocale);
+                  },
+                ),
+              ),
+            ]),
+          ),
+          const SizedBox(height: 20),
+
+          // Notifications & campagnes
+          const Text('Notifications',
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: brandDark)),
+          const SizedBox(height: 8),
+          Card(
+            child: _ActionTile(
+              icon: Icons.campaign_outlined,
+              label: 'Campagnes de notifications',
+              onTap: () => context.push('/owner/campaigns'),
+            ),
           ),
           const SizedBox(height: 20),
 

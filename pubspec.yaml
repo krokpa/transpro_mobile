@@ -30,6 +30,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   cupertino_icons: ^1.0.8
 
   # State management
@@ -51,7 +53,7 @@ dependencies:
   qr_flutter: ^4.1.0
 
   # Date formatting
-  intl: ^0.19.0
+  intl: ^0.20.2
 
   # Share sheet
   share_plus: ^10.1.4
@@ -59,26 +61,48 @@ dependencies:
   # Real-time WebSocket (Socket.IO)
   socket_io_client: ^3.0.0
 
-  # Map
+  # Map & URL
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
+  url_launcher: ^6.3.1
 
   # Driver GPS
   geolocator: ^13.0.2
 
+  # Offline cache (billets / QR codes)
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+
   # Biometric auth (fingerprint / Face ID)
   local_auth: ^2.3.0
+
+  # Image picker (avatar upload)
+  image_picker: ^1.1.2
 
   # PIN hashing
   crypto: ^3.0.3
 
-  # In-app WebView (GeniusPay checkout)
-  webview_flutter: ^4.10.0
+  # GeniusPay — paiement natif (Wave, Orange Money, MTN, Moov, carte)
+  geniuspay_flutter: ^1.0.0
+
+  # Splash screen natif (Android 12+ SplashScreen API)
+  flutter_native_splash: ^2.4.3
+
+  # Push notifications
+  onesignal_flutter: ^5.2.8
+  firebase_core: ^3.0.0
+  firebase_messaging: ^15.0.0
+
+  # Local notifications + campagnes périodiques
+  flutter_local_notifications: ^18.0.1
+  workmanager: ^0.5.2
+  timezone: ^0.9.4
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -86,7 +110,38 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
 
-  # The following line ensures that the Material Icons font is
-  # included with your application, so that you can use the icons in
-  # the material Icons class.
+  generate: true
   uses-material-design: true
+
+  assets:
+    - assets/images/transpro-logo.png
+    - assets/images/transpro-logo-transparent.png
+    - assets/images/transpro-horizontal.png
+    - assets/images/transpro-story.png
+    - assets/images/payments/
+
+# ── Launcher icon ──────────────────────────────────────────────────────────────
+flutter_launcher_icons:
+  android: launcher_icon
+  ios: true
+  image_path: assets/images/transpro-logo.png
+  min_sdk_android: 21
+  adaptive_icon_background: "#F97316"
+  adaptive_icon_foreground: assets/images/transpro-logo-transparent.png
+  web:
+    generate: false
+
+# ── Splash screen ──────────────────────────────────────────────────────────────
+flutter_native_splash:
+  color: "#F97316"
+  image: assets/images/transpro-logo-transparent.png
+  color_dark: "#0F172A"
+  image_dark: assets/images/transpro-logo-transparent.png
+  android: true
+  ios: true
+  web: false
+  android_12:
+    image: assets/images/transpro-logo-transparent.png
+    icon_background_color: "#F97316"
+    image_dark: assets/images/transpro-logo-transparent.png
+    icon_background_color_dark: "#0F172A"

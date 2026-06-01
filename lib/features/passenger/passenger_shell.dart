@@ -5,6 +5,7 @@ import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/models.dart';
+import '../../core/notifications/notification_prefs_cache.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/notification_providers.dart' show unreadCountProvider;
 import '../../core/providers/favorites_provider.dart';
@@ -54,6 +55,7 @@ class _PassengerShellState extends ConsumerState<PassengerShell> {
   void initState() {
     super.initState();
     _connectSocket();
+    NotifPrefsCache.markActive();
   }
 
   void _connectSocket() {
@@ -468,7 +470,10 @@ class _DrawerFooter extends StatelessWidget {
                 const Spacer(),
                 // Déconnexion
                 TextButton.icon(
-                  onPressed: () => _confirmLogout(context, ref, l10n),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    ref.read(authProvider.notifier).logout();
+                  },
                   icon: const Icon(Icons.logout_rounded, size: 15, color: Color(0xFFDC2626)),
                   label: Text(
                     l10n.settingsLogout,
@@ -488,41 +493,6 @@ class _DrawerFooter extends StatelessWidget {
     );
   }
 
-  void _confirmLogout(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
-    // Ferme le drawer d'abord, puis ouvre la dialog via postFrameCallback
-    // pour ne pas réutiliser un contexte déjà déactivé.
-    Navigator.pop(context);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final rootCtx = ref.context;
-      if (!rootCtx.mounted) return;
-      showDialog(
-        context: rootCtx,
-        builder: (dialogContext) => AlertDialog(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-          title: Text(l10n.settingsLogout, style: const TextStyle(fontWeight: FontWeight.w800)),
-          content: Text(l10n.settingsLogoutBody),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: Text(l10n.settingsLogoutCancel),
-            ),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFDC2626),
-                minimumSize: Size.zero,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              ),
-              onPressed: () {
-                Navigator.pop(dialogContext);
-                ref.read(authProvider.notifier).logout();
-              },
-              child: Text(l10n.settingsLogoutConfirm),
-            ),
-          ],
-        ),
-      );
-    });
-  }
 }
 
 // ── Helpers visuels ───────────────────────────────────────────────────────────
