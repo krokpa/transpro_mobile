@@ -163,6 +163,8 @@ class LocalNotificationService {
         ),
       ),
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
       payload: 'BOOKING_REMINDER:$bookingId',
     );
   }
@@ -185,6 +187,8 @@ class LocalNotificationService {
         _nextDailyTime(hour, minute),
         _campaignDetails(title, body),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.time,
         payload: payload,
       );
@@ -203,6 +207,8 @@ class LocalNotificationService {
         _nextWeekdayTime(weekday, hour, minute),
         _campaignDetails(title, body),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
         matchDateTimeComponents: DateTimeComponents.dayOfWeekAndTime,
         payload: payload,
       );
