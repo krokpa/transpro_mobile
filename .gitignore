@@ -43,3 +43,13 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# ── Credentials & secrets (NE PAS committer) ──────────────────
+# Copier app_constants.example.dart → app_constants.dart
+lib/core/config/app_constants.dart
+
+# Firebase — fichiers générés contenant des clés sensibles
+google-services.json
+GoogleService-Info.plist
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
