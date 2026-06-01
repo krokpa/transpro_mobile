@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../core/api/api_client.dart';
+import '../../core/services/permission_service.dart';
 import '../../core/theme/app_theme.dart';
 
 // ── Status config ─────────────────────────────────────────────────────────────
@@ -37,20 +38,37 @@ class ParcelScanScreen extends ConsumerStatefulWidget {
 }
 
 class _State extends ConsumerState<ParcelScanScreen> {
-  final _scanCtrl   = MobileScannerController(detectionSpeed: DetectionSpeed.noDuplicates);
-  final _codeCtrl   = TextEditingController();
-  bool _paused      = false;
-  bool _loading     = false;
-  bool _manualEntry = false;
+  final _scanCtrl    = MobileScannerController(detectionSpeed: DetectionSpeed.noDuplicates);
+  final _codeCtrl    = TextEditingController();
+  bool _paused       = false;
+  bool _loading      = false;
+  bool _manualEntry  = false;
+  bool _cameraGranted = false;
 
   Map<String, dynamic>? _parcel;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkCamera();
+  }
 
   @override
   void dispose() {
     _scanCtrl.dispose();
     _codeCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _checkCamera() async {
+    final granted = await PermissionService.hasCamera();
+    if (mounted) setState(() => _cameraGranted = granted);
+  }
+
+  Future<void> _requestCamera() async {
+    final granted = await PermissionService.requestCamera(context);
+    if (mounted) setState(() => _cameraGranted = granted);
   }
 
   // ── Lookup ────────────────────────────────────────────────────────────────
@@ -314,6 +332,17 @@ class _State extends ConsumerState<ParcelScanScreen> {
   }
 
   Widget _buildScanner() {
+    if (!_cameraGranted) {
+      return PermissionGate(
+        icon: Icons.camera_alt_outlined,
+        title: 'Accès à la caméra requis',
+        subtitle: 'Pour scanner les QR codes des colis, TransPro a besoin d\'accéder à la caméra.',
+        buttonLabel: 'Autoriser la caméra',
+        iconColor: brandOrange,
+        onTap: _requestCamera,
+      );
+    }
+
     return Stack(
       children: [
         MobileScanner(controller: _scanCtrl, onDetect: _onDetect),

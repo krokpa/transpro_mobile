@@ -7,6 +7,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:latlong2/latlong.dart';
 import '../../core/config/map_config.dart';
+import '../../core/services/permission_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -53,17 +54,15 @@ class _StationNavigationScreenState extends State<StationNavigationScreen> {
   }
 
   Future<void> _startTracking() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
+    if (!mounted) return;
+    final granted = await PermissionService.requestLocation(context);
+    if (!granted) {
       setState(() => _locationDenied = true);
       return;
     }
 
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-    if (permission == LocationPermission.deniedForever || permission == LocationPermission.denied) {
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
       setState(() => _locationDenied = true);
       return;
     }

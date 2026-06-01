@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../../core/api/api_client.dart';
 import '../../core/offline/manifest_cache.dart';
+import '../../core/services/permission_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -17,9 +18,26 @@ class ScannerScreen extends ConsumerStatefulWidget {
 
 class _State extends ConsumerState<ScannerScreen> {
   final _ctrl = MobileScannerController(detectionSpeed: DetectionSpeed.noDuplicates);
-  bool _paused  = false;
-  bool _loading = false;
+  bool _paused        = false;
+  bool _loading       = false;
+  bool _cameraGranted = false;
   _ScanResult? _result;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkCamera();
+  }
+
+  Future<void> _checkCamera() async {
+    final granted = await PermissionService.hasCamera();
+    if (mounted) setState(() => _cameraGranted = granted);
+  }
+
+  Future<void> _requestCamera() async {
+    final granted = await PermissionService.requestCamera(context);
+    if (mounted) setState(() => _cameraGranted = granted);
+  }
 
   Future<void> _onDetect(BarcodeCapture capture) async {
     if (_paused || _loading) return;
@@ -101,6 +119,24 @@ class _State extends ConsumerState<ScannerScreen> {
   Widget build(BuildContext context) {
     final l10n       = AppLocalizations.of(context);
     final hasOffline = widget.tripId != null && ManifestCache.hasManifest(widget.tripId!);
+
+    if (!_cameraGranted) {
+      return Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.transparent,
+          iconTheme: const IconThemeData(color: Colors.white),
+        ),
+        body: PermissionGate(
+          icon: Icons.camera_alt_outlined,
+          title: 'Accès à la caméra requis',
+          subtitle: 'Pour scanner les QR codes des billets, TransPro a besoin d\'accéder à la caméra.',
+          buttonLabel: 'Autoriser la caméra',
+          iconColor: brandOrange,
+          onTap: _requestCamera,
+        ),
+      );
+    }
 
     return Scaffold(
       backgroundColor: Colors.black,

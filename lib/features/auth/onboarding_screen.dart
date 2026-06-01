@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/services/permission_service.dart';
 import '../../core/settings/settings_cache.dart';
 import '../../core/theme/app_theme.dart';
 import '../../l10n/app_localizations.dart';
@@ -28,6 +29,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   ];
 
   Future<void> _finish() async {
+    // Demande les permissions essentielles avant d'entrer dans l'app.
+    // La demande de notifications est non-bloquante : si l'utilisateur
+    // refuse, les notifications push et locales seront simplement inactives
+    // jusqu'à ce qu'il les active depuis les paramètres.
+    await PermissionService.requestNotifications();
+    await PermissionService.requestExactAlarms();
     await SettingsCache.markOnboardingDone();
     if (mounted) context.go('/passenger');
   }

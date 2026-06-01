@@ -12,8 +12,9 @@ class PushService {
 
     OneSignal.initialize(kOneSignalAppId);
 
-    // Demande la permission (iOS / Android 13+)
-    await OneSignal.Notifications.requestPermission(true);
+    // La permission est demandée via PermissionService dans l'onboarding.
+    // On synchronise seulement l'état OneSignal sans afficher de dialog.
+    await OneSignal.Notifications.requestPermission(false);
 
     // Afficher les notifications même quand l'app est au premier plan
     OneSignal.Notifications.addForegroundWillDisplayListener(

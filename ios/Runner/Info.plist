@@ -7,7 +7,11 @@
 		<key>NSCameraUsageDescription</key>
 		<string>TransPro utilise la caméra pour scanner les QR codes des billets.</string>
 		<key>NSLocationWhenInUseUsageDescription</key>
-		<string>TransPro utilise votre position GPS pour partager la localisation du bus en temps réel.</string>
+		<string>TransPro utilise votre position GPS pour partager la localisation du véhicule en temps réel.</string>
+		<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+		<string>TransPro utilise votre position GPS pour partager la localisation du véhicule en temps réel.</string>
+		<key>NSLocationAlwaysUsageDescription</key>
+		<string>TransPro utilise votre position GPS pour partager la localisation du véhicule en temps réel.</string>
 		<key>CADisableMinimumFrameDurationOnPhone</key>
 		<true/>
 		<key>CFBundleDevelopmentRegion</key>

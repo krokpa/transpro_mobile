@@ -9,6 +9,7 @@ import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/offline/manifest_cache.dart';
+import '../../core/services/permission_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/fade_slide.dart';
 import '../../core/widgets/notification_bell.dart';
@@ -193,28 +194,23 @@ class _DepartureCardState extends ConsumerState<_DepartureCard> {
 
   Future<void> _startSharing() async {
     final l10n = AppLocalizations.of(context);
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
+    if (!mounted) return;
+
+    final granted = await PermissionService.requestLocation(context);
+    if (!granted) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.navScreenLocationDenied),
-            backgroundColor: Colors.red,
-          ),
-        );
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          content: Text(l10n.navScreenLocationDenied),
+          backgroundColor: Colors.red,
+        ));
       }
       return;
     }
 
     if (!await Geolocator.isLocationServiceEnabled()) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(l10n.agentGpsEnableHint)));
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(l10n.agentGpsEnableHint)));
       }
       return;
     }
