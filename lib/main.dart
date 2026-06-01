@@ -7,7 +7,6 @@ import 'package:geniuspay_flutter/geniuspay_flutter.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'core/config/app_constants.dart';
-import 'core/notifications/campaign_scheduler.dart';
 import 'core/notifications/local_notification_service.dart';
 import 'core/notifications/notification_prefs_cache.dart';
 import 'core/offline/ticket_cache.dart';
@@ -53,10 +52,7 @@ void main() async {
   await LocalNotificationService.init();
   await LocalNotificationService.handleLaunchDetails();
 
-  // 5. Workmanager (campagnes périodiques background)
-  await CampaignScheduler.init();
-
-  // 6. GeniusPay — SDK de paiement natif
+  // 5. GeniusPay — SDK de paiement natif
   GeniusPay.initialize(GeniusPayConfig(
     apiKey:    kGeniusPayApiKey,
     apiSecret: kGeniusPayApiSecret,

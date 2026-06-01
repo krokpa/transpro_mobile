@@ -5,7 +5,7 @@ import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/models.dart';
-import '../../core/notifications/notification_prefs_cache.dart';
+import '../../core/notifications/campaign_scheduler.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/notification_providers.dart' show unreadCountProvider;
 import '../../core/providers/favorites_provider.dart';
@@ -55,7 +55,8 @@ class _PassengerShellState extends ConsumerState<PassengerShell> {
   void initState() {
     super.initState();
     _connectSocket();
-    NotifPrefsCache.markActive();
+    final tenantId = ref.read(authProvider).user?.tenantId;
+    CampaignScheduler.onAppOpen(tenantId).ignore();
   }
 
   void _connectSocket() {

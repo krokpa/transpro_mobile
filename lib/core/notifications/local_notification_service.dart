@@ -137,7 +137,7 @@ class LocalNotificationService {
     await _plugin.zonedSchedule(
       _bookingNotifId(bookingId),
       'Départ dans 2h — $origin → $destination',
-      'Votre bus part à $timeStr. Préparez votre billet !',
+      'Votre véhicule part à $timeStr. Préparez votre billet !',
       tz.TZDateTime.from(reminderAt, tz.local),
       NotificationDetails(
         android: AndroidNotificationDetails(
@@ -147,7 +147,7 @@ class LocalNotificationService {
           icon: '@mipmap/launcher_icon',
           color: const Color(0xFFF97316),
           styleInformation: BigTextStyleInformation(
-            'Votre bus $origin → $destination part à $timeStr.\n'
+            'Votre véhicule $origin → $destination part à $timeStr.\n'
             'Présentez votre billet au guichet.',
           ),
           actions: [
@@ -221,6 +221,25 @@ class LocalNotificationService {
   }) =>
       _plugin.show(id, title, body, _campaignDetails(title, body),
           payload: payload);
+
+  // Notification one-shot pour le ré-engagement (annulée + reschedulée à
+  // chaque ouverture de l'app via CampaignScheduler.onAppOpen).
+  static Future<void> scheduleReEngagement({
+    required tz.TZDateTime scheduledAt,
+    required String title,
+    required String body,
+  }) =>
+      _plugin.zonedSchedule(
+        reEngagementId,
+        title,
+        body,
+        scheduledAt,
+        _campaignDetails(title, body),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
+        payload: 'CAMPAIGN_REENGAGEMENT',
+      );
 
   static Future<void> cancelCampaign(int id) => _plugin.cancel(id);
 

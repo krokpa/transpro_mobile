@@ -1,68 +1,36 @@
-import 'package:flutter/foundation.dart';
-import 'package:hive_flutter/hive_flutter.dart';
-import 'package:workmanager/workmanager.dart';
+import 'package:timezone/timezone.dart' as tz;
 import 'campaign_config.dart';
 import 'local_notification_service.dart';
 import 'notification_prefs_cache.dart';
 
-const _kReEngagementTask = 'transpro.reengagement';
-
-// ── Workmanager callback (isolate séparé) ─────────────────────────────────────
-// Doit être une fonction top-level annotée vm:entry-point.
-
-@pragma('vm:entry-point')
-void workmanagerCallbackDispatcher() {
-  Workmanager().executeTask((taskName, inputData) async {
-    try {
-      await Hive.initFlutter();
-      await NotifPrefsCache.init();
-      await LocalNotificationService.initForBackground();
-
-      if (taskName == _kReEngagementTask) {
-        await _checkAndFireReEngagement();
-      }
-    } catch (e) {
-      debugPrint('[Workmanager] $taskName: $e');
-    }
-    return true;
-  });
-}
-
-Future<void> _checkAndFireReEngagement() async {
-  final config = NotifPrefsCache.getConfig(null);
-  if (!config.reEngagementEnabled) return;
-  if (!NotifPrefsCache.isCampaignEnabled('reEngagement')) return;
-
-  final elapsed = DateTime.now().difference(NotifPrefsCache.lastActiveAt);
-  if (elapsed.inDays < config.reEngagementAfterDays) return;
-
-  await LocalNotificationService.showCampaignNow(
-    id: LocalNotificationService.reEngagementId,
-    title: config.reEngagementTitle,
-    body: config.reEngagementBody,
-    payload: 'CAMPAIGN_REENGAGEMENT',
-  );
-}
-
 // ── CampaignScheduler ─────────────────────────────────────────────────────────
+//
+// Stratégie ré-engagement sans Workmanager :
+//   • À chaque ouverture de l'app (PassengerShell.initState), on annule la
+//     notification en cours et on en planifie une nouvelle dans N jours.
+//   • Si l'utilisateur n'ouvre pas l'app pendant N jours, la notification
+//     se déclenche. Dès qu'il rouvre l'app, le cycle repart.
 
 class CampaignScheduler {
-  /// À appeler une seule fois dans main(), avant runApp().
-  static Future<void> init() async {
-    await Workmanager().initialize(
-      workmanagerCallbackDispatcher,
-      isInDebugMode: kDebugMode,
-    );
-  }
+  /// Initialisation — rien à faire sans Workmanager.
+  static Future<void> init() async {}
 
-  /// Applique la config (actuelle du tenant) en tenant compte des prefs
-  /// utilisateur. À appeler après login et après tout changement de config.
+  /// (Re)programme toutes les campagnes selon la config + prefs utilisateur.
+  /// À appeler après login et après chaque changement de config/prefs.
   static Future<void> applyConfig({
     required CampaignConfig config,
     required String? tenantId,
   }) async {
     await _applyMorning(config);
     await _applyWeekend(config);
+    await _applyReEngagement(config);
+  }
+
+  /// À appeler à chaque ouverture de l'app (PassengerShell.initState).
+  /// Réinitialise le compteur d'inactivité en reschedulant la notification.
+  static Future<void> onAppOpen(String? tenantId) async {
+    await NotifPrefsCache.markActive();
+    final config = NotifPrefsCache.getConfig(tenantId);
     await _applyReEngagement(config);
   }
 
@@ -74,7 +42,6 @@ class CampaignScheduler {
         LocalNotificationService.weekendOfferId);
     await LocalNotificationService.cancelCampaign(
         LocalNotificationService.reEngagementId);
-    await Workmanager().cancelByUniqueName(_kReEngagementTask);
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -113,17 +80,21 @@ class CampaignScheduler {
   }
 
   static Future<void> _applyReEngagement(CampaignConfig config) async {
-    await Workmanager().cancelByUniqueName(_kReEngagementTask);
+    await LocalNotificationService.cancelCampaign(
+        LocalNotificationService.reEngagementId);
     if (!config.reEngagementEnabled) return;
     if (!NotifPrefsCache.isCampaignEnabled('reEngagement')) return;
 
-    await Workmanager().registerPeriodicTask(
-      _kReEngagementTask,
-      _kReEngagementTask,
-      frequency: const Duration(hours: 24),
-      initialDelay: const Duration(minutes: 30),
-      constraints: Constraints(networkType: NetworkType.not_required),
-      existingWorkPolicy: ExistingWorkPolicy.keep,
+    // Planifie une notification one-shot dans N jours à partir de maintenant.
+    // À chaque ouverture de l'app, cette notification est annulée et
+    // reschedulée — ce qui repart le compteur d'inactivité.
+    final fireAt = tz.TZDateTime.now(tz.local)
+        .add(Duration(days: config.reEngagementAfterDays));
+
+    await LocalNotificationService.scheduleReEngagement(
+      scheduledAt: fireAt,
+      title: config.reEngagementTitle,
+      body: config.reEngagementBody,
     );
   }
 }
