@@ -8,6 +8,9 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:local_auth/local_auth.dart';
 import '../models/models.dart';
 import '../api/api_client.dart';
+import '../notifications/campaign_config.dart';
+import '../notifications/campaign_scheduler.dart';
+import '../notifications/notification_prefs_cache.dart';
 import '../push/push_service.dart';
 
 // ── Helpers biométrie publics ─────────────────────────────────────────────────
@@ -177,6 +180,8 @@ class AuthNotifier extends Notifier<AuthState> {
       pinVerified: true,
       biometricEnabled: false,
     );
+
+    _syncAndApplyCampaigns(user);
   }
 
   Future<void> login(String email, String password) async {
@@ -211,6 +216,8 @@ class AuthNotifier extends Notifier<AuthState> {
       pinVerified: false,
       biometricEnabled: bioEnabled == '1',
     );
+
+    _syncAndApplyCampaigns(user);
   }
 
   Future<void> setupPin(String pin, {bool biometric = false}) async {
@@ -318,6 +325,8 @@ class AuthNotifier extends Notifier<AuthState> {
 
     // Nettoyage en arrière-plan (fire-and-forget) — ne bloque pas le thread UI
     Future.microtask(() async {
+      // Annuler toutes les campagnes planifiées avant de déconnecter
+      CampaignScheduler.cancelAll().ignore();
       try {
         await dio.post('/auth/logout', data: {'refreshToken': currentRefreshToken});
       } catch (_) {}
@@ -330,6 +339,36 @@ class AuthNotifier extends Notifier<AuthState> {
         _storage.delete(key: 'pin_hash'),
         _storage.delete(key: 'biometric_enabled'),
       ]);
+    });
+  }
+
+  // ── Sync campagnes depuis l'API puis applique la config ────────────────────
+
+  void _syncAndApplyCampaigns(User user) {
+    Future.microtask(() async {
+      try {
+        final dio = ref.read(dioProvider);
+        final endpoint = user.tenantId != null
+            ? '/notifications/campaigns/config'
+            : '/notifications/campaigns/config/tenant/${user.tenantId}';
+        final res = await dio.get(endpoint);
+        final raw = (res.data is Map && res.data['data'] != null)
+            ? res.data['data'] as Map<String, dynamic>
+            : res.data as Map<String, dynamic>;
+        final config = CampaignConfig.fromJson(raw);
+        await NotifPrefsCache.saveConfig(user.tenantId, config);
+        await CampaignScheduler.applyConfig(
+          config: config,
+          tenantId: user.tenantId,
+        );
+      } catch (_) {
+        // Utilise la config locale en cas d'erreur réseau
+        final config = NotifPrefsCache.getConfig(user.tenantId);
+        await CampaignScheduler.applyConfig(
+          config: config,
+          tenantId: user.tenantId,
+        );
+      }
     });
   }
 }

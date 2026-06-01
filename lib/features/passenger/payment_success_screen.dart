@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
+import '../../core/notifications/local_notification_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -39,11 +40,36 @@ class _State extends ConsumerState<PaymentSuccessScreen> {
       final res = await dio.get('/bookings/my/${widget.bookingId}');
       final data = extractData(res.data) as Map<String, dynamic>;
       if (!mounted) return;
+      final wasConfirmed = _confirmed;
       setState(() {
         _booking   = data;
         _confirmed = data['status'] == 'CONFIRMED';
       });
-      if (_confirmed) _timer?.cancel();
+      if (_confirmed) {
+        _timer?.cancel();
+        if (!wasConfirmed) _scheduleReminder(data);
+      }
+    } catch (_) {}
+  }
+
+  void _scheduleReminder(Map<String, dynamic> booking) {
+    try {
+      final trip      = booking['trip'] as Map<String, dynamic>?;
+      final route     = trip?['route'] as Map<String, dynamic>?;
+      final depStr    = trip?['departureAt'] as String?;
+      final origin    = route?['originCity']?['name'] as String? ?? '';
+      final dest      = route?['destinationCity']?['name'] as String? ?? '';
+      final departure = depStr != null ? DateTime.tryParse(depStr) : null;
+      final id        = booking['id'] as String?;
+
+      if (id != null && departure != null && origin.isNotEmpty) {
+        LocalNotificationService.scheduleBookingReminder(
+          bookingId: id,
+          origin: origin,
+          destination: dest,
+          departureAt: departure,
+        );
+      }
     } catch (_) {}
   }
 
