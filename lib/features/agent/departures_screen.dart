@@ -18,7 +18,11 @@ import '../../l10n/app_localizations.dart';
 final _todayTripsProvider = FutureProvider.autoDispose<List<Trip>>((ref) async {
   final user = ref.read(authProvider).user!;
   final dio = ref.read(dioProvider);
-  final res = await dio.get('/stations/${user.stationId}/trips/today');
+  final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+  final res = await dio.get(
+    '/stations/${user.stationId}/trips',
+    queryParameters: {'date': today},
+  );
   final items = extractData(res.data);
   return (items as List).map((e) => Trip.fromJson(e)).toList();
 });
@@ -188,7 +192,12 @@ class _DepartureCardState extends ConsumerState<_DepartureCard> {
   @override
   void dispose() {
     _countdownTimer?.cancel();
-    _stopSharing();
+    // Nettoyer les ressources sans setState — le widget est en cours de démontage
+    _locationSub?.cancel();
+    _locationSub = null;
+    _socket?.disconnect();
+    _socket?.dispose();
+    _socket = null;
     super.dispose();
   }
 
@@ -422,23 +431,9 @@ class _DepartureCardState extends ConsumerState<_DepartureCard> {
             const SizedBox(height: 10),
             const Divider(height: 1),
             const SizedBox(height: 8),
+            // Ligne 1 : Bagages | Colis | Hors-ligne
             Row(
               children: [
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () => context.push('/agent/manifest/${trip.id}'),
-                    icon: const Icon(Icons.format_list_bulleted, size: 16),
-                    label: Text(l10n.departureManifestBtn(occupied)),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: brandOrange,
-                      side: BorderSide(
-                        color: brandOrange.withValues(alpha: 0.31),
-                      ),
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
                 OutlinedButton.icon(
                   onPressed: () => context.push('/agent/luggage/${trip.id}'),
                   icon: const Icon(Icons.luggage_outlined, size: 15),
@@ -447,6 +442,7 @@ class _DepartureCardState extends ConsumerState<_DepartureCard> {
                     foregroundColor: const Color(0xFF7C3AED),
                     side: const BorderSide(color: Color(0xFFDDD6FE)),
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    minimumSize: const Size(0, 36),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -458,9 +454,10 @@ class _DepartureCardState extends ConsumerState<_DepartureCard> {
                     foregroundColor: const Color(0xFF3B82F6),
                     side: const BorderSide(color: Color(0xFFBFDBFE)),
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    minimumSize: const Size(0, 36),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const Spacer(),
                 OutlinedButton(
                   onPressed: _prefetching ? null : _prefetchManifest,
                   style: OutlinedButton.styleFrom(
@@ -472,10 +469,7 @@ class _DepartureCardState extends ConsumerState<_DepartureCard> {
                           ? const Color(0xFF16A34A)
                           : context.divider,
                     ),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 8,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                     minimumSize: const Size(0, 36),
                   ),
                   child: _prefetching
@@ -492,6 +486,22 @@ class _DepartureCardState extends ConsumerState<_DepartureCard> {
                         ),
                 ),
               ],
+            ),
+            const SizedBox(height: 6),
+            // Ligne 2 : Manifest (pleine largeur)
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () => context.push('/agent/manifest/${trip.id}'),
+                icon: const Icon(Icons.format_list_bulleted, size: 16),
+                label: Text(l10n.departureManifestBtn(occupied)),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: brandOrange,
+                  side: BorderSide(color: brandOrange.withValues(alpha: 0.31)),
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                  minimumSize: const Size(0, 36),
+                ),
+              ),
             ),
 
             if (isDeparted) ...[

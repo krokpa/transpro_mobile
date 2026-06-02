@@ -73,21 +73,12 @@ class _State extends ConsumerState<QuickSaleScreen> {
       if (mounted)
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(_extractMsg(e)),
+            content: Text(apiErrorMessage(e)),
             backgroundColor: const Color(0xFFDC2626),
           ),
         );
     } finally {
       if (mounted) setState(() => _loading = false);
-    }
-  }
-
-  String _extractMsg(dynamic e) {
-    try {
-      return (e as dynamic).response?.data?['message'] ??
-          AppLocalizations.of(context).error;
-    } catch (_) {
-      return AppLocalizations.of(context).error;
     }
   }
 

@@ -127,23 +127,13 @@ class _State extends ConsumerState<GuichetScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              '${AppLocalizations.of(context).error}: ${_extractMsg(e)}',
-            ),
+            content: Text(apiErrorMessage(e)),
             backgroundColor: Colors.red,
           ),
         );
       }
     } finally {
       if (mounted) setState(() => _loading = false);
-    }
-  }
-
-  String _extractMsg(dynamic e) {
-    try {
-      return (e as dynamic).response?.data?['message'] ?? '';
-    } catch (_) {
-      return '';
     }
   }
 

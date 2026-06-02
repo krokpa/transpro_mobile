@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -107,20 +108,26 @@ class _State extends ConsumerState<AgentParcelsScreen> {
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.error_outline, color: Colors.red.shade300, size: 40),
-              const SizedBox(height: 10),
-              Text(apiErrorMessage(e), style: TextStyle(color: Colors.red.shade400)),
-              TextButton(
-                onPressed: () => ref.refresh(_tripParcelsProvider(widget.tripId)),
-                child: const Text('Réessayer'),
-              ),
-            ],
-          ),
-        ),
+        error: (e, _) {
+          final is403 = e is DioException && e.response?.statusCode == 403;
+          if (is403) return const _PlanUpgradePrompt();
+          return Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.error_outline, color: Colors.red.shade300, size: 40),
+                const SizedBox(height: 10),
+                Text(apiErrorMessage(e),
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.red.shade400)),
+                TextButton(
+                  onPressed: () => ref.refresh(_tripParcelsProvider(widget.tripId)),
+                  child: const Text('Réessayer'),
+                ),
+              ],
+            ),
+          );
+        },
         data: (parcels) {
           if (parcels.isEmpty) {
             return Center(
@@ -175,6 +182,86 @@ class _State extends ConsumerState<AgentParcelsScreen> {
             ),
           );
         },
+      ),
+    );
+  }
+}
+
+// ── Plan upgrade prompt ───────────────────────────────────────────────────────
+
+class _PlanUpgradePrompt extends StatelessWidget {
+  const _PlanUpgradePrompt();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFFF7ED), Color(0xFFFFEDD5)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+                border: Border.all(color: brandOrange.withValues(alpha: 0.25), width: 2),
+              ),
+              child: const Icon(Icons.workspace_premium_rounded,
+                size: 38, color: brandOrange),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Fonctionnalité Premium',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w800,
+                color: Color(0xFF0F172A),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'La gestion des colis est disponible à partir du plan Professional.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 14, color: Colors.grey.shade500, height: 1.5),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: brandOrange.withValues(alpha: 0.06),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: brandOrange.withValues(alpha: 0.18)),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.check_circle_outline, size: 16, color: brandOrange),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Plans Professional & Enterprise',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: brandOrange.withValues(alpha: 0.9),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Contactez votre administrateur pour\nmettre à niveau votre abonnement.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade400),
+            ),
+          ],
+        ),
       ),
     );
   }

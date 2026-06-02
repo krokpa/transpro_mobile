@@ -41,8 +41,8 @@ class User {
       phone: json['phone'],
       role: json['role'],
       tenantId: json['tenantId'],
-      stationId: primary?['stationId'] ?? primary?['station']?['id'],
-      stationName: primary?['station']?['name'],
+      stationId: primary?['stationId'] ?? primary?['station']?['id'] ?? json['stationId'] as String?,
+      stationName: primary?['station']?['name'] ?? json['stationName'] as String?,
       avatar: json['avatar'] as String?,
     );
   }
