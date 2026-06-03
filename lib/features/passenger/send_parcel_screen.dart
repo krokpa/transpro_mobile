@@ -7,6 +7,7 @@ import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/shimmer.dart';
 
 // ── Providers ─────────────────────────────────────────────────────────────────
 
@@ -20,10 +21,9 @@ final _availableTripsProvider = FutureProvider.autoDispose
     .family<List<Trip>, String>((ref, destCity) async {
   final dio = ref.read(dioProvider);
   final res = await dio.get('/trips/search', queryParameters: {
-    'origin': '',
     'destination': destCity,
     'departureDate': DateFormat('yyyy-MM-dd').format(DateTime.now()),
-    'passengers': 0,
+    'passengers': 1,
   });
   return (extractData(res.data) as List).map((e) => Trip.fromJson(e)).toList();
 });
@@ -558,7 +558,7 @@ class _TripPicker extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(_availableTripsProvider(destCity));
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => AppShimmer.tripCards(count: 3),
       error: (_, _) => Text('Impossible de charger les voyages', style: TextStyle(color: Colors.red.shade400)),
       data: (trips) {
         if (trips.isEmpty) {
