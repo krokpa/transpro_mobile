@@ -190,7 +190,7 @@ class _AgentProfileScreenState extends ConsumerState<AgentProfileScreen> {
                     title: Text(l10n.settingsLogout,
                       style: const TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.w600)),
                     trailing: const Icon(Icons.chevron_right, color: Color(0xFFDC2626)),
-                    onTap: () => _confirmLogout(context, ref, l10n),
+                    onTap: () => ref.read(authProvider.notifier).logout(),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -214,34 +214,7 @@ class _AgentProfileScreenState extends ConsumerState<AgentProfileScreen> {
     );
   }
 
-  void _confirmLogout(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(l10n.settingsLogout, style: const TextStyle(fontWeight: FontWeight.w800)),
-        content: Text(l10n.settingsLogoutBody),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(l10n.settingsLogoutCancel),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
-              minimumSize: Size.zero,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-              ref.read(authProvider.notifier).logout();
-            },
-            child: Text(l10n.settingsLogoutConfirm),
-          ),
-        ],
-      ),
-    );
-  }
+
 }
 
 class _Section extends StatelessWidget {
