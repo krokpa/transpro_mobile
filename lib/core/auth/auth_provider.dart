@@ -186,40 +186,45 @@ class AuthNotifier extends Notifier<AuthState> {
     _syncAndApplyCampaigns(user);
   }
 
-  Future<void> login(String email, String password) async {
-    final dio = ref.read(dioProvider);
-    final response = await dio.post('/auth/login', data: {
-      'email': email,
-      'password': password,
-    });
-    final data = extractData(response.data);
-    final user = User.fromJson(data['user']);
-    final accessToken = data['accessToken'] as String;
+  Future<void> _applyLoginResponse(Map<String, dynamic> data) async {
+    final user         = User.fromJson(data['user']);
+    final accessToken  = data['accessToken']  as String;
     final refreshToken = data['refreshToken'] as String;
 
     await Future.wait([
-      _storage.write(key: 'access_token', value: accessToken),
+      _storage.write(key: 'access_token',  value: accessToken),
       _storage.write(key: 'refresh_token', value: refreshToken),
-      _storage.write(key: 'user', value: jsonEncode(user.toJson())),
+      _storage.write(key: 'user',          value: jsonEncode(user.toJson())),
     ]);
 
-    final pinHash = await _storage.read(key: 'pin_hash');
+    final pinHash    = await _storage.read(key: 'pin_hash');
     final bioEnabled = await _storage.read(key: 'biometric_enabled');
 
-    // Link this device to the user on OneSignal
     PushService.login(user.id);
 
     state = AuthState(
-      user: user,
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-      isLoading: false,
-      hasPinSet: pinHash != null,
-      pinVerified: false,
+      user:             user,
+      accessToken:      accessToken,
+      refreshToken:     refreshToken,
+      isLoading:        false,
+      hasPinSet:        pinHash != null,
+      pinVerified:      false,
       biometricEnabled: bioEnabled == '1',
     );
 
     _syncAndApplyCampaigns(user);
+  }
+
+  Future<void> login(String email, String password) async {
+    final dio      = ref.read(dioProvider);
+    final response = await dio.post('/auth/login', data: {'email': email, 'password': password});
+    await _applyLoginResponse(extractData(response.data) as Map<String, dynamic>);
+  }
+
+  Future<void> loginByPhone(String phone, String code) async {
+    final dio      = ref.read(dioProvider);
+    final response = await dio.post('/auth/login-phone', data: {'phone': phone, 'code': code});
+    await _applyLoginResponse(extractData(response.data) as Map<String, dynamic>);
   }
 
   Future<void> setupPin(String pin, {bool biometric = false}) async {
