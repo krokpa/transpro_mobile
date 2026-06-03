@@ -33,7 +33,9 @@ class _AgentProfileScreenState extends ConsumerState<AgentProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n      = AppLocalizations.of(context);
-    final user      = ref.watch(authProvider).user!;
+    final authState = ref.watch(authProvider);
+    if (authState.user == null) return const SizedBox.shrink();
+    final user      = authState.user!;
     final themeMode = ref.watch(themeModeProvider);
     final locale    = ref.watch(localeProvider);
 
