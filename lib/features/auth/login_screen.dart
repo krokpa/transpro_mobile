@@ -74,6 +74,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() { _loading = true; _error = null; });
     try {
       final dio = ref.read(dioProvider);
+
+      // Vérifier que le numéro est inscrit avant d'envoyer l'OTP
+      final checkRes = await dio.post('/auth/check-phone', data: {'phone': phone});
+      final exists   = (extractData(checkRes.data) as Map?)?.containsKey('exists') == true
+          ? (extractData(checkRes.data) as Map)['exists'] as bool
+          : false;
+      if (!exists) {
+        setState(() {
+          _error   = 'Aucun compte avec ce numéro. Inscrivez-vous d\'abord.';
+          _loading = false;
+        });
+        return;
+      }
+
       await dio.post('/otp/send', data: {'phone': phone});
       setState(() { _otpStarted = true; _loading = false; });
     } catch (e) {
@@ -569,14 +583,19 @@ class _PhoneOtpPanelState extends ConsumerState<_PhoneOtpPanel>
       ),
       const SizedBox(height: 10),
 
-      // OTP boxes (shake on error)
+      // OTP boxes (shake on error) — taille adaptative au viewport
       AnimatedBuilder(
         animation: _shakeAnim,
         builder: (_, child) => Transform.translate(
           offset: Offset(_shakeAnim.value, 0), child: child),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(6, (i) => _buildBox(i)),
+        child: LayoutBuilder(
+          builder: (_, constraints) {
+            final boxSize = ((constraints.maxWidth / 6) - 8).clamp(32.0, 46.0);
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(6, (i) => _buildBox(i, boxSize)),
+            );
+          },
         ),
       ),
       const SizedBox(height: 10),
@@ -618,11 +637,11 @@ class _PhoneOtpPanelState extends ConsumerState<_PhoneOtpPanel>
     ]);
   }
 
-  Widget _buildBox(int i) {
+  Widget _buildBox(int i, [double size = 44]) {
     final filled   = _ctrl[i].text.isNotEmpty;
     final hasError = _error != null;
     return Container(
-      width: 44, height: 52,
+      width: size, height: size * 1.18,
       margin: const EdgeInsets.symmetric(horizontal: 4),
       decoration: BoxDecoration(
         color: filled
