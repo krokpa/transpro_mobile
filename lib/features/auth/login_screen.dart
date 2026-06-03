@@ -180,27 +180,29 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
                   // ── Content ───────────────────────────────────────────────
                   Expanded(
-                    child: _mode == _LoginMode.email
-                        ? _EmailPanel(
-                            emailCtrl:    _emailCtrl,
-                            passwordCtrl: _passwordCtrl,
-                            obscure:      _obscure,
-                            loading:      _loading,
-                            onToggleObscure: () => setState(() => _obscure = !_obscure),
-                            onLogin:      _loginEmail,
-                            l10n:         l10n,
-                          )
-                        : _otpStarted
-                            ? _PhoneOtpPanel(
-                                phone:  _phoneCtrl.text.trim(),
-                                onBack: _resetPhone,
-                              )
-                            : _PhoneEnterPanel(
-                                phoneCtrl: _phoneCtrl,
-                                loading:   _loading,
-                                onSend:    _sendOtp,
-                                l10n:      l10n,
-                              ),
+                    child: SingleChildScrollView(
+                      child: _mode == _LoginMode.email
+                          ? _EmailPanel(
+                              emailCtrl:       _emailCtrl,
+                              passwordCtrl:    _passwordCtrl,
+                              obscure:         _obscure,
+                              loading:         _loading,
+                              onToggleObscure: () => setState(() => _obscure = !_obscure),
+                              onLogin:         _loginEmail,
+                              l10n:            l10n,
+                            )
+                          : _otpStarted
+                              ? _PhoneOtpPanel(
+                                  phone:  _phoneCtrl.text.trim(),
+                                  onBack: _resetPhone,
+                                )
+                              : _PhoneEnterPanel(
+                                  phoneCtrl: _phoneCtrl,
+                                  loading:   _loading,
+                                  onSend:    _sendOtp,
+                                  l10n:      l10n,
+                                ),
+                    ),
                   ),
 
                   // ── Footer ────────────────────────────────────────────────
@@ -374,7 +376,7 @@ class _EmailPanel extends StatelessWidget {
                 ]),
         ),
       ),
-      const Spacer(),
+      const SizedBox(height: 16),
     ]);
   }
 }
@@ -416,7 +418,7 @@ class _PhoneEnterPanel extends StatelessWidget {
           label: Text(loading ? 'Envoi...' : 'Envoyer le code SMS'),
         ),
       ),
-      const Spacer(),
+      const SizedBox(height: 16),
     ]);
   }
 }
@@ -633,7 +635,7 @@ class _PhoneOtpPanelState extends ConsumerState<_PhoneOtpPanel>
                 style: TextButton.styleFrom(foregroundColor: brandOrange),
               ),
       ),
-      const Spacer(),
+      const SizedBox(height: 16),
     ]);
   }
 
