@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -296,6 +297,11 @@ class _ParcelDetail extends StatelessWidget {
 
           const SizedBox(height: 12),
 
+          // ── Photos ────────────────────────────────────────────────────────
+          _PhotosCard(photos: (data['photos'] as List?)?.cast<String>() ?? []),
+
+          const SizedBox(height: 12),
+
           // ── Timeline card ─────────────────────────────────────────────────
           _InfoCard(
             title: 'Historique',
@@ -361,6 +367,91 @@ class _ParcelDetail extends StatelessWidget {
           ],
 
           const SizedBox(height: 32),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Photos card ───────────────────────────────────────────────────────────────
+
+class _PhotosCard extends StatelessWidget {
+  final List<String> photos;
+  const _PhotosCard({required this.photos});
+
+  Uint8List? _decode(String src) {
+    try {
+      final data = src.contains(',') ? src.split(',').last : src;
+      return base64Decode(data);
+    } catch (_) {
+      return null;
+    }
+  }
+
+  void _openPhoto(BuildContext context, Uint8List bytes) {
+    showDialog(
+      context: context,
+      builder: (_) => GestureDetector(
+        onTap: () => Navigator.pop(context),
+        child: Scaffold(
+          backgroundColor: Colors.black,
+          body: Center(
+            child: InteractiveViewer(
+              child: Image.memory(bytes, fit: BoxFit.contain),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (photos.isEmpty) return const SizedBox.shrink();
+
+    final decoded = photos
+        .map(_decode)
+        .whereType<Uint8List>()
+        .toList();
+
+    if (decoded.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: context.cardBg,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: context.divider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Photos',
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w700,
+              color: context.textSecondary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: decoded.map((bytes) => Padding(
+              padding: const EdgeInsets.only(right: 10),
+              child: GestureDetector(
+                onTap: () => _openPhoto(context, bytes),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Image.memory(
+                    bytes,
+                    width: 120,
+                    height: 120,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+              ),
+            )).toList(),
+          ),
         ],
       ),
     );
