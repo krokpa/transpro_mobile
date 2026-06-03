@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/searchable_dropdown_field.dart';
+import '../../core/widgets/shimmer.dart';
 
 final _staffProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   final dio   = ref.read(dioProvider);
@@ -41,7 +43,7 @@ class StaffScreen extends ConsumerWidget {
         ],
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => AppShimmer.listTiles(),
         error: (e, _) => Center(child: Text('Erreur: $e')),
         data: (staff) => staff.isEmpty
             ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -256,31 +258,34 @@ class _InviteStaffSheetState extends ConsumerState<_InviteStaffSheet> {
               validator: (v) => (v == null || !v.contains('@')) ? 'Email invalide' : null,
             ),
             const SizedBox(height: 14),
-            DropdownButtonFormField<String>(
-              initialValue: _role,
-              decoration: const InputDecoration(labelText: 'Rôle'),
-              items: const [
-                DropdownMenuItem(value: 'COMPANY_AGENT', child: Text('Agent guichet')),
-                DropdownMenuItem(value: 'COMPANY_ADMIN', child: Text('Administrateur')),
-              ],
+            SearchableDropdownField<String>(
+              label:     'Rôle',
+              value:     _role,
+              items:     const ['COMPANY_AGENT', 'COMPANY_ADMIN'],
+              itemLabel: (r) => r == 'COMPANY_AGENT' ? 'Agent guichet' : 'Administrateur',
               onChanged: (v) { if (v != null) setState(() => _role = v); },
             ),
             const SizedBox(height: 14),
             stationsAsync.when(
               loading: () => const SizedBox.shrink(),
               error: (_, _) => const SizedBox.shrink(),
-              data: (stations) => DropdownButtonFormField<String>(
-                initialValue: _stationId,
-                decoration: const InputDecoration(labelText: 'Gare assignée (optionnel)'),
-                items: [
-                  const DropdownMenuItem(value: null, child: Text('Aucune')),
-                  ...stations.map((s) => DropdownMenuItem(
-                    value: s['id'] as String,
-                    child: Text(s['name'] as String? ?? ''),
-                  )),
-                ],
-                onChanged: (v) => setState(() => _stationId = v),
-              ),
+              data: (stations) {
+                final items = stations.map((s) => _StationOption(
+                  id:   s['id'] as String,
+                  name: s['name'] as String? ?? '',
+                )).toList();
+                return SearchableDropdownField<_StationOption>(
+                  label:     'Gare assignée (optionnel)',
+                  hint:      'Aucune',
+                  clearable: true,
+                  value:     items.cast<_StationOption?>().firstWhere(
+                    (s) => s?.id == _stationId, orElse: () => null),
+                  items:     items,
+                  itemLabel: (s) => s.name,
+                  itemKey:   (s) => s.id,
+                  onChanged: (s) => setState(() => _stationId = s?.id),
+                );
+              },
             ),
             const SizedBox(height: 24),
             SizedBox(
@@ -297,6 +302,12 @@ class _InviteStaffSheetState extends ConsumerState<_InviteStaffSheet> {
       ),
     );
   }
+}
+
+class _StationOption {
+  final String id;
+  final String name;
+  const _StationOption({required this.id, required this.name});
 }
 
 class _SheetHandle extends StatelessWidget {

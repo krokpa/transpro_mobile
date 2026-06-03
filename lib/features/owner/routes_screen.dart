@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_client.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/searchable_dropdown_field.dart';
+import '../../core/widgets/shimmer.dart';
 
 final _routesProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   final dio = ref.read(dioProvider);
@@ -37,7 +39,7 @@ class OwnerRoutesScreen extends ConsumerWidget {
         ],
       ),
       body: routesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => AppShimmer.listTiles(),
         error: (e, _) => Center(child: Text('Erreur: $e')),
         data: (routes) => routes.isEmpty
             ? Center(
@@ -265,14 +267,16 @@ class _AddRouteSheetState extends ConsumerState<_AddRouteSheet> {
           ),
           const SizedBox(height: 12),
           citiesAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => Shimmer(child: Column(children: List.generate(2, (_) => const ShimmerListTile()))),
             error: (e, _) => Text('Erreur villes: $e'),
             data: (cities) => Row(children: [
-              Expanded(child: DropdownButtonFormField<City>(
-                initialValue: _origin,
-                hint: const Text('Départ', style: TextStyle(fontSize: 13)),
-                decoration: const InputDecoration(labelText: 'Ville départ'),
-                items: cities.map((c) => DropdownMenuItem(value: c, child: Text(c.name, style: const TextStyle(fontSize: 13)))).toList(),
+              Expanded(child: SearchableDropdownField<City>(
+                label:     'Ville départ',
+                hint:      'Départ',
+                value:     _origin,
+                items:     cities,
+                itemLabel: (c) => c.name,
+                itemKey:   (c) => c.id,
                 onChanged: (v) => setState(() => _origin = v),
                 validator: (v) => v == null ? 'Requis' : null,
               )),
@@ -280,11 +284,13 @@ class _AddRouteSheetState extends ConsumerState<_AddRouteSheet> {
                 padding: EdgeInsets.symmetric(horizontal: 8),
                 child: Icon(Icons.arrow_forward, color: Color(0xFF94A3B8)),
               ),
-              Expanded(child: DropdownButtonFormField<City>(
-                initialValue: _dest,
-                hint: const Text('Arrivée', style: TextStyle(fontSize: 13)),
-                decoration: const InputDecoration(labelText: 'Ville arrivée'),
-                items: cities.map((c) => DropdownMenuItem(value: c, child: Text(c.name, style: const TextStyle(fontSize: 13)))).toList(),
+              Expanded(child: SearchableDropdownField<City>(
+                label:     'Ville arrivée',
+                hint:      'Arrivée',
+                value:     _dest,
+                items:     cities,
+                itemLabel: (c) => c.name,
+                itemKey:   (c) => c.id,
                 onChanged: (v) => setState(() => _dest = v),
                 validator: (v) => v == null ? 'Requis' : null,
               )),

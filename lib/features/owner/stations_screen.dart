@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_client.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/searchable_dropdown_field.dart';
+import '../../core/widgets/shimmer.dart';
 
 final _stationsProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   final dio   = ref.read(dioProvider);
@@ -40,7 +42,7 @@ class StationsScreen extends ConsumerWidget {
         ],
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => AppShimmer.listTiles(),
         error: (e, _) => Center(child: Text('Erreur: $e')),
         data: (stations) => stations.isEmpty
             ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -288,11 +290,15 @@ class _AddStationSheetState extends ConsumerState<_AddStationSheet> {
             citiesAsync.when(
               loading: () => const LinearProgressIndicator(),
               error: (e, _) => Text('Erreur: $e', style: const TextStyle(color: Colors.red)),
-              data: (cities) => DropdownButtonFormField<String>(
-                initialValue: _cityId,
-                decoration: const InputDecoration(labelText: 'Ville'),
-                items: cities.map((c) => DropdownMenuItem(value: c.id, child: Text(c.name))).toList(),
-                onChanged: (v) => setState(() => _cityId = v),
+              data: (cities) => SearchableDropdownField<City>(
+                label:     'Ville',
+                hint:      'Sélectionner une ville…',
+                value:     cities.cast<City?>().firstWhere(
+                  (c) => c?.id == _cityId, orElse: () => null),
+                items:     cities,
+                itemLabel: (c) => c.name,
+                itemKey:   (c) => c.id,
+                onChanged: (c) => setState(() => _cityId = c?.id),
                 validator: (v) => v == null ? 'Sélectionnez une ville' : null,
               ),
             ),

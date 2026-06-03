@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/searchable_dropdown_field.dart';
+import '../../core/widgets/shimmer.dart';
 
 final _schedulesProvider = FutureProvider.autoDispose<List<Map<String, dynamic>>>((ref) async {
   final dio   = ref.read(dioProvider);
@@ -39,7 +41,7 @@ class SchedulesScreen extends ConsumerWidget {
         ],
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => AppShimmer.tripCards(),
         error: (e, _) => Center(child: Text('Erreur: $e')),
         data: (schedules) => schedules.isEmpty
             ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -250,17 +252,24 @@ class _AddScheduleSheetState extends ConsumerState<_AddScheduleSheet> {
             routesAsync.when(
               loading: () => const LinearProgressIndicator(),
               error: (e, _) => Text('Erreur routes: $e', style: const TextStyle(color: Colors.red)),
-              data: (routes) => DropdownButtonFormField<String>(
-                initialValue: _routeId,
-                decoration: const InputDecoration(labelText: 'Itinéraire'),
-                items: routes.map((r) {
-                  final name = r['name'] as String? ??
-                      '${r['originCity']?['name'] ?? ''} → ${r['destinationCity']?['name'] ?? ''}';
-                  return DropdownMenuItem(value: r['id'] as String, child: Text(name, overflow: TextOverflow.ellipsis));
-                }).toList(),
-                onChanged: (v) => setState(() => _routeId = v),
-                validator: (v) => v == null ? 'Sélectionnez un itinéraire' : null,
-              ),
+              data: (routes) {
+                final routeItems = routes.map((r) => _RouteOption(
+                  id: r['id'] as String,
+                  name: r['name'] as String? ??
+                      '${r['originCity']?['name'] ?? ''} → ${r['destinationCity']?['name'] ?? ''}',
+                )).toList();
+                return SearchableDropdownField<_RouteOption>(
+                  label:     'Itinéraire',
+                  hint:      'Sélectionner un itinéraire…',
+                  value:     routeItems.cast<_RouteOption?>().firstWhere(
+                    (r) => r?.id == _routeId, orElse: () => null),
+                  items:     routeItems,
+                  itemLabel: (r) => r.name,
+                  itemKey:   (r) => r.id,
+                  onChanged: (r) => setState(() => _routeId = r?.id),
+                  validator: (v) => v == null ? 'Sélectionnez un itinéraire' : null,
+                );
+              },
             ),
             const SizedBox(height: 14),
             // Time picker
@@ -309,10 +318,11 @@ class _AddScheduleSheetState extends ConsumerState<_AddScheduleSheet> {
             })),
             const SizedBox(height: 14),
             // Class
-            DropdownButtonFormField<String>(
-              initialValue: _tripClass,
-              decoration: const InputDecoration(labelText: 'Classe'),
-              items: _classes.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
+            SearchableDropdownField<String>(
+              label:     'Classe',
+              value:     _tripClass,
+              items:     _classes,
+              itemLabel: (c) => c,
               onChanged: (v) { if (v != null) setState(() => _tripClass = v); },
             ),
             const SizedBox(height: 14),
@@ -337,6 +347,12 @@ class _AddScheduleSheetState extends ConsumerState<_AddScheduleSheet> {
       ),
     );
   }
+}
+
+class _RouteOption {
+  final String id;
+  final String name;
+  const _RouteOption({required this.id, required this.name});
 }
 
 class _SheetHandle extends StatelessWidget {
