@@ -257,12 +257,14 @@ class _GuichetState extends ConsumerState<GuichetScreen> {
 
     if (_success) {
       return _SuccessView(
-        booking:      _createdBooking!,
-        trip:         _trip!,
-        pax:          _effectivePax,
-        seatNumbers:  _selectedSeats,
-        methodLabel:  _methodLabel(_method),
-        onReset:      _reset,
+        booking:     _createdBooking!,
+        trip:        _trip!,
+        pax:         _effectivePax,
+        seatNumbers: _selectedSeats,
+        methodLabel: _methodLabel(_method),
+        bookingId:   (_createdBooking!['id'] as String?) ?? '',
+        tripId:      _trip!.id,
+        onReset:     _reset,
       );
     }
 
@@ -1354,10 +1356,13 @@ class _SuccessView extends StatelessWidget {
   final int          pax;
   final List<String> seatNumbers;
   final String       methodLabel;
+  final String       bookingId;
+  final String       tripId;
   final VoidCallback onReset;
   const _SuccessView({
     required this.booking, required this.trip, required this.pax,
-    required this.seatNumbers, required this.methodLabel, required this.onReset,
+    required this.seatNumbers, required this.methodLabel,
+    required this.bookingId, required this.tripId, required this.onReset,
   });
 
   @override
@@ -1528,6 +1533,32 @@ class _SuccessView extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: OutlinedButton.icon(
+                onPressed: () => showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  builder: (_) => _LuggageDeclarationSheet(
+                    bookingId: bookingId,
+                  ),
+                ),
+                icon: const Icon(Icons.luggage_outlined, size: 18),
+                label: const Text('Déclarer les bagages (optionnel)'),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: const Color(0xFF7C3AED).withValues(alpha: 0.4)),
+                  foregroundColor: const Color(0xFF7C3AED),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14)),
+                  textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
             TextButton(
               onPressed: () => context.go('/agent'),
               child: Text('Retour aux départs',
@@ -1536,6 +1567,170 @@ class _SuccessView extends StatelessWidget {
           ]),
         ),
       ),
+    );
+  }
+}
+
+// ── Luggage declaration sheet ─────────────────────────────────────────────────
+
+class _LuggageDeclarationSheet extends ConsumerStatefulWidget {
+  final String bookingId;
+  const _LuggageDeclarationSheet({required this.bookingId});
+
+  @override
+  ConsumerState<_LuggageDeclarationSheet> createState() => _LuggageDeclarationSheetState();
+}
+
+class _LuggageDeclarationSheetState extends ConsumerState<_LuggageDeclarationSheet> {
+  int    _bagCount = 1;
+  final  _weightCtrl = TextEditingController();
+  bool   _loading  = false;
+  bool   _done     = false;
+
+  static const _freeKg   = 20.0;
+  static const _rateXof  = 300;
+
+  double get _weight  => double.tryParse(_weightCtrl.text) ?? 0;
+  double get _excess  => (_weight - _freeKg).clamp(0, double.infinity);
+  int    get _fee     => (_excess * _rateXof).round();
+
+  @override
+  void dispose() { _weightCtrl.dispose(); super.dispose(); }
+
+  Future<void> _declare() async {
+    setState(() => _loading = true);
+    try {
+      final dio = ref.read(dioProvider);
+      await dio.post('/luggage/declare', data: {
+        'bookingId':    widget.bookingId,
+        'bagCount':     _bagCount,
+        if (_weight > 0) 'totalWeightKg': _weight,
+        'freeWeightKg': _freeKg,
+      });
+      if (mounted) setState(() { _done = true; _loading = false; });
+    } catch (e) {
+      if (mounted) {
+        setState(() => _loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(apiErrorMessage(e)), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final pad = MediaQuery.of(context).viewInsets.bottom;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20, 16, 20, pad + 24),
+      child: Column(mainAxisSize: MainAxisSize.min, children: [
+        // Handle
+        Container(width: 36, height: 4,
+          decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2))),
+        const SizedBox(height: 16),
+
+        Row(children: [
+          const Icon(Icons.luggage_outlined, color: Color(0xFF7C3AED), size: 20),
+          const SizedBox(width: 8),
+          Text('Déclarer les bagages',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: context.textPrimary)),
+          const Spacer(),
+          TextButton(onPressed: () => Navigator.pop(context),
+            child: Text('Ignorer', style: TextStyle(color: context.textMuted, fontSize: 13))),
+        ]),
+        const SizedBox(height: 16),
+
+        if (_done) ...[
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFFDCFCE7),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Row(children: [
+              const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 24),
+              const SizedBox(width: 12),
+              Expanded(child: Text(
+                '$_bagCount sac${_bagCount > 1 ? "s" : ""} déclaré${_bagCount > 1 ? "s" : ""}',
+                style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF166534)),
+              )),
+            ]),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(backgroundColor: brandOrange,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+              child: const Text('Fermer'),
+            )),
+        ] else ...[
+          // Bag count stepper
+          Row(children: [
+            Text('Nombre de sacs', style: TextStyle(fontSize: 13, color: context.textSecondary)),
+            const Spacer(),
+            IconButton(
+              icon: const Icon(Icons.remove_circle_outline),
+              onPressed: _bagCount > 0 ? () => setState(() => _bagCount--) : null,
+              color: const Color(0xFF7C3AED),
+            ),
+            Text('$_bagCount', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+            IconButton(
+              icon: const Icon(Icons.add_circle_outline),
+              onPressed: _bagCount < 20 ? () => setState(() => _bagCount++) : null,
+              color: const Color(0xFF7C3AED),
+            ),
+          ]),
+          const SizedBox(height: 12),
+
+          // Weight
+          TextField(
+            controller: _weightCtrl,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              labelText: 'Poids total (kg) — franchise $_freeKg kg',
+              suffixText: 'kg',
+            ),
+          ),
+
+          // Excess fee
+          if (_excess > 0) ...[
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFBEB),
+                border: Border.all(color: const Color(0xFFFDE68A)),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Text(
+                'Excédent : ${_excess.toStringAsFixed(1)} kg × $_rateXof F = $_fee F CFA',
+                style: const TextStyle(fontSize: 12, color: Color(0xFF92400E)),
+              ),
+            ),
+          ],
+
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity, height: 50,
+            child: ElevatedButton.icon(
+              onPressed: _loading || _bagCount == 0 ? null : _declare,
+              icon: _loading
+                  ? const SizedBox(width: 16, height: 16,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Icon(Icons.luggage_outlined, size: 18),
+              label: Text(_loading ? 'Déclaration…' : 'Déclarer'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF7C3AED),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
+              ),
+            ),
+          ),
+        ],
+      ]),
     );
   }
 }

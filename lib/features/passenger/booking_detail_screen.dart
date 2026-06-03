@@ -10,6 +10,7 @@ import '../../core/auth/auth_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/offline/ticket_cache.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/shimmer.dart';
 import '../../l10n/app_localizations.dart';
 import 'seat_picker.dart';
 
@@ -43,7 +44,7 @@ class BookingDetailScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.bookingDetailTitle)),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => AppShimmer.listTiles(count: 6),
         error: (e, _) => Center(child: Text('$e')),
         data: (data) => _BookingDetail(data: data, bookingId: bookingId),
       ),
@@ -240,6 +241,9 @@ class _BookingDetailState extends ConsumerState<_BookingDetail> {
             const SizedBox(height: 16),
           ],
 
+          _LuggageSection(bookingId: widget.bookingId),
+          const SizedBox(height: 16),
+
           if (tickets.isNotEmpty) ...[
             Text(
               l10n.bookingTicketsSection,
@@ -251,6 +255,162 @@ class _BookingDetailState extends ConsumerState<_BookingDetail> {
             ),
             const SizedBox(height: 10),
             ...tickets.map((t) => _TicketCard(ticket: t, trip: booking.trip)),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// ── Luggage section ───────────────────────────────────────────────────────────
+
+const _statusColors = {
+  'DECLARED': Color(0xFF94A3B8),
+  'LOADED':   Color(0xFF3B82F6),
+  'ARRIVED':  Color(0xFFF59E0B),
+  'CLAIMED':  Color(0xFF16A34A),
+  'MISSING':  Color(0xFFEF4444),
+};
+
+const _statusLabels = {
+  'DECLARED': 'Déclaré',
+  'LOADED':   'Chargé',
+  'ARRIVED':  'Arrivé',
+  'CLAIMED':  'Réclamé',
+  'MISSING':  'Manquant',
+};
+
+const _progressSteps = ['DECLARED', 'LOADED', 'ARRIVED', 'CLAIMED'];
+
+class _LuggageSection extends ConsumerWidget {
+  final String bookingId;
+  const _LuggageSection({required this.bookingId});
+
+  Future<Map<String, dynamic>?> _fetch(WidgetRef ref) async {
+    try {
+      final res  = await ref.read(dioProvider).get('/luggage/my/$bookingId');
+      final data = extractData(res.data);
+      if (data == null) return null;
+      return data as Map<String, dynamic>;
+    } catch (_) {
+      return null; // plan BASIC, not declared, or error — hide silently
+    }
+  }
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return FutureBuilder<Map<String, dynamic>?>(
+      future: _fetch(ref),
+      builder: (context, snap) {
+        if (snap.connectionState == ConnectionState.waiting) return const SizedBox.shrink();
+        if (snap.hasError || snap.data == null) return const SizedBox.shrink();
+
+        final bags = (snap.data!['bags'] as List?) ?? [];
+        if (bags.isEmpty) return const SizedBox.shrink();
+
+        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Row(children: [
+            const Icon(Icons.luggage_outlined, size: 18, color: Color(0xFF7C3AED)),
+            const SizedBox(width: 8),
+            Text('Bagages',
+              style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: context.textPrimary)),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: const Color(0xFF7C3AED).withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text('${bags.length} sac${bags.length > 1 ? "s" : ""}',
+                style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF7C3AED))),
+            ),
+          ]),
+          const SizedBox(height: 12),
+          ...bags.map((b) => _BagProgressTile(bag: b as Map<String, dynamic>)),
+        ]);
+      },
+    );
+  }
+}
+
+class _BagProgressTile extends StatelessWidget {
+  final Map<String, dynamic> bag;
+  const _BagProgressTile({required this.bag});
+
+  @override
+  Widget build(BuildContext context) {
+    final status  = bag['status'] as String? ?? 'DECLARED';
+    final label   = bag['label']  as String?;
+    final weight  = bag['weightKg'];
+    final color   = _statusColors[status] ?? const Color(0xFF94A3B8);
+    final isMissing = status == 'MISSING';
+    final stepIdx = _progressSteps.indexOf(status);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: context.cardBg,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: context.divider),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(children: [
+            Icon(Icons.luggage_rounded, color: color, size: 20),
+            const SizedBox(width: 8),
+            Expanded(child: Text(
+              label ?? 'Sac',
+              style: TextStyle(fontWeight: FontWeight.w600, color: context.textPrimary, fontSize: 14),
+            )),
+            if (weight != null)
+              Text('${weight}kg', style: TextStyle(fontSize: 12, color: context.textMuted)),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(_statusLabels[status] ?? status,
+                style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color)),
+            ),
+          ]),
+
+          if (!isMissing) ...[
+            const SizedBox(height: 12),
+            Row(children: List.generate(_progressSteps.length * 2 - 1, (i) {
+              if (i.isOdd) {
+                final lineIdx = i ~/ 2;
+                final filled  = stepIdx > lineIdx;
+                return Expanded(child: Container(height: 2,
+                  color: filled ? brandOrange : context.divider));
+              }
+              final sIdx   = i ~/ 2;
+              final filled = stepIdx >= sIdx;
+              final active = stepIdx == sIdx;
+              return Container(
+                width: 20, height: 20,
+                decoration: BoxDecoration(
+                  shape:       BoxShape.circle,
+                  color:       filled ? brandOrange : Colors.transparent,
+                  border:      active
+                      ? Border.all(color: brandOrange, width: 2.5)
+                      : filled
+                          ? null
+                          : Border.all(color: context.divider, width: 1.5),
+                ),
+                child: filled
+                    ? const Icon(Icons.check_rounded, size: 11, color: Colors.white)
+                    : null,
+              );
+            })),
+          ] else ...[
+            const SizedBox(height: 8),
+            if (bag['missingNote'] != null)
+              Text('Note : ${bag['missingNote']}',
+                style: const TextStyle(fontSize: 12, color: Color(0xFFEF4444))),
           ],
         ],
       ),
@@ -1329,7 +1489,7 @@ class _CreateState extends ConsumerState<BookingCreateScreen> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.tripBook)),
       body: tripAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => AppShimmer.tripCards(count: 2),
         error: (e, _) => Center(child: Text('$e')),
         data: (trip) {
           final locale = Localizations.localeOf(context).toString();
