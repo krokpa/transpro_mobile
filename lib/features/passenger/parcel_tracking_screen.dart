@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/shimmer.dart';
 
 // ── Provider ──────────────────────────────────────────────────────────────────
 
@@ -92,13 +93,16 @@ class _State extends ConsumerState<ParcelTrackingScreen> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: _search,
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                SizedBox(
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: _search,
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: const Text('Rechercher'),
                   ),
-                  child: const Text('Rechercher'),
                 ),
               ],
             ),
@@ -154,7 +158,7 @@ class _ParcelResult extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(_parcelProvider(code));
     return async.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
+      loading: () => AppShimmer.listTiles(count: 4),
       error: (e, _) => Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
