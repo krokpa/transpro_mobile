@@ -93,16 +93,15 @@ class _State extends ConsumerState<ParcelTrackingScreen> {
                   ),
                 ),
                 const SizedBox(width: 10),
-                SizedBox(
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: _search,
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                    child: const Text('Rechercher'),
+                ElevatedButton(
+                  onPressed: _search,
+                  style: ElevatedButton.styleFrom(
+                    minimumSize: const Size(0, 52),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
+                  child: const Text('Rechercher'),
                 ),
               ],
             ),
