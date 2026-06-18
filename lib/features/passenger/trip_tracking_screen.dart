@@ -11,6 +11,7 @@ import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/company_logo.dart';
 import '../../l10n/app_localizations.dart';
 
 enum _SocketStatus { connecting, connected, reconnecting, disconnected }
@@ -627,6 +628,29 @@ class _BottomSheet extends StatelessWidget {
                       ],
                     ),
                   ),
+
+                  // ── Company ───────────────────────────────────────────────
+                  if (trip.tenantName != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          CompanyLogo(logo: trip.tenantLogo, size: 20),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              trip.tenantName!,
+                              style: TextStyle(
+                                color: context.textSecondary,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
 
                   const Divider(),
 
