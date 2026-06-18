@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/company_logo.dart';
 import '../../core/widgets/fade_slide.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -732,7 +733,7 @@ class _SearchResultCard extends StatelessWidget {
                       : null,
                   child: Row(
                     children: [
-                      _TenantLogo(logo: trip.tenantLogo, size: 28),
+                      CompanyLogo(logo: trip.tenantLogo, size: 28),
                       const SizedBox(width: 8),
                       Text(
                         trip.tenantName!,
@@ -963,45 +964,6 @@ class _SearchResultCard extends StatelessWidget {
       ),
     );
   }
-}
-
-// ── Tenant logo widget ────────────────────────────────────────────────────────
-
-class _TenantLogo extends StatelessWidget {
-  final String? logo;
-  final double size;
-  const _TenantLogo({this.logo, this.size = 32});
-
-  @override
-  Widget build(BuildContext context) {
-    if (logo != null && logo!.isNotEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(size * 0.25),
-        child: Image.network(
-          logo!,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-          errorBuilder: (_, _, _) => _fallback(context),
-        ),
-      );
-    }
-    return _fallback(context);
-  }
-
-  Widget _fallback(BuildContext context) => Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(
-      color: context.tagBg,
-      borderRadius: BorderRadius.circular(size * 0.25),
-    ),
-    child: Icon(
-      Icons.directions_bus_filled,
-      color: brandOrange,
-      size: size * 0.55,
-    ),
-  );
 }
 
 // ── Placeholder states ────────────────────────────────────────────────────────

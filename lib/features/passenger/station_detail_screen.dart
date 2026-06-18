@@ -6,6 +6,8 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/favorites_provider.dart';
+import '../../core/widgets/company_logo.dart';
+import '../../core/widgets/shimmer.dart';
 import '../../l10n/app_localizations.dart';
 
 // ── Provider ──────────────────────────────────────────────────────────────────
@@ -32,7 +34,7 @@ class StationDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => AppShimmer.listTiles(count: 3),
         error: (e, _) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -267,21 +269,10 @@ class _StationBody extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(vertical: 4),
                             child: Row(
                               children: [
-                                if (tenant['logo'] != null &&
-                                    (tenant['logo'] as String).isNotEmpty)
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: Image.network(
-                                      tenant['logo'],
-                                      width: 32,
-                                      height: 32,
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (_, _, _) =>
-                                          _companyFallback(),
-                                    ),
-                                  )
-                                else
-                                  _companyFallback(),
+                                CompanyLogo.tile(
+                                  logo: tenant['logo'] as String?,
+                                  size: 32,
+                                ),
                                 const SizedBox(width: 10),
                                 Expanded(
                                   child: Column(
@@ -520,15 +511,6 @@ class _StationBody extends StatelessWidget {
     );
   }
 
-  Widget _companyFallback() => Container(
-    width: 32,
-    height: 32,
-    decoration: BoxDecoration(
-      color: brandOrange.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(6),
-    ),
-    child: const Icon(Icons.business_outlined, size: 16, color: brandOrange),
-  );
 }
 
 // ── Shared widgets ────────────────────────────────────────────────────────────

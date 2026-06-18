@@ -6,6 +6,7 @@ import '../../core/api/api_client.dart';
 import '../../core/models/models.dart';
 import '../../core/offline/ticket_cache.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/company_logo.dart';
 import '../../core/widgets/fade_slide.dart';
 import '../../core/widgets/shimmer.dart';
 import '../../core/widgets/view_toggle_button.dart';
@@ -927,11 +928,17 @@ class _BookingGridCard extends StatelessWidget {
 
                 // Company
                 if (trip?.tenantName != null) ...[
-                  Text(
-                    trip!.tenantName!,
-                    style: TextStyle(fontSize: 11, color: context.textMuted),
-                    maxLines: 1, overflow: TextOverflow.ellipsis,
-                  ),
+                  Row(children: [
+                    CompanyLogo(logo: trip!.tenantLogo, size: 16),
+                    const SizedBox(width: 5),
+                    Expanded(
+                      child: Text(
+                        trip.tenantName!,
+                        style: TextStyle(fontSize: 11, color: context.textMuted),
+                        maxLines: 1, overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ]),
                   const SizedBox(height: 4),
                 ],
 
@@ -1057,14 +1064,17 @@ class _BookingCard extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Row(children: [
-                      Icon(Icons.business_outlined,
-                          size: 12, color: context.textMuted),
-                      const SizedBox(width: 4),
-                      Text(trip.tenantName!,
-                          style: TextStyle(
-                              fontSize: 12,
-                              color: context.textSecondary,
-                              fontWeight: FontWeight.w500)),
+                      CompanyLogo(logo: trip.tenantLogo, size: 18),
+                      const SizedBox(width: 6),
+                      Flexible(
+                        child: Text(trip.tenantName!,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: context.textSecondary,
+                                fontWeight: FontWeight.w500)),
+                      ),
                     ]),
                   ),
                 Row(children: [

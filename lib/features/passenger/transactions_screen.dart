@@ -4,7 +4,9 @@ import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/company_logo.dart';
 import '../../core/widgets/fade_slide.dart';
+import '../../core/widgets/shimmer.dart';
 import '../../l10n/app_localizations.dart';
 
 // ── Provider ───────────────────────────────────────────────────────────────────
@@ -47,7 +49,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
         centerTitle: false,
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => AppShimmer.listTiles(),
         error: (e, _) => Center(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             Icon(Icons.wifi_off_rounded, size: 40, color: context.textMuted),
@@ -328,10 +330,20 @@ class _TransactionCard extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                       ),
                       if (payment.tenantName != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          payment.tenantName!,
-                          style: TextStyle(fontSize: 12, color: context.textMuted),
+                        const SizedBox(height: 4),
+                        Row(
+                          children: [
+                            CompanyLogo(logo: payment.tenantLogo, size: 16),
+                            const SizedBox(width: 5),
+                            Expanded(
+                              child: Text(
+                                payment.tenantName!,
+                                style: TextStyle(fontSize: 12, color: context.textMuted),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ],

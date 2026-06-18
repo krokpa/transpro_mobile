@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/favorites_provider.dart';
+import '../../core/widgets/company_logo.dart';
+import '../../core/widgets/shimmer.dart';
 import '../../l10n/app_localizations.dart';
 
 // ── Provider ──────────────────────────────────────────────────────────────────
@@ -30,7 +32,7 @@ class CompanyDetailScreen extends ConsumerWidget {
 
     return Scaffold(
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => AppShimmer.listTiles(count: 4),
         error: (e, _) => Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -122,7 +124,7 @@ class _CompanyBody extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          _Logo(logo: company['logo'] as String?, size: 64),
+                          CompanyLogo.onDark(logo: company['logo'] as String?, size: 64),
                           const SizedBox(width: 16),
                           Expanded(
                             child: Column(
@@ -310,43 +312,6 @@ class _CompanyBody extends StatelessWidget {
 }
 
 // ── Widgets ───────────────────────────────────────────────────────────────────
-
-class _Logo extends StatelessWidget {
-  final String? logo;
-  final double size;
-  const _Logo({this.logo, required this.size});
-
-  @override
-  Widget build(BuildContext context) {
-    if (logo != null && logo!.isNotEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(size * 0.2),
-        child: Image.network(
-          logo!,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stack) => _placeholder(size),
-        ),
-      );
-    }
-    return _placeholder(size);
-  }
-
-  Widget _placeholder(double size) => Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(
-      color: Colors.white.withValues(alpha: 0.15),
-      borderRadius: BorderRadius.circular(size * 0.2),
-    ),
-    child: Icon(
-      Icons.directions_bus_rounded,
-      size: size * 0.5,
-      color: Colors.white70,
-    ),
-  );
-}
 
 class _StatChip extends StatelessWidget {
   final String label;

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/favorites_provider.dart';
+import '../../core/widgets/company_logo.dart';
 import '../../l10n/app_localizations.dart';
 
 class FavoritesScreen extends ConsumerWidget {
@@ -167,7 +168,7 @@ class _CompanyTile extends StatelessWidget {
       ),
       child: ListTile(
         onTap: onTap,
-        leading: _Logo(logo: logo, size: 40),
+        leading: CompanyLogo.tile(logo: logo, size: 40),
         title: Text(
           name,
           style: TextStyle(
@@ -259,39 +260,3 @@ class _StationTile extends StatelessWidget {
   }
 }
 
-class _Logo extends StatelessWidget {
-  final String? logo;
-  final double size;
-  const _Logo({this.logo, required this.size});
-
-  @override
-  Widget build(BuildContext context) {
-    if (logo != null && logo!.isNotEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(8),
-        child: Image.network(
-          logo!,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-          errorBuilder: (_, _, _) => _fallback(),
-        ),
-      );
-    }
-    return _fallback();
-  }
-
-  Widget _fallback() => Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(
-      color: brandOrange.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: Icon(
-      Icons.directions_bus_rounded,
-      size: size * 0.45,
-      color: brandOrange,
-    ),
-  );
-}

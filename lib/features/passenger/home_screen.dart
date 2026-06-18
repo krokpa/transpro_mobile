@@ -8,8 +8,10 @@ import '../../core/widgets/user_avatar.dart';
 import 'passenger_shell.dart' show PassengerShellScope;
 import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/company_logo.dart';
 import '../../core/widgets/fade_slide.dart';
 import '../../core/widgets/notification_bell.dart';
+import '../../core/widgets/shimmer.dart';
 import '../../core/providers/favorites_provider.dart';
 import '../../l10n/app_localizations.dart';
 
@@ -52,7 +54,8 @@ class HomeScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final user = ref.watch(authProvider).user!;
+    final user = ref.watch(authProvider).user;
+    if (user == null) return const SizedBox.shrink();
     final tripsAsync = ref.watch(_upcomingTripsProvider);
     final nextBookingAsync = ref.watch(_nextBookingProvider);
     final favs = ref.watch(favoritesProvider);
@@ -214,7 +217,10 @@ class HomeScreen extends ConsumerWidget {
           ),
 
           nextBookingAsync.when(
-            loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+            loading: () => SliverToBoxAdapter(child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+              child: Shimmer(child: const ShimmerBookingCard()),
+            )),
             error: (_, _) =>
                 const SliverToBoxAdapter(child: SizedBox.shrink()),
             data: (booking) => booking == null
@@ -323,7 +329,7 @@ class HomeScreen extends ConsumerWidget {
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                _FavCompanyLogo(logo: logo, size: 52),
+                                CompanyLogo.tile(logo: logo, size: 52),
                                 const SizedBox(height: 4),
                                 SizedBox(
                                   width: 60,
@@ -378,12 +384,7 @@ class HomeScreen extends ConsumerWidget {
                   ),
                   const SizedBox(height: 12),
                   tripsAsync.when(
-                    loading: () => const Center(
-                      child: Padding(
-                        padding: EdgeInsets.all(32),
-                        child: CircularProgressIndicator(),
-                      ),
-                    ),
+                    loading: () => Shimmer(child: Column(children: List.generate(3, (_) => const ShimmerTripCard()))),
                     error: (e, _) => _ErrorCard(message: e.toString()),
                     data: (trips) => trips.isEmpty
                         ? _EmptyState(l10n: l10n)
@@ -710,6 +711,25 @@ class _TripCard extends StatelessWidget {
                             ),
                           ],
                         ),
+                        if (trip.tenantName != null) ...[
+                          const SizedBox(height: 4),
+                          Row(
+                            children: [
+                              CompanyLogo(logo: trip.tenantLogo, size: 16),
+                              const SizedBox(width: 5),
+                              Expanded(
+                                child: Text(
+                                  trip.tenantName!,
+                                  style: TextStyle(
+                                    color: context.textMuted,
+                                    fontSize: 12,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -879,39 +899,6 @@ class _EmptyState extends StatelessWidget {
         ],
       ),
     ),
-  );
-}
-
-class _FavCompanyLogo extends StatelessWidget {
-  final String? logo;
-  final double size;
-  const _FavCompanyLogo({this.logo, required this.size});
-
-  @override
-  Widget build(BuildContext context) {
-    if (logo != null && logo!.isNotEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(size * 0.2),
-        child: Image.network(
-          logo!,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-          errorBuilder: (_, _, _) => _placeholder(size),
-        ),
-      );
-    }
-    return _placeholder(size);
-  }
-
-  Widget _placeholder(double size) => Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(
-      color: brandOrange.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(size * 0.2),
-    ),
-    child: Icon(Icons.directions_bus_rounded, size: size * 0.5, color: brandOrange),
   );
 }
 

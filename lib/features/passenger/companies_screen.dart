@@ -4,6 +4,8 @@ import 'package:go_router/go_router.dart';
 import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/providers/favorites_provider.dart';
+import '../../core/widgets/company_logo.dart';
+import '../../core/widgets/shimmer.dart';
 import '../../l10n/app_localizations.dart';
 
 final _companiesListProvider =
@@ -81,7 +83,7 @@ class _CompaniesScreenState extends ConsumerState<CompaniesScreen> {
           ),
           Expanded(
             child: async.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => AppShimmer.companyChips(),
               error: (e, _) => Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -188,7 +190,7 @@ class _CompanyCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            _CompanyLogo(logo: logo, size: 52),
+            CompanyLogo.tile(logo: logo, size: 52),
             const SizedBox(width: 14),
             Expanded(
               child: Column(
@@ -257,43 +259,6 @@ class _CompanyCard extends StatelessWidget {
       ),
     );
   }
-}
-
-class _CompanyLogo extends StatelessWidget {
-  final String? logo;
-  final double size;
-  const _CompanyLogo({this.logo, required this.size});
-
-  @override
-  Widget build(BuildContext context) {
-    if (logo != null && logo!.isNotEmpty) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(size * 0.2),
-        child: Image.network(
-          logo!,
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-          errorBuilder: (_, _, _) => _placeholder(size),
-        ),
-      );
-    }
-    return _placeholder(size);
-  }
-
-  Widget _placeholder(double size) => Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(
-      color: brandOrange.withValues(alpha: 0.1),
-      borderRadius: BorderRadius.circular(size * 0.2),
-    ),
-    child: Icon(
-      Icons.directions_bus_rounded,
-      size: size * 0.5,
-      color: brandOrange,
-    ),
-  );
 }
 
 class _MiniChip extends StatelessWidget {

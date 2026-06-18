@@ -7,6 +7,7 @@ import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/company_logo.dart';
 import '../../core/widgets/shimmer.dart';
 
 // ── Providers ─────────────────────────────────────────────────────────────────
@@ -619,11 +620,19 @@ class _TripPicker extends ConsumerWidget {
                           ],
                         ),
                       ),
-                      if (t.tenantName != null)
-                        Text(
-                          t.tenantName!,
-                          style: TextStyle(fontSize: 11, color: context.textMuted),
+                      if (t.tenantName != null) ...[
+                        CompanyLogo(logo: t.tenantLogo, size: 18),
+                        const SizedBox(width: 5),
+                        ConstrainedBox(
+                          constraints: const BoxConstraints(maxWidth: 90),
+                          child: Text(
+                            t.tenantName!,
+                            style: TextStyle(fontSize: 11, color: context.textMuted),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
+                      ],
                       if (isSel)
                         const Padding(
                           padding: EdgeInsets.only(left: 8),
