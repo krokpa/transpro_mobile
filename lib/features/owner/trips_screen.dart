@@ -3,9 +3,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/models/models.dart';
+import '../../core/models/setup_progress.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/fade_slide.dart';
+import '../../core/widgets/shimmer.dart';
 import '../../l10n/app_localizations.dart';
+import 'setup_progress_provider.dart';
+import 'widgets/prerequisite_guard.dart';
 
 final _ownerTripsProvider = FutureProvider.autoDispose.family<List<Trip>, String>((ref, date) async {
   final dio = ref.read(dioProvider);
@@ -33,10 +37,36 @@ class _State extends ConsumerState<OwnerTripsScreen> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+
+    // ── Prerequisite check ─────────────────────────────────────────────────
+    final progressAsync = ref.watch(setupProgressProvider);
+    final progress = progressAsync.valueOrNull;
+    if (progress != null && !progress.isComplete) {
+      final tripStep = progress.steps.firstWhere(
+        (s) => s.id == 'first_trip', orElse: () => progress.steps.first);
+      if (tripStep.isBlocked) {
+        return PrerequisiteBlockedScreen(
+          title: 'Voyages',
+          message: tripStep.blockedReason ?? 'Des prérequis sont manquants pour créer un voyage.',
+          ctaLabel: tripStep.blockedAction ?? 'Voir le guide',
+          ctaRoute: tripStep.blockedRoute ?? '/owner/setup',
+          icon: Icons.departure_board_rounded,
+        );
+      }
+    }
+
     final tripsAsync = ref.watch(_ownerTripsProvider(_date));
 
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.tripsManageTitle)),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
+        title: Text(l10n.tripsManageTitle,
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: brandDark)),
+      ),
       body: Column(children: [
         Container(
           color: context.cardBg,
@@ -48,7 +78,7 @@ class _State extends ConsumerState<OwnerTripsScreen> {
         ),
         const Divider(height: 1),
         Expanded(child: tripsAsync.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => AppShimmer.tripCards(),
           error: (e, _) => Center(child: Text('${l10n.error}: $e')),
           data: (trips) => trips.isEmpty
               ? Center(child: Text(l10n.tripsNone, style: TextStyle(color: context.textMuted)))
@@ -134,10 +164,15 @@ class _TripRow extends StatelessWidget {
     final cfg = _statusCfg[trip.status] ?? _statusCfg['SCHEDULED']!;
     final actions = _transitions[trip.status] ?? [];
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 3))],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         child: Column(children: [
           Row(children: [
             Text(DateFormat('HH:mm').format(trip.departureAt.toLocal()),

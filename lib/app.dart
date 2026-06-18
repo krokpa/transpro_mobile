@@ -10,6 +10,7 @@ import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 import 'features/auth/login_screen.dart';
 import 'features/auth/onboarding_screen.dart';
+import 'features/auth/walkthrough_screen.dart';
 import 'features/auth/register_screen.dart';
 import 'features/auth/forgot_password_screen.dart';
 import 'features/auth/pin_setup_screen.dart';
@@ -31,6 +32,7 @@ import 'features/agent/quick_sale_screen.dart';
 import 'features/agent/caisse_screen.dart';
 import 'features/owner/owner_shell.dart';
 import 'features/owner/dashboard_screen.dart';
+import 'features/owner/setup_stepper_screen.dart';
 import 'features/owner/drivers_screen.dart';
 import 'features/owner/driver_detail_screen.dart';
 import 'features/owner/fleet_screen.dart';
@@ -61,82 +63,152 @@ import 'features/agent/agent_luggage_screen.dart';
 import 'features/passenger/passenger_luggage_screen.dart';
 import 'features/passenger/notification_settings_screen.dart';
 import 'features/owner/campaign_settings_screen.dart';
+import 'features/driver/driver_shell.dart';
+import 'features/driver/driver_home_screen.dart';
+import 'features/driver/driver_trips_screen.dart';
+import 'features/driver/driver_profile_screen.dart';
+import 'features/driver/driver_settings_screen.dart';
 
 /// Clé globale du navigateur racine — utilisée par PushService pour naviguer
 /// hors du contexte widget (ex. tap sur une notification push).
 final rootNavigatorKey = GlobalKey<NavigatorState>();
 
-GoRouter _buildRouter(AuthState auth) {
-  String initial;
-  if (auth.isLoading) {
-    initial = '/splash';
-  } else if (!auth.isAuthenticated) {
-    initial = '/login';
-  } else if (auth.user!.isPassenger) {
-    initial = '/passenger';
-  } else if (auth.user!.isAgent) {
-    initial = '/agent';
-  } else if (auth.user!.isOwner) {
-    initial = '/owner';
-  } else {
-    initial = '/login';
+// ---------------------------------------------------------------------------
+// Auth-driven redirect logic extracted into a ChangeNotifier so the GoRouter
+// stays stable and is never recreated on auth state changes.
+// Only notifies on routing-relevant state changes to avoid triggering
+// GoRouter.refresh() during in-progress navigations (e.g. profile updates,
+// biometric toggles, or token refreshes that don't affect the current route).
+// ---------------------------------------------------------------------------
+class _AuthListenable extends ChangeNotifier {
+  final Ref _ref;
+
+  _AuthListenable(this._ref) {
+    _ref.listen<AuthState>(authProvider, _onAuthChange);
   }
+
+  void _onAuthChange(AuthState? prev, AuthState next) {
+    if (prev == null ||
+        prev.isLoading != next.isLoading ||
+        prev.isAuthenticated != next.isAuthenticated ||
+        prev.pinVerified != next.pinVerified ||
+        prev.hasPinSet != next.hasPinSet ||
+        prev.user?.role != next.user?.role) {
+      notifyListeners();
+    }
+  }
+
+  String get initialLocation {
+    final auth = _ref.read(authProvider);
+    if (auth.isLoading) return '/splash';
+    if (!auth.isAuthenticated) return '/login';
+    if (auth.user!.isPassenger) return '/passenger';
+    if (auth.user!.isAgent) return '/agent';
+    if (auth.user!.isOwner) return '/owner';
+    if (auth.user!.isDriver) return '/driver';
+    return '/login';
+  }
+
+  String? redirect(BuildContext context, GoRouterState state) {
+    final auth = _ref.read(authProvider);
+
+    final uri = state.uri;
+    if (uri.scheme == 'transpro' && uri.host == 'track') {
+      final id = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : '';
+      if (id.isNotEmpty) return '/track/$id';
+    }
+    if (uri.scheme == 'transpro' && uri.host == 'booking') {
+      final id = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : '';
+      if (id.isNotEmpty) return '/passenger/booking/$id';
+    }
+    if (uri.scheme == 'transpro' && uri.host == 'parcel') {
+      final code = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : '';
+      if (code.isNotEmpty) return '/parcel/$code';
+    }
+
+    if (auth.isLoading) return '/splash';
+
+    final authenticated = auth.isAuthenticated;
+    final loc = state.matchedLocation;
+    final isAuthRoute = loc.startsWith('/login') ||
+        loc.startsWith('/register') ||
+        loc.startsWith('/forgot-password');
+    final isPinRoute = loc == '/pin-login' || loc == '/pin-setup';
+    final isPublicRoute =
+        loc.startsWith('/track/') || loc.startsWith('/parcel/');
+
+    if (!authenticated && !isAuthRoute && !isPublicRoute) return '/login';
+
+    if (authenticated && !isPinRoute && !isPublicRoute) {
+      if (auth.hasPinSet && !auth.pinVerified) return '/pin-login';
+      if (!auth.hasPinSet) return '/pin-setup';
+      if (auth.pinVerified &&
+          auth.user!.isPassenger &&
+          !SettingsCache.onboardingDone &&
+          loc != '/onboarding') {
+        return '/onboarding';
+      }
+      // ── Walkthrough première connexion par rôle ─────────────────────────
+      if (auth.pinVerified &&
+          auth.user!.isDriver &&
+          !SettingsCache.walkthroughDone('driver') &&
+          loc != '/driver-onboarding') {
+        return '/driver-onboarding';
+      }
+      if (auth.pinVerified &&
+          auth.user!.isOwner &&
+          !SettingsCache.walkthroughDone('owner') &&
+          loc != '/owner-onboarding') {
+        return '/owner-onboarding';
+      }
+      if (auth.pinVerified &&
+          auth.user!.isAgent &&
+          !SettingsCache.walkthroughDone('agent') &&
+          loc != '/agent-onboarding') {
+        return '/agent-onboarding';
+      }
+      if (isAuthRoute) {
+        if (auth.user!.isPassenger) return '/passenger';
+        if (auth.user!.isAgent) return '/agent';
+        if (auth.user!.isOwner) return '/owner';
+        if (auth.user!.isDriver) return '/driver';
+      }
+    }
+
+    return null;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Stable router — created once for the lifetime of the ProviderScope.
+// Auth changes trigger redirect re-evaluation via refreshListenable, not
+// a new GoRouter instance.
+// ---------------------------------------------------------------------------
+final _routerProvider = Provider<GoRouter>((ref) {
+  final notifier = _AuthListenable(ref);
+  ref.onDispose(notifier.dispose);
+
+  // Explicit navigator keys for ShellRoutes prevent duplicate-page-key
+  // assertions in go_router when navigating between sibling shell tabs.
+  final passengerShellKey = GlobalKey<NavigatorState>(debugLabel: 'passengerShell');
+  final agentShellKey     = GlobalKey<NavigatorState>(debugLabel: 'agentShell');
+  final ownerShellKey     = GlobalKey<NavigatorState>(debugLabel: 'ownerShell');
+  final driverShellKey    = GlobalKey<NavigatorState>(debugLabel: 'driverShell');
 
   return GoRouter(
     navigatorKey: rootNavigatorKey,
-    initialLocation: initial,
-    // Remap custom scheme deep links: transpro://track/ID → /track/ID
-    redirect: (context, state) {
-      final uri = state.uri;
-      if (uri.scheme == 'transpro' && uri.host == 'track') {
-        final id = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : '';
-        if (id.isNotEmpty) return '/track/$id';
-      }
-      if (uri.scheme == 'transpro' && uri.host == 'booking') {
-        final id = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : '';
-        if (id.isNotEmpty) return '/passenger/booking/$id';
-      }
-      if (uri.scheme == 'transpro' && uri.host == 'parcel') {
-        final code = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : '';
-        if (code.isNotEmpty) return '/parcel/$code';
-      }
-
-      if (auth.isLoading) return '/splash';
-
-      final authenticated = auth.isAuthenticated;
-      final loc = state.matchedLocation;
-      final isAuthRoute = loc.startsWith('/login') ||
-          loc.startsWith('/register') ||
-          loc.startsWith('/forgot-password');
-      final isPinRoute = loc == '/pin-login' || loc == '/pin-setup';
-      final isPublicRoute = loc.startsWith('/track/') || loc.startsWith('/parcel/');
-
-      if (!authenticated && !isAuthRoute && !isPublicRoute) return '/login';
-
-      if (authenticated && !isPinRoute && !isPublicRoute) {
-        // PIN gate: require verification before accessing the app
-        if (auth.hasPinSet && !auth.pinVerified) return '/pin-login';
-        // First login: no PIN set yet, redirect to setup
-        if (!auth.hasPinSet) return '/pin-setup';
-        // Onboarding: show once for new passengers after PIN setup
-        if (auth.pinVerified && auth.user!.isPassenger
-            && !SettingsCache.onboardingDone
-            && loc != '/onboarding') {
-          return '/onboarding';
-        }
-        // PIN verified — redirect away from auth screens to role home
-        if (isAuthRoute) {
-          if (auth.user!.isPassenger) return '/passenger';
-          if (auth.user!.isAgent) return '/agent';
-          if (auth.user!.isOwner) return '/owner';
-        }
-      }
-
-      return null;
-    },
+    initialLocation: notifier.initialLocation,
+    refreshListenable: notifier,
+    redirect: notifier.redirect,
     routes: [
-      GoRoute(path: '/splash',      builder: (_, _) => const _SplashScreen()),
-      GoRoute(path: '/onboarding',  builder: (_, _) => const OnboardingScreen()),
+      GoRoute(path: '/splash',     builder: (_, _) => const _SplashScreen()),
+      GoRoute(path: '/onboarding', builder: (_, _) => const OnboardingScreen()),
+      GoRoute(path: '/driver-onboarding', builder: (_, _) => const WalkthroughScreen(
+        roleKey: 'driver', homeRoute: '/driver', slides: kDriverSlides)),
+      GoRoute(path: '/owner-onboarding', builder: (_, _) => const WalkthroughScreen(
+        roleKey: 'owner', homeRoute: '/owner', slides: kOwnerSlides)),
+      GoRoute(path: '/agent-onboarding', builder: (_, _) => const WalkthroughScreen(
+        roleKey: 'agent', homeRoute: '/agent', slides: kAgentSlides)),
 
       // ── Auth ──────────────────────────────────────────────────────────────
       GoRoute(path: '/login',           builder: (_, _) => const LoginScreen()),
@@ -147,12 +219,13 @@ GoRouter _buildRouter(AuthState auth) {
 
       // ── Passenger ─────────────────────────────────────────────────────────
       ShellRoute(
+        navigatorKey: passengerShellKey,
         builder: (_, __, child) => PassengerShell(child: child),
         routes: [
-          GoRoute(path: '/passenger', builder: (_, _) => const HomeScreen()),
-          GoRoute(path: '/passenger/search', builder: (_, _) => const SearchScreen()),
+          GoRoute(path: '/passenger',          builder: (_, _) => const HomeScreen()),
+          GoRoute(path: '/passenger/search',   builder: (_, _) => const SearchScreen()),
           GoRoute(path: '/passenger/bookings', builder: (_, _) => const BookingsScreen()),
-          GoRoute(path: '/passenger/profile', builder: (_, _) => const PassengerProfileScreen()),
+          GoRoute(path: '/passenger/profile',  builder: (_, _) => const PassengerProfileScreen()),
         ],
       ),
       GoRoute(
@@ -209,13 +282,14 @@ GoRouter _buildRouter(AuthState auth) {
 
       // ── Agent ─────────────────────────────────────────────────────────────
       ShellRoute(
+        navigatorKey: agentShellKey,
         builder: (_, __, child) => AgentShell(child: child),
         routes: [
-          GoRoute(path: '/agent',          builder: (_, _) => const DeparturesScreen()),
-          GoRoute(path: '/agent/scanner',  builder: (_, state) => ScannerScreen(tripId: state.uri.queryParameters['tripId'])),
-          GoRoute(path: '/agent/guichet',  builder: (_, _) => const GuichetScreen()),
-          GoRoute(path: '/agent/caisse',   builder: (_, _) => const CaisseScreen()),
-          GoRoute(path: '/agent/profile',  builder: (_, _) => const AgentProfileScreen()),
+          GoRoute(path: '/agent',         builder: (_, _) => const DeparturesScreen()),
+          GoRoute(path: '/agent/scanner', builder: (_, state) => ScannerScreen(tripId: state.uri.queryParameters['tripId'])),
+          GoRoute(path: '/agent/guichet', builder: (_, _) => const GuichetScreen()),
+          GoRoute(path: '/agent/caisse',  builder: (_, _) => const CaisseScreen()),
+          GoRoute(path: '/agent/profile', builder: (_, _) => const AgentProfileScreen()),
         ],
       ),
       GoRoute(
@@ -249,11 +323,19 @@ GoRouter _buildRouter(AuthState auth) {
         ),
       ),
 
-      // ── Home delivery request (auth or public via tracking code) ──────────
+      // ── Home delivery request ─────────────────────────────────────────────
       GoRoute(
         path: '/delivery-request/:code',
         builder: (_, state) => DeliveryRequestScreen(
           trackingCode: Uri.decodeComponent(state.pathParameters['code']!),
+        ),
+      ),
+
+      // ── Agent: ticket scanner pushed from manifest (root navigator, no shell) ──
+      GoRoute(
+        path: '/agent/scan-ticket',
+        builder: (_, state) => ScannerScreen(
+          tripId: state.uri.queryParameters['tripId'],
         ),
       ),
 
@@ -272,13 +354,11 @@ GoRouter _buildRouter(AuthState auth) {
         ),
       ),
 
-      // ── Passenger parcel list (auth required) ─────────────────────────────
+      // ── Passenger parcel list ─────────────────────────────────────────────
       GoRoute(
         path: '/passenger/parcels',
         builder: (_, _) => const MyParcelsScreen(),
       ),
-
-      // ── Passenger: send parcel ────────────────────────────────────────────
       GoRoute(
         path: '/passenger/parcels/send',
         builder: (_, _) => const SendParcelScreen(),
@@ -310,8 +390,23 @@ GoRouter _buildRouter(AuthState auth) {
         builder: (_, _) => const ParcelScanScreen(),
       ),
 
+      GoRoute(path: '/driver/settings', builder: (_, _) => const DriverSettingsScreen()),
+
+      // ── Driver ────────────────────────────────────────────────────────────
+      ShellRoute(
+        navigatorKey: driverShellKey,
+        builder: (_, __, child) => DriverShell(child: child),
+        routes: [
+          GoRoute(path: '/driver',          builder: (_, _) => const DriverHomeScreen()),
+          GoRoute(path: '/driver/trips',    builder: (_, _) => const DriverTripsScreen()),
+          GoRoute(path: '/driver/schedule', builder: (_, _) => const DriverTripsScreen()),
+          GoRoute(path: '/driver/profile',  builder: (_, _) => const DriverProfileScreen()),
+        ],
+      ),
+
       // ── Owner ─────────────────────────────────────────────────────────────
       ShellRoute(
+        navigatorKey: ownerShellKey,
         builder: (_, __, child) => OwnerShell(child: child),
         routes: [
           GoRoute(path: '/owner',         builder: (_, _) => const OwnerDashboardScreen()),
@@ -330,12 +425,13 @@ GoRouter _buildRouter(AuthState auth) {
         path: '/owner/fleet/:id',
         builder: (_, state) => VehicleDetailScreen(vehicleId: state.pathParameters['id']!),
       ),
-      GoRoute(path: '/owner/schedules', builder: (_, _) => const SchedulesScreen()),
-      GoRoute(path: '/owner/staff',     builder: (_, _) => const StaffScreen()),
-      GoRoute(path: '/owner/reports',   builder: (_, _) => const ReportsScreen()),
+      GoRoute(path: '/owner/schedules',      builder: (_, _) => const SchedulesScreen()),
+      GoRoute(path: '/owner/staff',          builder: (_, _) => const StaffScreen()),
+      GoRoute(path: '/owner/reports',        builder: (_, _) => const ReportsScreen()),
       GoRoute(path: '/owner/stations',       builder: (_, _) => const StationsScreen()),
       GoRoute(path: '/owner/notifications',  builder: (_, _) => const NotificationsScreen()),
       GoRoute(path: '/owner/campaigns',      builder: (_, _) => const CampaignSettingsScreen()),
+      GoRoute(path: '/owner/setup',          builder: (_, _) => const SetupStepperScreen()),
 
       // ── Passenger: notification preferences ──────────────────────────────
       GoRoute(
@@ -344,17 +440,16 @@ GoRouter _buildRouter(AuthState auth) {
       ),
     ],
   );
-}
+});
 
 class TransProApp extends ConsumerWidget {
   const TransProApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final auth = ref.watch(authProvider);
+    final router    = ref.watch(_routerProvider);
     final themeMode = ref.watch(themeModeProvider);
-    final locale = ref.watch(localeProvider);
-    final router = _buildRouter(auth);
+    final locale    = ref.watch(localeProvider);
     return MaterialApp.router(
       title: 'TransPro CI',
       debugShowCheckedModeBanner: false,
