@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/shimmer.dart';
+import '../../core/widgets/view_toggle_button.dart';
 import '../../l10n/app_localizations.dart';
 
 final _vehiclesProvider =
@@ -13,72 +15,99 @@ final _vehiclesProvider =
       return (items as List).cast<Map<String, dynamic>>();
     });
 
-class FleetScreen extends ConsumerWidget {
+class FleetScreen extends ConsumerStatefulWidget {
   const FleetScreen({super.key});
+  @override
+  ConsumerState<FleetScreen> createState() => _FleetScreenState();
+}
+
+class _FleetScreenState extends ConsumerState<FleetScreen> {
+  bool _isGrid = false;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final vehiclesAsync = ref.watch(_vehiclesProvider);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text(l10n.fleetTitle),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
+        title: Text(l10n.fleetTitle,
+          style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: brandDark)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: l10n.fleetAddVehicle,
-            onPressed: () => _showAddVehicleSheet(context, ref),
+          ViewToggleButton(
+            isGrid: _isGrid,
+            onToggle: (v) => setState(() => _isGrid = v),
+          ),
+          Container(
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(color: brandOrange, borderRadius: BorderRadius.circular(10)),
+            child: IconButton(
+              icon: const Icon(Icons.add, color: Colors.white, size: 20),
+              tooltip: l10n.fleetAddVehicle,
+              onPressed: () => _showAddVehicleSheet(context),
+              padding: const EdgeInsets.all(8),
+              constraints: const BoxConstraints(),
+            ),
           ),
         ],
       ),
       body: vehiclesAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => AppShimmer.listTiles(),
         error: (e, _) => Center(child: Text('${l10n.error}: $e')),
         data: (vehicles) => vehicles.isEmpty
             ? Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.directions_bus_outlined,
-                      size: 64,
-                      color: context.textMuted,
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      l10n.fleetNoVehicles,
-                      style: TextStyle(color: context.textMuted, fontSize: 16),
-                    ),
-                    const SizedBox(height: 8),
-                    TextButton.icon(
-                      onPressed: () => _showAddVehicleSheet(context, ref),
-                      icon: const Icon(Icons.add),
-                      label: Text(l10n.fleetAddVehicle),
-                    ),
-                  ],
-                ),
+                child: Column(mainAxisSize: MainAxisSize.min, children: [
+                  Icon(Icons.directions_bus_outlined, size: 64, color: context.textMuted),
+                  const SizedBox(height: 12),
+                  Text(l10n.fleetNoVehicles, style: TextStyle(color: context.textMuted, fontSize: 16)),
+                  const SizedBox(height: 8),
+                  TextButton.icon(
+                    onPressed: () => _showAddVehicleSheet(context),
+                    icon: const Icon(Icons.add),
+                    label: Text(l10n.fleetAddVehicle),
+                  ),
+                ]),
               )
-            : ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: vehicles.length,
-                itemBuilder: (_, i) => _VehicleCard(
-                  vehicle: vehicles[i],
-                  onToggle: (id, active) =>
-                      _toggleVehicle(id, active, ref, context),
-                  onDetail: (id) => context.push('/owner/fleet/$id'),
-                ),
+            : AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
+                child: _isGrid
+                    ? GridView.builder(
+                        key: const ValueKey('grid'),
+                        padding: const EdgeInsets.all(12),
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 10,
+                          mainAxisSpacing: 10,
+                          childAspectRatio: 0.95,
+                        ),
+                        itemCount: vehicles.length,
+                        itemBuilder: (_, i) => _VehicleGridCard(
+                          vehicle: vehicles[i],
+                          onToggle: (id, active) => _toggleVehicle(id, active),
+                          onDetail: (id) => context.push('/owner/fleet/$id'),
+                        ),
+                      )
+                    : ListView.builder(
+                        key: const ValueKey('list'),
+                        padding: const EdgeInsets.all(16),
+                        itemCount: vehicles.length,
+                        itemBuilder: (_, i) => _VehicleCard(
+                          vehicle: vehicles[i],
+                          onToggle: (id, active) => _toggleVehicle(id, active),
+                          onDetail: (id) => context.push('/owner/fleet/$id'),
+                        ),
+                      ),
               ),
       ),
     );
   }
 
-  Future<void> _toggleVehicle(
-    String id,
-    bool activate,
-    WidgetRef ref,
-    BuildContext context,
-  ) async {
+  Future<void> _toggleVehicle(String id, bool activate) async {
     try {
       final dio = ref.read(dioProvider);
       if (activate) {
@@ -88,18 +117,15 @@ class FleetScreen extends ConsumerWidget {
       }
       ref.invalidate(_vehiclesProvider);
     } catch (e) {
-      if (context.mounted) {
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${AppLocalizations.of(context).error}: $e'),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text('${AppLocalizations.of(context).error}: $e'), backgroundColor: Colors.red),
         );
       }
     }
   }
 
-  void _showAddVehicleSheet(BuildContext context, WidgetRef ref) {
+  void _showAddVehicleSheet(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -115,6 +141,110 @@ class FleetScreen extends ConsumerWidget {
     );
   }
 }
+
+// ── Vehicle grid card ──────────────────────────────────────────────────────────
+
+class _VehicleGridCard extends StatelessWidget {
+  final Map<String, dynamic> vehicle;
+  final void Function(String, bool) onToggle;
+  final void Function(String) onDetail;
+  const _VehicleGridCard({required this.vehicle, required this.onToggle, required this.onDetail});
+
+  static const _statusCfg = {
+    'ACTIVE':       (Color(0xFFDCFCE7), Color(0xFF16A34A)),
+    'INACTIVE':     (Color(0xFFF1F5F9), Color(0xFF64748B)),
+    'MAINTENANCE':  (Color(0xFFFEF9C3), Color(0xFFCA8A04)),
+    'OUT_OF_SERVICE': (Color(0xFFFEE2E2), Color(0xFFDC2626)),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final status   = vehicle['status'] as String? ?? 'ACTIVE';
+    final cfg      = _statusCfg[status] ?? _statusCfg['ACTIVE']!;
+    final plate    = vehicle['plate']    as String? ?? '—';
+    final brand    = vehicle['brand']    as String? ?? '';
+    final model    = vehicle['model']    as String? ?? '—';
+    final capacity = vehicle['capacity'] as int?    ?? 0;
+    final id       = vehicle['id']       as String;
+    final isActive = status == 'ACTIVE';
+
+    return GestureDetector(
+      onTap: () => onDetail(id),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2))],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            // Icon + status badge
+            Row(children: [
+              Container(
+                width: 40, height: 40,
+                decoration: BoxDecoration(color: brandLight, borderRadius: BorderRadius.circular(10)),
+                child: const Icon(Icons.directions_bus_outlined, color: brandOrange, size: 20),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+                decoration: BoxDecoration(color: cfg.$1, borderRadius: BorderRadius.circular(20)),
+                child: Text(
+                  _statusLabel(status),
+                  style: TextStyle(fontSize: 9, fontWeight: FontWeight.w700, color: cfg.$2),
+                ),
+              ),
+            ]),
+            const SizedBox(height: 10),
+            // Plate
+            Text(plate, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: brandDark)),
+            const SizedBox(height: 2),
+            Text('$brand $model',
+              style: TextStyle(fontSize: 11, color: context.textSecondary),
+              maxLines: 1, overflow: TextOverflow.ellipsis),
+            const SizedBox(height: 6),
+            Row(children: [
+              Icon(Icons.event_seat_outlined, size: 12, color: context.textMuted),
+              const SizedBox(width: 3),
+              Text('$capacity pl.', style: TextStyle(fontSize: 11, color: context.textMuted)),
+            ]),
+            const Spacer(),
+            // Toggle
+            GestureDetector(
+              onTap: () => onToggle(id, !isActive),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                decoration: BoxDecoration(
+                  color: isActive ? const Color(0xFFFEE2E2) : const Color(0xFFF0FDF4),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  isActive ? 'Désactiver' : 'Activer',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 11, fontWeight: FontWeight.w700,
+                    color: isActive ? const Color(0xFFDC2626) : const Color(0xFF16A34A),
+                  ),
+                ),
+              ),
+            ),
+          ]),
+        ),
+      ),
+    );
+  }
+
+  static String _statusLabel(String s) => switch (s) {
+    'ACTIVE'       => 'Actif',
+    'INACTIVE'     => 'Inactif',
+    'MAINTENANCE'  => 'Maintenance',
+    _              => s,
+  };
+}
+
+// ── Vehicle list card (unchanged) ─────────────────────────────────────────────
 
 class _VehicleCard extends StatelessWidget {
   final Map<String, dynamic> vehicle;
@@ -145,10 +275,15 @@ class _VehicleCard extends StatelessWidget {
     final tripClass = vehicle['tripClass'] as String? ?? '—';
     final isActive = status == 'ACTIVE';
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 3))],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         child: Column(
           children: [
             Row(

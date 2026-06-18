@@ -7,6 +7,8 @@ import '../../core/models/models.dart';
 import '../../core/offline/ticket_cache.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/fade_slide.dart';
+import '../../core/widgets/shimmer.dart';
+import '../../core/widgets/view_toggle_button.dart';
 import '../../l10n/app_localizations.dart';
 
 // ── Provider ──────────────────────────────────────────────────────────────────
@@ -104,6 +106,7 @@ class BookingsScreen extends ConsumerStatefulWidget {
 
 class _BookingsScreenState extends ConsumerState<BookingsScreen> {
   _BookingFilter _filter = _BookingFilter.empty;
+  bool _isGrid = false;
 
   static const _statuses = [
     ('CONFIRMED', 'Confirmé',  Color(0xFF16A34A), Icons.check_circle_outline),
@@ -144,6 +147,10 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
       appBar: AppBar(
         title: Text(l10n.bookingsTitle),
         actions: [
+          ViewToggleButton(
+            isGrid: _isGrid,
+            onToggle: (v) => setState(() => _isGrid = v),
+          ),
           async.whenData((r) => r.bookings).valueOrNull != null
               ? _FilterBadgeButton(
                   count: _filter.activeCount,
@@ -154,7 +161,7 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
         ],
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => AppShimmer.bookingCards(),
         error: (e, _) => Center(child: Text('$e')),
         data: (result) {
           final allBookings = result.bookings;
@@ -224,21 +231,37 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
                   ),
                 ),
 
-              // ── List ────────────────────────────────────────────────────
+              // ── List / Grid ──────────────────────────────────────────────
               Expanded(
                 child: filtered.isEmpty
                     ? _NoFilterResults(
                         onReset: () =>
                             setState(() => _filter = _BookingFilter.empty),
                       )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: filtered.length,
-                        itemBuilder: (_, i) => FadeSlideIn(
-                          delay: Duration(
-                              milliseconds: (i * 60).clamp(0, 240)),
-                          child: _BookingCard(booking: filtered[i]),
-                        ),
+                    : AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 220),
+                        child: _isGrid
+                            ? GridView.builder(
+                                key: const ValueKey('grid'),
+                                padding: const EdgeInsets.all(12),
+                                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  crossAxisSpacing: 10,
+                                  mainAxisSpacing: 10,
+                                  childAspectRatio: 0.72,
+                                ),
+                                itemCount: filtered.length,
+                                itemBuilder: (_, i) => _BookingGridCard(booking: filtered[i]),
+                              )
+                            : ListView.builder(
+                                key: const ValueKey('list'),
+                                padding: const EdgeInsets.all(16),
+                                itemCount: filtered.length,
+                                itemBuilder: (_, i) => FadeSlideIn(
+                                  delay: Duration(milliseconds: (i * 60).clamp(0, 240)),
+                                  child: _BookingCard(booking: filtered[i]),
+                                ),
+                              ),
                       ),
               ),
             ]),
@@ -839,6 +862,123 @@ class _NoFilterResults extends StatelessWidget {
           ),
         ]),
       );
+}
+
+// ── Booking grid card (compact 2-col) ─────────────────────────────────────────
+
+class _BookingGridCard extends StatelessWidget {
+  final Booking booking;
+  const _BookingGridCard({required this.booking});
+
+  static const _statusCfg = <String, (Color, Color, IconData)>{
+    'CONFIRMED': (Color(0xFFDCFCE7), Color(0xFF16A34A), Icons.check_circle_rounded),
+    'PENDING':   (Color(0xFFFEF9C3), Color(0xFFCA8A04), Icons.schedule_rounded),
+    'CANCELLED': (Color(0xFFFEE2E2), Color(0xFFDC2626), Icons.cancel_rounded),
+    'COMPLETED': (Color(0xFFF0F9FF), Color(0xFF0369A1), Icons.done_all_rounded),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final cfg    = _statusCfg[booking.status] ?? _statusCfg['PENDING']!;
+    final trip   = booking.trip;
+    final locale = Localizations.localeOf(context).toString();
+
+    return InkWell(
+      onTap: () => context.push('/passenger/booking/${booking.id}'),
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        decoration: BoxDecoration(
+          color: context.cardBg,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2))],
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // ── Status bar ────────────────────────────────────────────────
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            decoration: BoxDecoration(
+              color: cfg.$1,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+            ),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Icon(cfg.$3, size: 11, color: cfg.$2),
+              const SizedBox(width: 4),
+              Flexible(child: Text(
+                _statusLabel(booking.status),
+                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: cfg.$2),
+                maxLines: 1, overflow: TextOverflow.ellipsis,
+              )),
+            ]),
+          ),
+
+          // ── Content ───────────────────────────────────────────────────
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(10),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                // Route
+                Text(
+                  trip?.routeName ?? '—',
+                  style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: context.textPrimary),
+                  maxLines: 2, overflow: TextOverflow.ellipsis,
+                ),
+                const SizedBox(height: 4),
+
+                // Company
+                if (trip?.tenantName != null) ...[
+                  Text(
+                    trip!.tenantName!,
+                    style: TextStyle(fontSize: 11, color: context.textMuted),
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                ],
+
+                // Date
+                if (trip != null) ...[
+                  Row(children: [
+                    Icon(Icons.calendar_today_outlined, size: 10, color: context.textMuted),
+                    const SizedBox(width: 3),
+                    Flexible(child: Text(
+                      DateFormat('d MMM · HH:mm', locale).format(trip.departureAt.toLocal()),
+                      style: TextStyle(fontSize: 10, color: context.textSecondary),
+                      maxLines: 1, overflow: TextOverflow.ellipsis,
+                    )),
+                  ]),
+                  const SizedBox(height: 4),
+                ],
+
+                const Spacer(),
+
+                // Ref + amount
+                Row(children: [
+                  Expanded(child: Text(
+                    booking.reference,
+                    style: TextStyle(fontSize: 9, color: context.textMuted, fontFamily: 'monospace'),
+                    maxLines: 1, overflow: TextOverflow.ellipsis,
+                  )),
+                ]),
+                const SizedBox(height: 4),
+                Text(
+                  '${booking.totalAmount.toStringAsFixed(0)} F',
+                  style: const TextStyle(fontWeight: FontWeight.w800, color: brandOrange, fontSize: 14),
+                ),
+              ]),
+            ),
+          ),
+        ]),
+      ),
+    );
+  }
+
+  static String _statusLabel(String s) => switch (s) {
+    'CONFIRMED' => 'Confirmé',
+    'PENDING'   => 'En attente',
+    'CANCELLED' => 'Annulé',
+    'COMPLETED' => 'Terminé',
+    _           => s,
+  };
 }
 
 // ── Booking card (inchangée) ──────────────────────────────────────────────────
