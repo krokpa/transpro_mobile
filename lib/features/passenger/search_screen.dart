@@ -25,7 +25,21 @@ final _tenantsProvider = FutureProvider.autoDispose<List<Tenant>>((ref) async {
 });
 
 class SearchScreen extends ConsumerStatefulWidget {
-  const SearchScreen({super.key});
+  /// Optional prefill — passed from the Home hero so a search can be launched
+  /// in 2 taps. When [originName] and [destName] are both set, the search runs
+  /// automatically as soon as the cities list is available.
+  final String? originName;
+  final String? destName;
+  final String? dateIso;
+  final int? passengers;
+
+  const SearchScreen({
+    super.key,
+    this.originName,
+    this.destName,
+    this.dateIso,
+    this.passengers,
+  });
   @override
   ConsumerState<SearchScreen> createState() => _State();
 }
@@ -39,6 +53,47 @@ class _State extends ConsumerState<SearchScreen> {
   List<Trip>? _results;
   bool _loading = false;
   String? _error;
+
+  /// Guards the one-shot prefill so it doesn't re-apply on every rebuild.
+  bool _prefillApplied = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.passengers != null && widget.passengers! > 0) {
+      _passengers = widget.passengers!.clamp(1, 9);
+    }
+    final d = widget.dateIso != null ? DateTime.tryParse(widget.dateIso!) : null;
+    if (d != null) _date = d;
+  }
+
+  /// Matches the prefill city names against the loaded list and, when both
+  /// endpoints resolve, launches the search automatically.
+  void _applyPrefill(List<City> cities) {
+    if (_prefillApplied || cities.isEmpty) return;
+    if (widget.originName == null && widget.destName == null) return;
+    _prefillApplied = true;
+
+    City? match(String? name) {
+      if (name == null) return null;
+      final lower = name.toLowerCase();
+      for (final c in cities) {
+        if (c.name.toLowerCase() == lower) return c;
+      }
+      return null;
+    }
+
+    _origin = match(widget.originName) ?? _origin;
+    _dest = match(widget.destName) ?? _dest;
+
+    if (_origin != null && _dest != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _search();
+      });
+    } else if (mounted) {
+      setState(() {});
+    }
+  }
 
   void _swap() => setState(() {
     final tmp = _origin;
@@ -104,6 +159,9 @@ class _State extends ConsumerState<SearchScreen> {
     final tenantsAsync = ref.watch(_tenantsProvider);
     final cities = citiesAsync.value ?? [];
     final tenants = tenantsAsync.value ?? [];
+
+    // One-shot prefill coming from the Home hero (origin/dest/date/passengers).
+    if (cities.isNotEmpty) _applyPrefill(cities);
 
     return Scaffold(
       body: Column(

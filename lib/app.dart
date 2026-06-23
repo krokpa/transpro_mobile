@@ -223,7 +223,18 @@ final _routerProvider = Provider<GoRouter>((ref) {
         builder: (_, __, child) => PassengerShell(child: child),
         routes: [
           GoRoute(path: '/passenger',          builder: (_, _) => const HomeScreen()),
-          GoRoute(path: '/passenger/search',   builder: (_, _) => const SearchScreen()),
+          GoRoute(
+            path: '/passenger/search',
+            builder: (_, s) {
+              final q = s.uri.queryParameters;
+              return SearchScreen(
+                originName: q['origin'],
+                destName: q['destination'],
+                dateIso: q['date'],
+                passengers: int.tryParse(q['passengers'] ?? ''),
+              );
+            },
+          ),
           GoRoute(path: '/passenger/bookings', builder: (_, _) => const BookingsScreen()),
           GoRoute(path: '/passenger/profile',  builder: (_, _) => const PassengerProfileScreen()),
         ],

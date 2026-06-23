@@ -1008,6 +1008,51 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeBookNow => 'Book';
 
   @override
+  String get homeHistory => 'History';
+
+  @override
+  String get homeNextTripTitle => 'My next trip';
+
+  @override
+  String get homePopularDestinations => 'Popular destinations';
+
+  @override
+  String get homePartners => 'Partner companies';
+
+  @override
+  String homePartnersCount(int count) {
+    return '$count companies trust us';
+  }
+
+  @override
+  String homeFromPrice(String price) {
+    return 'from $price F';
+  }
+
+  @override
+  String homeTripsAvailable(int count) {
+    return '$count departures';
+  }
+
+  @override
+  String homeDepartsInDays(int days) {
+    return 'Departs in $days d';
+  }
+
+  @override
+  String homeDepartsInHM(int h, int m) {
+    return 'Departs in ${h}h ${m}min';
+  }
+
+  @override
+  String homeDepartsInMin(int m) {
+    return 'Departs in ${m}min';
+  }
+
+  @override
+  String get homeDepartingNow => 'Departing now';
+
+  @override
   String get bookingsOfflineMode => 'Offline mode — cached tickets';
 
   @override

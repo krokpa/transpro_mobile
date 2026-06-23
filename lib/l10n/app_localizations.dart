@@ -2042,6 +2042,72 @@ abstract class AppLocalizations {
   /// **'Book'**
   String get homeBookNow;
 
+  /// No description provided for @homeHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get homeHistory;
+
+  /// No description provided for @homeNextTripTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'My next trip'**
+  String get homeNextTripTitle;
+
+  /// No description provided for @homePopularDestinations.
+  ///
+  /// In en, this message translates to:
+  /// **'Popular destinations'**
+  String get homePopularDestinations;
+
+  /// No description provided for @homePartners.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner companies'**
+  String get homePartners;
+
+  /// No description provided for @homePartnersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} companies trust us'**
+  String homePartnersCount(int count);
+
+  /// No description provided for @homeFromPrice.
+  ///
+  /// In en, this message translates to:
+  /// **'from {price} F'**
+  String homeFromPrice(String price);
+
+  /// No description provided for @homeTripsAvailable.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} departures'**
+  String homeTripsAvailable(int count);
+
+  /// No description provided for @homeDepartsInDays.
+  ///
+  /// In en, this message translates to:
+  /// **'Departs in {days} d'**
+  String homeDepartsInDays(int days);
+
+  /// No description provided for @homeDepartsInHM.
+  ///
+  /// In en, this message translates to:
+  /// **'Departs in {h}h {m}min'**
+  String homeDepartsInHM(int h, int m);
+
+  /// No description provided for @homeDepartsInMin.
+  ///
+  /// In en, this message translates to:
+  /// **'Departs in {m}min'**
+  String homeDepartsInMin(int m);
+
+  /// No description provided for @homeDepartingNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Departing now'**
+  String get homeDepartingNow;
+
   /// No description provided for @bookingsOfflineMode.
   ///
   /// In en, this message translates to:

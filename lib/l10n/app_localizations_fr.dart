@@ -1011,6 +1011,51 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeBookNow => 'Réserver';
 
   @override
+  String get homeHistory => 'Historique';
+
+  @override
+  String get homeNextTripTitle => 'Mon prochain voyage';
+
+  @override
+  String get homePopularDestinations => 'Destinations populaires';
+
+  @override
+  String get homePartners => 'Compagnies partenaires';
+
+  @override
+  String homePartnersCount(int count) {
+    return '$count compagnies vous font confiance';
+  }
+
+  @override
+  String homeFromPrice(String price) {
+    return 'dès $price F';
+  }
+
+  @override
+  String homeTripsAvailable(int count) {
+    return '$count départs';
+  }
+
+  @override
+  String homeDepartsInDays(int days) {
+    return 'Départ dans $days j';
+  }
+
+  @override
+  String homeDepartsInHM(int h, int m) {
+    return 'Départ dans ${h}h ${m}min';
+  }
+
+  @override
+  String homeDepartsInMin(int m) {
+    return 'Départ dans ${m}min';
+  }
+
+  @override
+  String get homeDepartingNow => 'Départ imminent';
+
+  @override
   String get bookingsOfflineMode => 'Mode hors-ligne — billets mis en cache';
 
   @override
