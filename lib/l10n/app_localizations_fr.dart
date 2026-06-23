@@ -1017,6 +1017,12 @@ class AppLocalizationsFr extends AppLocalizations {
   String get homeNextTripTitle => 'Mon prochain voyage';
 
   @override
+  String get homeAnyCompany => 'Toutes les compagnies';
+
+  @override
+  String get searchCompany => 'Compagnie';
+
+  @override
   String get homePopularDestinations => 'Destinations populaires';
 
   @override

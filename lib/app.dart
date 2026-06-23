@@ -232,6 +232,7 @@ final _routerProvider = Provider<GoRouter>((ref) {
                 destName: q['destination'],
                 dateIso: q['date'],
                 passengers: int.tryParse(q['passengers'] ?? ''),
+                companySlug: q['company'],
               );
             },
           ),

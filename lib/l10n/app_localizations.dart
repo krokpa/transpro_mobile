@@ -2054,6 +2054,18 @@ abstract class AppLocalizations {
   /// **'My next trip'**
   String get homeNextTripTitle;
 
+  /// No description provided for @homeAnyCompany.
+  ///
+  /// In en, this message translates to:
+  /// **'Any company'**
+  String get homeAnyCompany;
+
+  /// No description provided for @searchCompany.
+  ///
+  /// In en, this message translates to:
+  /// **'Company'**
+  String get searchCompany;
+
   /// No description provided for @homePopularDestinations.
   ///
   /// In en, this message translates to:

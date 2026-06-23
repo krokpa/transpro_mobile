@@ -359,6 +359,8 @@
   "homeBookNow": "Réserver",
   "homeHistory": "Historique",
   "homeNextTripTitle": "Mon prochain voyage",
+  "homeAnyCompany": "Toutes les compagnies",
+  "searchCompany": "Compagnie",
   "homePopularDestinations": "Destinations populaires",
   "homePartners": "Compagnies partenaires",
   "homePartnersCount": "{count} compagnies vous font confiance",

@@ -382,6 +382,8 @@
   "homeBookNow": "Book",
   "homeHistory": "History",
   "homeNextTripTitle": "My next trip",
+  "homeAnyCompany": "Any company",
+  "searchCompany": "Company",
   "homePopularDestinations": "Popular destinations",
   "homePartners": "Partner companies",
   "homePartnersCount": "{count} companies trust us",

@@ -96,6 +96,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   City? _dest;
   DateTime _date = DateTime.now();
   int _passengers = 1;
+  Tenant? _company;
 
   void _swap() => setState(() {
     final tmp = _origin;
@@ -115,13 +116,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Future<void> _pickCity({required bool isOrigin}) async {
     final l10n = AppLocalizations.of(context);
-    final cities = ref.read(_citiesProvider).value ?? [];
     final selected = await showModalBottomSheet<City>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (_) => _CityPickerSheet(
-        cities: cities,
         title: isOrigin ? l10n.searchFromCity : l10n.searchToCity,
         hint: isOrigin ? l10n.searchOriginHint : l10n.searchDestHint,
       ),
@@ -129,6 +128,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     if (selected != null) {
       setState(() => isOrigin ? _origin = selected : _dest = selected);
     }
+  }
+
+  Future<void> _pickCompany() async {
+    final result = await showModalBottomSheet<_CompanyChoice>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _CompanyPickerSheet(selected: _company),
+    );
+    if (result != null) setState(() => _company = result.tenant);
   }
 
   Future<void> _pickDate() async {
@@ -173,6 +182,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         'destination': _dest!.name,
         'date': DateFormat('yyyy-MM-dd').format(_date),
         'passengers': '$_passengers',
+        if (_company?.slug != null) 'company': _company!.slug!,
       },
     );
     context.go(uri.toString());
@@ -193,6 +203,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final tripsAsync = ref.watch(_upcomingTripsProvider);
     final nextBookingAsync = ref.watch(_nextBookingProvider);
     final favs = ref.watch(favoritesProvider);
+    // Précharge la liste des villes pour que le sélecteur soit instantané.
+    ref.watch(_citiesProvider);
     final fmt = DateFormat(
       'EEE d MMM',
       Localizations.localeOf(context).toString(),
@@ -216,6 +228,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 dest: _dest,
                 date: _date,
                 passengers: _passengers,
+                company: _company,
                 onMenu: () => PassengerShellScope.of(context)?.openDrawer(),
                 onAvatar: () => context.go('/passenger/profile'),
                 onPickOrigin: () => _pickCity(isOrigin: true),
@@ -223,6 +236,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 onSwap: _swap,
                 onPickDate: _pickDate,
                 onPickPassengers: _pickPassengers,
+                onPickCompany: _pickCompany,
                 onSearch: _onSearch,
                 l10n: l10n,
               ),
@@ -427,19 +441,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   const SizedBox(height: 12),
                   tripsAsync.when(
-                    loading: () => Shimmer(child: Column(children: List.generate(3, (_) => const ShimmerTripCard()))),
+                    loading: () => Shimmer(child: Column(children: List.generate(2, (_) => const ShimmerTripCard()))),
                     error: (e, _) => _ErrorCard(message: e.toString()),
-                    data: (trips) => trips.isEmpty
-                        ? _EmptyState(l10n: l10n)
-                        : Column(
-                            children: [
-                              for (int i = 0; i < trips.length; i++)
-                                FadeSlideIn(
-                                  delay: Duration(milliseconds: (i * 70).clamp(0, 280)),
-                                  child: _TripCard(trip: trips[i], fmt: fmt, l10n: l10n),
-                                ),
-                            ],
-                          ),
+                    data: (trips) {
+                      if (trips.isEmpty) return _EmptyState(l10n: l10n);
+                      // N'afficher que les 2 premiers — « Voir tout » mène à la recherche.
+                      final shown = trips.take(2).toList();
+                      return Column(
+                        children: [
+                          for (int i = 0; i < shown.length; i++)
+                            FadeSlideIn(
+                              delay: Duration(milliseconds: (i * 70).clamp(0, 280)),
+                              child: _TripCard(trip: shown[i], fmt: fmt, l10n: l10n),
+                            ),
+                        ],
+                      );
+                    },
                   ),
                 ],
               ),
@@ -1137,6 +1154,7 @@ class _HomeHero extends StatelessWidget {
   final City? dest;
   final DateTime date;
   final int passengers;
+  final Tenant? company;
   final VoidCallback onMenu;
   final VoidCallback onAvatar;
   final VoidCallback onPickOrigin;
@@ -1144,6 +1162,7 @@ class _HomeHero extends StatelessWidget {
   final VoidCallback onSwap;
   final VoidCallback onPickDate;
   final VoidCallback onPickPassengers;
+  final VoidCallback onPickCompany;
   final VoidCallback onSearch;
   final AppLocalizations l10n;
 
@@ -1156,6 +1175,7 @@ class _HomeHero extends StatelessWidget {
     required this.dest,
     required this.date,
     required this.passengers,
+    required this.company,
     required this.onMenu,
     required this.onAvatar,
     required this.onPickOrigin,
@@ -1163,6 +1183,7 @@ class _HomeHero extends StatelessWidget {
     required this.onSwap,
     required this.onPickDate,
     required this.onPickPassengers,
+    required this.onPickCompany,
     required this.onSearch,
     required this.l10n,
   });
@@ -1359,6 +1380,13 @@ class _HomeHero extends StatelessWidget {
                           ],
                         ),
                         const SizedBox(height: 10),
+                        // ── Compagnie de préférence (optionnel) ──
+                        _HeroMiniField(
+                          icon: Icons.business_rounded,
+                          text: company?.name ?? l10n.homeAnyCompany,
+                          onTap: onPickCompany,
+                        ),
+                        const SizedBox(height: 10),
                         SizedBox(
                           width: double.infinity,
                           height: 52,
@@ -1505,28 +1533,26 @@ class _HeroMiniField extends StatelessWidget {
 }
 
 // ── Bottom sheet : sélection d'une ville (avec recherche) ─────────────────────
-class _CityPickerSheet extends StatefulWidget {
-  final List<City> cities;
+class _CityPickerSheet extends ConsumerStatefulWidget {
   final String title;
   final String hint;
-  const _CityPickerSheet({
-    required this.cities,
-    required this.title,
-    required this.hint,
-  });
+  const _CityPickerSheet({required this.title, required this.hint});
 
   @override
-  State<_CityPickerSheet> createState() => _CityPickerSheetState();
+  ConsumerState<_CityPickerSheet> createState() => _CityPickerSheetState();
 }
 
-class _CityPickerSheetState extends State<_CityPickerSheet> {
+class _CityPickerSheetState extends ConsumerState<_CityPickerSheet> {
   String _query = '';
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final citiesAsync = ref.watch(_citiesProvider);
+    final cities = citiesAsync.value ?? const <City>[];
     final filtered = _query.isEmpty
-        ? widget.cities
-        : widget.cities
+        ? cities
+        : cities
               .where((c) => c.name.toLowerCase().contains(_query.toLowerCase()))
               .toList();
 
@@ -1582,27 +1608,176 @@ class _CityPickerSheetState extends State<_CityPickerSheet> {
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: ListView.builder(
-                controller: scrollController,
-                itemCount: filtered.length,
-                itemBuilder: (context, i) {
-                  final c = filtered[i];
-                  return ListTile(
-                    leading: Icon(
-                      Icons.location_city_rounded,
-                      color: context.spacePrimary,
-                    ),
-                    title: Text(
-                      c.name,
-                      style: TextStyle(
-                        color: context.textPrimary,
-                        fontWeight: FontWeight.w600,
+              child: citiesAsync.isLoading && cities.isEmpty
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: context.spacePrimary,
                       ),
+                    )
+                  : filtered.isEmpty
+                  ? Center(
+                      child: Text(
+                        citiesAsync.hasError ? l10n.error : l10n.searchNoResults,
+                        style: TextStyle(color: context.textMuted),
+                      ),
+                    )
+                  : ListView.builder(
+                      controller: scrollController,
+                      itemCount: filtered.length,
+                      itemBuilder: (context, i) {
+                        final c = filtered[i];
+                        return ListTile(
+                          leading: Icon(
+                            Icons.location_city_rounded,
+                            color: context.spacePrimary,
+                          ),
+                          title: Text(
+                            c.name,
+                            style: TextStyle(
+                              color: context.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          onTap: () => Navigator.of(context).pop(c),
+                        );
+                      },
                     ),
-                    onTap: () => Navigator.of(context).pop(c),
-                  );
-                },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ── Bottom sheet : compagnie de préférence ────────────────────────────────────
+/// Wrapper de résultat : tenant == null signifie « Toutes les compagnies ».
+class _CompanyChoice {
+  final Tenant? tenant;
+  const _CompanyChoice(this.tenant);
+}
+
+class _CompanyPickerSheet extends ConsumerStatefulWidget {
+  final Tenant? selected;
+  const _CompanyPickerSheet({required this.selected});
+
+  @override
+  ConsumerState<_CompanyPickerSheet> createState() =>
+      _CompanyPickerSheetState();
+}
+
+class _CompanyPickerSheetState extends ConsumerState<_CompanyPickerSheet> {
+  String _query = '';
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final partnersAsync = ref.watch(_partnersProvider);
+    final tenants = partnersAsync.value ?? const <Tenant>[];
+    final filtered = _query.isEmpty
+        ? tenants
+        : tenants
+              .where((t) => t.name.toLowerCase().contains(_query.toLowerCase()))
+              .toList();
+
+    return Container(
+      decoration: BoxDecoration(
+        color: context.cardBg,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      child: DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.7,
+        maxChildSize: 0.92,
+        minChildSize: 0.5,
+        builder: (context, scrollController) => Column(
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: context.divider,
+                borderRadius: BorderRadius.circular(2),
               ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  l10n.searchCompany,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w800,
+                    color: context.textPrimary,
+                  ),
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: TextField(
+                onChanged: (v) => setState(() => _query = v),
+                decoration: InputDecoration(
+                  hintText: l10n.searchCompany,
+                  prefixIcon: const Icon(Icons.search_rounded),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Expanded(
+              child: partnersAsync.isLoading && tenants.isEmpty
+                  ? Center(
+                      child: CircularProgressIndicator(
+                        color: context.spacePrimary,
+                      ),
+                    )
+                  : ListView(
+                      controller: scrollController,
+                      children: [
+                        // Option « Toutes les compagnies »
+                        ListTile(
+                          leading: Icon(
+                            Icons.apps_rounded,
+                            color: context.spacePrimary,
+                          ),
+                          title: Text(
+                            l10n.homeAnyCompany,
+                            style: TextStyle(
+                              color: context.textPrimary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          trailing: widget.selected == null
+                              ? Icon(Icons.check_rounded,
+                                  color: context.spacePrimary)
+                              : null,
+                          onTap: () =>
+                              Navigator.of(context).pop(const _CompanyChoice(null)),
+                        ),
+                        for (final t in filtered)
+                          ListTile(
+                            leading: CompanyLogo(logo: t.logo, size: 32),
+                            title: Text(
+                              t.name,
+                              style: TextStyle(
+                                color: context.textPrimary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                            trailing: widget.selected?.id == t.id
+                                ? Icon(Icons.check_rounded,
+                                    color: context.spacePrimary)
+                                : null,
+                            onTap: () =>
+                                Navigator.of(context).pop(_CompanyChoice(t)),
+                          ),
+                      ],
+                    ),
             ),
           ],
         ),

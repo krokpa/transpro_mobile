@@ -1014,6 +1014,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get homeNextTripTitle => 'My next trip';
 
   @override
+  String get homeAnyCompany => 'Any company';
+
+  @override
+  String get searchCompany => 'Company';
+
+  @override
   String get homePopularDestinations => 'Popular destinations';
 
   @override

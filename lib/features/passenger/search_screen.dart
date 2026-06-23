@@ -32,6 +32,7 @@ class SearchScreen extends ConsumerStatefulWidget {
   final String? destName;
   final String? dateIso;
   final int? passengers;
+  final String? companySlug;
 
   const SearchScreen({
     super.key,
@@ -39,6 +40,7 @@ class SearchScreen extends ConsumerStatefulWidget {
     this.destName,
     this.dateIso,
     this.passengers,
+    this.companySlug,
   });
   @override
   ConsumerState<SearchScreen> createState() => _State();
@@ -67,14 +69,20 @@ class _State extends ConsumerState<SearchScreen> {
     if (d != null) _date = d;
   }
 
-  /// Matches the prefill city names against the loaded list and, when both
-  /// endpoints resolve, launches the search automatically.
-  void _applyPrefill(List<City> cities) {
+  /// Matches the prefill city/company names against the loaded lists and, when
+  /// both endpoints resolve, launches the search automatically. If a company
+  /// was requested, waits for the tenants list before applying.
+  void _applyPrefill(List<City> cities, List<Tenant> tenants) {
     if (_prefillApplied || cities.isEmpty) return;
-    if (widget.originName == null && widget.destName == null) return;
+    final hasCityPrefill =
+        widget.originName != null || widget.destName != null;
+    final hasCompanyPrefill = widget.companySlug != null;
+    if (!hasCityPrefill && !hasCompanyPrefill) return;
+    // Wait for tenants before applying when a company preference was passed.
+    if (hasCompanyPrefill && tenants.isEmpty) return;
     _prefillApplied = true;
 
-    City? match(String? name) {
+    City? matchCity(String? name) {
       if (name == null) return null;
       final lower = name.toLowerCase();
       for (final c in cities) {
@@ -83,8 +91,16 @@ class _State extends ConsumerState<SearchScreen> {
       return null;
     }
 
-    _origin = match(widget.originName) ?? _origin;
-    _dest = match(widget.destName) ?? _dest;
+    _origin = matchCity(widget.originName) ?? _origin;
+    _dest = matchCity(widget.destName) ?? _dest;
+    if (hasCompanyPrefill) {
+      for (final t in tenants) {
+        if (t.slug == widget.companySlug) {
+          _company = t;
+          break;
+        }
+      }
+    }
 
     if (_origin != null && _dest != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -160,8 +176,8 @@ class _State extends ConsumerState<SearchScreen> {
     final cities = citiesAsync.value ?? [];
     final tenants = tenantsAsync.value ?? [];
 
-    // One-shot prefill coming from the Home hero (origin/dest/date/passengers).
-    if (cities.isNotEmpty) _applyPrefill(cities);
+    // One-shot prefill coming from the Home hero (origin/dest/date/passengers/company).
+    if (cities.isNotEmpty) _applyPrefill(cities, tenants);
 
     return Scaffold(
       body: Column(
