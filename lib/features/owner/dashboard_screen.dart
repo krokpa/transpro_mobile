@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/branding/branding_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/fade_slide.dart';
@@ -69,9 +70,9 @@ class _State extends ConsumerState<OwnerDashboardScreen> {
               scrolledUnderElevation: 0,
               elevation: 0,
               automaticallyImplyLeading: false,
-              title: const Text(
-                'TransPro CI',
-                style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
+              title: Text(
+                ref.watch(brandingProvider).appName,
+                style: const TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700),
               ),
               actions: const [
                 NotificationBell(notificationsRoute: '/owner/notifications'),

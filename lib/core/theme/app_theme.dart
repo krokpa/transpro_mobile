@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'space_theme.dart';
 
 // ── Page transition ───────────────────────────────────────────────────────────
 // Gentle fade + 3 % upward slide — applied to both light and dark themes so
@@ -58,6 +59,10 @@ extension AppColors on BuildContext {
 
   // Orange tag / pill background (keeps brandOrange as foreground)
   Color get tagBg         => isDark ? brandOrange.withValues(alpha: 0.18) : brandLight;
+
+  // Couleur primaire de l'espace courant (passager / chauffeur / propriétaire / agent)
+  Color get spacePrimary  => SpaceTheme.of(this).primary;
+  Color get spaceLight    => SpaceTheme.of(this).light;
 }
 
 const brandOrange = Color(0xFFF97316);
@@ -70,7 +75,11 @@ const darkSurface  = Color(0xFF1E293B);
 const darkCanvas   = Color(0xFF0F172A);
 const darkDivider  = Color(0xFF334155);
 
-ThemeData appDarkTheme() {
+ThemeData appDarkTheme([Color brand = brandOrange]) {
+  // Surcharge la couleur de marque à l'exécution : le nom local masque la
+  // constante pour toute la fonction, sans toucher aux usages internes.
+  // ignore: unused_local_variable
+  final brandOrange = brand;
   final base = ColorScheme.fromSeed(
     seedColor: brandOrange,
     primary: brandOrange,
@@ -142,7 +151,7 @@ ThemeData appDarkTheme() {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: brandOrange, width: 1.5),
+        borderSide: BorderSide(color: brandOrange, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -176,13 +185,13 @@ ThemeData appDarkTheme() {
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       iconTheme: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const IconThemeData(color: brandOrange, size: 24);
+          return IconThemeData(color: brandOrange, size: 24);
         }
         return const IconThemeData(color: Color(0xFF64748B), size: 22);
       }),
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: brandOrange);
+          return TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: brandOrange);
         }
         return const TextStyle(fontSize: 11, color: Color(0xFF64748B));
       }),
@@ -197,7 +206,10 @@ ThemeData appDarkTheme() {
   );
 }
 
-ThemeData appTheme() {
+ThemeData appTheme([Color brand = brandOrange]) {
+  // Voir appDarkTheme : masquage local pour surcharger la marque au runtime.
+  // ignore: unused_local_variable
+  final brandOrange = brand;
   final base = ColorScheme.fromSeed(
     seedColor: brandOrange,
     primary: brandOrange,
@@ -266,7 +278,7 @@ ThemeData appTheme() {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: brandOrange, width: 1.5),
+        borderSide: BorderSide(color: brandOrange, width: 1.5),
       ),
       errorBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(12),
@@ -311,13 +323,13 @@ ThemeData appTheme() {
       labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       iconTheme: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const IconThemeData(color: brandOrange, size: 24);
+          return IconThemeData(color: brandOrange, size: 24);
         }
         return const IconThemeData(color: Color(0xFF94A3B8), size: 22);
       }),
       labelTextStyle: WidgetStateProperty.resolveWith((states) {
         if (states.contains(WidgetState.selected)) {
-          return const TextStyle(
+          return TextStyle(
             fontSize: 11, fontWeight: FontWeight.w600, color: brandOrange,
           );
         }
@@ -326,12 +338,12 @@ ThemeData appTheme() {
     ),
 
     // Keep bottom nav as fallback (used by legacy widgets if any)
-    bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+    bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: Colors.white,
       selectedItemColor: brandOrange,
-      unselectedItemColor: Color(0xFF94A3B8),
-      selectedLabelStyle: TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-      unselectedLabelStyle: TextStyle(fontSize: 11),
+      unselectedItemColor: const Color(0xFF94A3B8),
+      selectedLabelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+      unselectedLabelStyle: const TextStyle(fontSize: 11),
       type: BottomNavigationBarType.fixed,
       elevation: 8,
     ),

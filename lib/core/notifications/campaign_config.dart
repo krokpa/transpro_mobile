@@ -23,7 +23,7 @@ class CampaignConfig {
     this.morningReminderHour = 7,
     this.morningReminderMinute = 30,
     this.morningReminderTitle = 'Bonjour !',
-    this.morningReminderBody = 'Planifiez votre prochain voyage avec TransPro.',
+    this.morningReminderBody = 'Planifiez votre prochain voyage dès maintenant.',
     this.weekendOfferEnabled = false,
     this.weekendOfferHour = 18,
     this.weekendOfferMinute = 0,
@@ -101,7 +101,7 @@ class CampaignConfig {
         morningReminderTitle:
             j['morningReminderTitle'] as String? ?? 'Bonjour !',
         morningReminderBody: j['morningReminderBody'] as String? ??
-            'Planifiez votre prochain voyage avec TransPro.',
+            'Planifiez votre prochain voyage dès maintenant.',
         weekendOfferEnabled: j['weekendOfferEnabled'] as bool? ?? false,
         weekendOfferHour: j['weekendOfferHour'] as int? ?? 18,
         weekendOfferMinute: j['weekendOfferMinute'] as int? ?? 0,

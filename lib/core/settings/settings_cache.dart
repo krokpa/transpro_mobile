@@ -25,9 +25,43 @@ class SettingsCache {
   static Future<void> setLocale(String languageCode) =>
       _box.put('locale', languageCode);
 
-  // ── Onboarding ─────────────────────────────────────────────────────────────
+  // ── Onboarding passager ────────────────────────────────────────────────────
 
   static bool get onboardingDone => _box.get('onboarding_done') == '1';
 
   static Future<void> markOnboardingDone() => _box.put('onboarding_done', '1');
+
+  // ── Walkthrough par rôle (driver / owner / agent) ──────────────────────────
+
+  static bool walkthroughDone(String role) =>
+      _box.get('walkthrough_done_$role') == '1';
+
+  static Future<void> markWalkthroughDone(String role) =>
+      _box.put('walkthrough_done_$role', '1');
+
+  // ── Marque (white-label) ─────────────────────────────────────────────────────
+  // Dernière marque connue, persistée pour un 1er paint correct hors-ligne.
+
+  static String? _read(String key) {
+    final v = _box.get(key);
+    return v == null || v.isEmpty ? null : v;
+  }
+
+  static String? get brandName    => _read('brand_name');
+  static String? get brandTagline => _read('brand_tagline');
+  static String? get brandColor   => _read('brand_color');
+  static String? get brandLogo    => _read('brand_logo');
+
+  /// Persiste les champs fournis (les `null` sont ignorés).
+  static Future<void> setBrand({
+    String? name,
+    String? tagline,
+    String? colorHex,
+    String? logo,
+  }) async {
+    if (name != null)     await _box.put('brand_name', name);
+    if (tagline != null)  await _box.put('brand_tagline', tagline);
+    if (colorHex != null) await _box.put('brand_color', colorHex);
+    if (logo != null)     await _box.put('brand_logo', logo);
+  }
 }

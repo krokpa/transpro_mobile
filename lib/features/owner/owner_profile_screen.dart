@@ -8,7 +8,9 @@ import '../../core/auth/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../core/l10n/locale_provider.dart';
+import '../../core/widgets/shimmer.dart';
 import '../../core/widgets/user_avatar.dart';
+import '../../core/widgets/legal_links.dart';
 import '../../l10n/app_localizations.dart';
 
 final _tenantProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
@@ -40,56 +42,79 @@ class _OwnerProfileScreenState extends ConsumerState<OwnerProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final auth = ref.watch(authProvider);
-    final user = auth.user!;
+    final auth       = ref.watch(authProvider);
+    final user       = auth.user;
+    if (user == null || !user.isOwner) return const SizedBox.shrink();
     final tenantAsync = ref.watch(_tenantProvider);
-    final themeMode = ref.watch(themeModeProvider);
-    final locale    = ref.watch(localeProvider);
-    final l10n      = AppLocalizations.of(context);
+    final themeMode  = ref.watch(themeModeProvider);
+    final locale     = ref.watch(localeProvider);
+    final l10n       = AppLocalizations.of(context);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Profil')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          // User card
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(children: [
-                UserAvatarWidget(
-                  firstName: user.firstName,
-                  lastName: user.lastName,
-                  avatar: user.avatar,
-                  size: 56,
-                  onTap: _uploadingAvatar ? null : _pickAvatar,
-                  showEditOverlay: true,
+      backgroundColor: const Color(0xFFF8FAFC),
+      body: CustomScrollView(slivers: [
+        // ── Hero header ──────────────────────────────────────────────────────
+        SliverAppBar(
+          expandedHeight: 220,
+          pinned: true,
+          backgroundColor: brandOrange,
+          scrolledUnderElevation: 0,
+          elevation: 0,
+          iconTheme: const IconThemeData(color: Colors.white),
+          title: const Text('Profil',
+            style: TextStyle(color: Colors.white, fontSize: 17, fontWeight: FontWeight.w700)),
+          flexibleSpace: FlexibleSpaceBar(
+            collapseMode: CollapseMode.pin,
+            background: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Color(0xFFFF8C00), brandOrange],
+                  begin: Alignment.topLeft, end: Alignment.bottomRight,
                 ),
-                const SizedBox(width: 14),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                  const SizedBox(height: kToolbarHeight - 16),
+                  Stack(alignment: Alignment.center, children: [
+                    UserAvatarWidget(
+                      firstName: user.firstName, lastName: user.lastName,
+                      avatar: user.avatar, size: 72,
+                      onTap: _uploadingAvatar ? null : _pickAvatar,
+                      showEditOverlay: true,
+                    ),
+                    if (_uploadingAvatar)
+                      const SizedBox(width: 72, height: 72,
+                        child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)),
+                  ]),
+                  const SizedBox(height: 10),
                   Text(user.fullName,
-                    style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: brandDark)),
-                  Text(user.email,
-                    style: const TextStyle(color: Color(0xFF64748B), fontSize: 13)),
-                  const SizedBox(height: 4),
+                    style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.w800)),
+                  const SizedBox(height: 6),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      color: brandLight,
+                      color: Colors.white.withValues(alpha: 0.20),
                       borderRadius: BorderRadius.circular(20),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.30)),
                     ),
                     child: Text(_roleLabel(user.role),
-                      style: const TextStyle(color: brandOrange, fontSize: 11, fontWeight: FontWeight.w600)),
+                      style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w600)),
                   ),
-                ])),
-              ]),
+                ]),
+              ),
             ),
           ),
-          const SizedBox(height: 20),
+        ),
+
+        // ── Body ────────────────────────────────────────────────────────────
+        SliverToBoxAdapter(child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
 
           // Company info
           tenantAsync.when(
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () => Shimmer(child: Column(children: List.generate(3, (_) => const ShimmerListTile()))),
             error: (e, _) => Text('Erreur: $e'),
             data: (tenant) => Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
@@ -206,13 +231,17 @@ class _OwnerProfileScreenState extends ConsumerState<OwnerProfileScreen> {
                 icon: Icons.logout,
                 label: 'Se déconnecter',
                 color: Colors.red,
-                onTap: () => _confirmLogout(context, ref),
+                onTap: () => ref.read(authProvider.notifier).logout(),
               ),
             ]),
           ),
+          const SizedBox(height: 16),
+          const LegalLinksSection(),
         ]),
       ),
-    );
+    ),
+  ]),
+);
   }
 
   String _roleLabel(String role) => {
@@ -248,26 +277,6 @@ class _OwnerProfileScreenState extends ConsumerState<OwnerProfileScreen> {
     );
   }
 
-  Future<void> _confirmLogout(BuildContext context, WidgetRef ref) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Déconnexion'),
-        content: const Text('Voulez-vous vraiment vous déconnecter ?'),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Déconnecter'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed == true && context.mounted) {
-      await ref.read(authProvider.notifier).logout();
-    }
-  }
 }
 
 class _InfoRow extends StatelessWidget {

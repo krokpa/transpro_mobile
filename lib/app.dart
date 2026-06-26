@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
 import 'core/auth/auth_provider.dart';
+import 'core/branding/branding_provider.dart';
 import 'core/l10n/locale_provider.dart';
 import 'core/settings/settings_cache.dart';
 import 'core/theme/app_theme.dart';
@@ -53,6 +54,7 @@ import 'features/passenger/station_navigation_screen.dart';
 import 'features/passenger/companies_screen.dart';
 import 'features/passenger/favorites_screen.dart';
 import 'features/passenger/parcel_tracking_screen.dart';
+import 'features/passenger/ticket_retrieval_screen.dart';
 import 'features/passenger/my_parcels_screen.dart';
 import 'features/passenger/send_parcel_screen.dart';
 import 'features/passenger/transactions_screen.dart';
@@ -125,6 +127,10 @@ class _AuthListenable extends ChangeNotifier {
       final code = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : '';
       if (code.isNotEmpty) return '/parcel/$code';
     }
+    if (uri.scheme == 'transpro' && uri.host == 'ticket') {
+      final ref = uri.pathSegments.isNotEmpty ? uri.pathSegments.first : '';
+      if (ref.isNotEmpty) return '/ticket/$ref';
+    }
 
     if (auth.isLoading) return '/splash';
 
@@ -135,7 +141,7 @@ class _AuthListenable extends ChangeNotifier {
         loc.startsWith('/forgot-password');
     final isPinRoute = loc == '/pin-login' || loc == '/pin-setup';
     final isPublicRoute =
-        loc.startsWith('/track/') || loc.startsWith('/parcel/');
+        loc.startsWith('/track/') || loc.startsWith('/parcel/') || loc.startsWith('/ticket/');
 
     if (!authenticated && !isAuthRoute && !isPublicRoute) return '/login';
 
@@ -335,6 +341,14 @@ final _routerProvider = Provider<GoRouter>((ref) {
         ),
       ),
 
+      // ── Public ticket retrieval (no auth required) ────────────────────────
+      GoRoute(
+        path: '/ticket/:reference',
+        builder: (_, state) => TicketRetrievalScreen(
+          reference: state.pathParameters['reference']!,
+        ),
+      ),
+
       // ── Home delivery request ─────────────────────────────────────────────
       GoRoute(
         path: '/delivery-request/:code',
@@ -462,11 +476,12 @@ class TransProApp extends ConsumerWidget {
     final router    = ref.watch(_routerProvider);
     final themeMode = ref.watch(themeModeProvider);
     final locale    = ref.watch(localeProvider);
+    final branding  = ref.watch(brandingProvider);
     return MaterialApp.router(
-      title: 'TransPro CI',
+      title: branding.appName,
       debugShowCheckedModeBanner: false,
-      theme: appTheme(),
-      darkTheme: appDarkTheme(),
+      theme: appTheme(branding.primaryColor),
+      darkTheme: appDarkTheme(branding.primaryColor),
       themeMode: themeMode,
       locale: locale,
       supportedLocales: supportedLocales,
@@ -481,19 +496,30 @@ class TransProApp extends ConsumerWidget {
   }
 }
 
-class _SplashScreen extends StatelessWidget {
+class _SplashScreen extends ConsumerWidget {
   const _SplashScreen();
   @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: Color(0xFFF05A1A),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final branding = ref.watch(brandingProvider);
+    return Scaffold(
+      backgroundColor: branding.primaryColor,
       body: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.directions_bus_rounded, size: 80, color: Colors.white),
-            SizedBox(height: 16),
-            Text('TransPro CI', style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800)),
+            if (branding.logoUrl != null)
+              Image.network(
+                branding.logoUrl!,
+                height: 88,
+                errorBuilder: (_, __, ___) => const Icon(
+                    Icons.directions_bus_rounded, size: 80, color: Colors.white),
+              )
+            else
+              const Icon(Icons.directions_bus_rounded, size: 80, color: Colors.white),
+            const SizedBox(height: 16),
+            Text(branding.appName,
+                style: const TextStyle(
+                    color: Colors.white, fontSize: 28, fontWeight: FontWeight.w800)),
           ],
         ),
       ),

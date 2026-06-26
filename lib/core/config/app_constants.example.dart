@@ -14,6 +14,9 @@
 const kApiBaseUrl = 'http://192.168.X.X:3001/api/v1';
 const kSocketUrl  = 'http://192.168.X.X:3001';
 
+// URL web publique (page de récupération de billet /ticket/<ref>) — liens partagés.
+const kPublicWebUrl = 'https://app.votre-domaine.com';
+
 // ─── OneSignal (notifications push) ──────────────────────────
 // 1. Créer un compte sur https://app.onesignal.com
 // 2. New App → "TransPro Mobile"

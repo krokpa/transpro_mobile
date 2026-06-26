@@ -10,6 +10,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/phone_input_field.dart';
 import '../../core/widgets/shimmer.dart';
 import '../../l10n/app_localizations.dart';
+import 'ticket_actions.dart';
 
 // ── Provider ──────────────────────────────────────────────────────────────────
 
@@ -681,7 +682,10 @@ class _SuccessView extends StatelessWidget {
                   ),
                 ]),
               ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 20),
+              // Remise du billet au client : QR à l'écran ou envoi SMS.
+              TicketActions(booking: result),
+              const SizedBox(height: 16),
               SizedBox(
                 width: double.infinity,
                 height: 52,

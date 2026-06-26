@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/branding/branding_provider.dart';
 import '../../core/theme/app_theme.dart';
-import '../../l10n/app_localizations.dart';
 
 // ── Background + dot grid ──────────────────────────────────────────────────────
 
@@ -67,19 +68,21 @@ class _DotGridPainter extends CustomPainter {
 
 // ── Logo block ─────────────────────────────────────────────────────────────────
 
-class AuthLogoBlock extends StatelessWidget {
+class AuthLogoBlock extends ConsumerWidget {
   final bool compact;
   const AuthLogoBlock({super.key, this.compact = false});
 
   @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+  Widget build(BuildContext context, WidgetRef ref) {
+    final branding = ref.watch(brandingProvider);
+    final size = compact ? 72.0 : 96.0;
+    final radius = compact ? 20.0 : 26.0;
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(compact ? 20 : 26),
+            borderRadius: BorderRadius.circular(radius),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(alpha: 0.35),
@@ -94,18 +97,32 @@ class AuthLogoBlock extends StatelessWidget {
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(compact ? 20 : 26),
-            child: Image.asset(
-              'assets/images/transpro-logo.png',
-              width: compact ? 72 : 96,
-              height: compact ? 72 : 96,
-              fit: BoxFit.cover,
-            ),
+            borderRadius: BorderRadius.circular(radius),
+            // Logo de marque distant si configuré, sinon l'asset embarqué.
+            child: branding.logoUrl != null
+                ? Image.network(
+                    branding.logoUrl!,
+                    width: size,
+                    height: size,
+                    fit: BoxFit.cover,
+                    errorBuilder: (_, __, ___) => Image.asset(
+                      'assets/images/transpro-logo.png',
+                      width: size,
+                      height: size,
+                      fit: BoxFit.cover,
+                    ),
+                  )
+                : Image.asset(
+                    'assets/images/transpro-logo.png',
+                    width: size,
+                    height: size,
+                    fit: BoxFit.cover,
+                  ),
           ),
         ),
         SizedBox(height: compact ? 12 : 16),
         Text(
-          'transpro',
+          branding.appName,
           style: TextStyle(
             color: Colors.white,
             fontSize: compact ? 22 : 28,
@@ -115,7 +132,7 @@ class AuthLogoBlock extends StatelessWidget {
         ),
         const SizedBox(height: 4),
         Text(
-          l10n.appTagline,
+          branding.tagline,
           style: const TextStyle(color: Color(0xFF94A3B8), fontSize: 13),
         ),
       ],
@@ -160,6 +177,84 @@ class AuthErrorBanner extends StatelessWidget {
       Expanded(child: Text(message,
           style: const TextStyle(color: Color(0xFFDC2626), fontSize: 13.5))),
     ]),
+  );
+}
+
+// ── Social login buttons ──────────────────────────────────────────────────────
+
+class SocialBtn extends StatelessWidget {
+  final VoidCallback onTap;
+  final Widget icon;
+  final String label;
+  const SocialBtn({super.key, required this.onTap, required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) => InkWell(
+    onTap: onTap,
+    borderRadius: BorderRadius.circular(12),
+    child: Container(
+      padding: const EdgeInsets.symmetric(vertical: 11),
+      decoration: BoxDecoration(
+        color: context.inputFill,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: context.divider),
+      ),
+      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+        icon,
+        const SizedBox(width: 8),
+        Text(label, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: context.textPrimary)),
+      ]),
+    ),
+  );
+}
+
+class GoogleIcon extends StatelessWidget {
+  const GoogleIcon({super.key});
+  @override
+  Widget build(BuildContext context) => SizedBox(
+    width: 18, height: 18,
+    child: Stack(alignment: Alignment.center, children: [
+      CustomPaint(size: const Size(18, 18), painter: _GoogleQuadrantsPainter()),
+      Container(
+        width: 10, height: 10,
+        decoration: BoxDecoration(color: context.cardBg, shape: BoxShape.circle),
+      ),
+    ]),
+  );
+}
+
+class _GoogleQuadrantsPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final r = size.width / 2;
+    final c = Offset(r, r);
+    final colors = [
+      const Color(0xFF4285F4),
+      const Color(0xFF34A853),
+      const Color(0xFFFBBC05),
+      const Color(0xFFEA4335),
+    ];
+    for (int i = 0; i < 4; i++) {
+      final path = Path()
+        ..moveTo(c.dx, c.dy)
+        ..arcTo(Rect.fromCircle(center: c, radius: r), -1.5708 + i * 1.5708, 1.5708, false)
+        ..close();
+      canvas.drawPath(path, Paint()..color = colors[i]);
+    }
+  }
+  @override
+  bool shouldRepaint(_) => false;
+}
+
+class FacebookIcon extends StatelessWidget {
+  const FacebookIcon({super.key});
+  @override
+  Widget build(BuildContext context) => Container(
+    width: 18, height: 18,
+    decoration: const BoxDecoration(color: Color(0xFF1877F2), shape: BoxShape.circle),
+    alignment: Alignment.center,
+    child: const Text('f',
+      style: TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.w900, height: 1.1)),
   );
 }
 

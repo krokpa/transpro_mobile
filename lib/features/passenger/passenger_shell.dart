@@ -4,9 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/branding/branding_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/notifications/campaign_scheduler.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/theme/space_theme.dart';
 import '../../core/providers/notification_providers.dart' show unreadCountProvider;
 import '../../core/providers/favorites_provider.dart';
 import '../../core/widgets/user_avatar.dart';
@@ -89,7 +91,7 @@ class _PassengerShellState extends ConsumerState<PassengerShell> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         duration: const Duration(seconds: 5),
-        backgroundColor: isAlert ? const Color(0xFFDC2626) : brandOrange,
+        backgroundColor: isAlert ? const Color(0xFFDC2626) : kPassengerColors.primary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -131,18 +133,22 @@ class _PassengerShellState extends ConsumerState<PassengerShell> {
 
     return PassengerShellScope(
       openDrawer: () => _scaffoldKey.currentState?.openDrawer(),
-      child: Scaffold(
-        key: _scaffoldKey,
-        drawer: _PassengerDrawer(favs: favs, l10n: l10n),
-        body: widget.child,
-        bottomNavigationBar: NavigationBar(
-          selectedIndex: current,
-          onDestinationSelected: (i) => context.go(_tabDefs[i].$1),
-          destinations: List.generate(_tabDefs.length, (i) => NavigationDestination(
-            icon: Icon(_tabDefs[i].$2),
-            selectedIcon: Icon(_tabDefs[i].$3),
-            label: labels[i],
-          )),
+      child: SpaceTheme.wrap(
+        context: context,
+        colors: kPassengerColors,
+        child: Scaffold(
+          key: _scaffoldKey,
+          drawer: _PassengerDrawer(favs: favs, l10n: l10n),
+          body: widget.child,
+          bottomNavigationBar: NavigationBar(
+            selectedIndex: current,
+            onDestinationSelected: (i) => context.go(_tabDefs[i].$1),
+            destinations: List.generate(_tabDefs.length, (i) => NavigationDestination(
+              icon: Icon(_tabDefs[i].$2),
+              selectedIcon: Icon(_tabDefs[i].$3),
+              label: labels[i],
+            )),
+          ),
         ),
       ),
     );
@@ -189,14 +195,14 @@ class _PassengerDrawer extends ConsumerWidget {
                 _NavItem(
                   icon: Icons.home_rounded,
                   label: l10n.navHome,
-                  color: brandOrange,
+                  color: kPassengerColors.primary,
                   active: location == '/passenger',
                   onTap: () => _go(context, '/passenger'),
                 ),
                 _NavItem(
                   icon: Icons.search_rounded,
                   label: l10n.navSearch,
-                  color: brandOrange,
+                  color: kPassengerColors.primary,
                   active: location.startsWith('/passenger/search'),
                   onTap: () => _go(context, '/passenger/search'),
                 ),
@@ -272,7 +278,7 @@ class _PassengerDrawer extends ConsumerWidget {
                 _NavItem(
                   icon: Icons.person_rounded,
                   label: l10n.navProfile,
-                  color: brandOrange,
+                  color: kPassengerColors.primary,
                   active: location.startsWith('/passenger/profile'),
                   onTap: () => _go(context, '/passenger/profile'),
                 ),
@@ -318,7 +324,7 @@ class _DrawerHeader extends StatelessWidget {
                 width: 130, height: 130,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: brandOrange.withValues(alpha: 0.1),
+                  color: kPassengerColors.primary.withValues(alpha: 0.12),
                 ),
               ),
             ),
@@ -350,7 +356,7 @@ class _DrawerHeader extends StatelessWidget {
                             border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 2.5),
                             boxShadow: [
                               BoxShadow(
-                                color: brandOrange.withValues(alpha: 0.3),
+                                color: kPassengerColors.primary.withValues(alpha: 0.3),
                                 blurRadius: 16,
                                 offset: const Offset(0, 6),
                               ),
@@ -367,14 +373,14 @@ class _DrawerHeader extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(
-                            color: brandOrange.withValues(alpha: 0.2),
+                            color: kPassengerColors.primary.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: brandOrange.withValues(alpha: 0.45)),
+                            border: Border.all(color: kPassengerColors.primary.withValues(alpha: 0.45)),
                           ),
                           child: Text(
                             l10n.passengerRole,
-                            style: const TextStyle(
-                              color: brandOrange,
+                            style: TextStyle(
+                              color: kPassengerColors.primary,
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
                             ),
@@ -459,7 +465,7 @@ class _DrawerFooter extends StatelessWidget {
                     Icon(Icons.directions_bus_rounded, size: 15, color: context.textMuted),
                     const SizedBox(width: 5),
                     Text(
-                      'TransPro CI',
+                      ref.watch(brandingProvider).appName,
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,

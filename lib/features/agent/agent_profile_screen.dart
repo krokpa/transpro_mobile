@@ -7,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../core/l10n/locale_provider.dart';
 import '../../core/widgets/user_avatar.dart';
+import '../../core/widgets/legal_links.dart';
 import '../../l10n/app_localizations.dart';
 
 class AgentProfileScreen extends ConsumerStatefulWidget {
@@ -178,6 +179,8 @@ class _AgentProfileScreenState extends ConsumerState<AgentProfileScreen> {
                     onTap: () => _showChangePassword(context, ref),
                   ),
                 ]),
+                const SizedBox(height: 16),
+                const LegalLinksSection(),
                 const SizedBox(height: 16),
                 Card(
                   child: ListTile(

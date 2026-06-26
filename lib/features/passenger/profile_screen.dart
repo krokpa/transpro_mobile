@@ -10,6 +10,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/theme/theme_provider.dart';
 import '../../core/l10n/locale_provider.dart';
 import '../../core/widgets/user_avatar.dart';
+import '../../core/widgets/legal_links.dart';
 import '../../l10n/app_localizations.dart';
 
 class PassengerProfileScreen extends ConsumerStatefulWidget {
@@ -46,7 +47,10 @@ class _PassengerProfileScreenState extends ConsumerState<PassengerProfileScreen>
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final auth = ref.watch(authProvider);
-    final user = auth.user!;
+    final user = auth.user;
+    if (user == null) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
     final biometricEnabled = auth.biometricEnabled;
@@ -146,6 +150,8 @@ class _PassengerProfileScreenState extends ConsumerState<PassengerProfileScreen>
                   ),
                 ]),
                 const SizedBox(height: 16),
+                const LegalLinksSection(),
+                const SizedBox(height: 16),
                 Card(
                   child: ListTile(
                     leading: Container(
@@ -159,7 +165,7 @@ class _PassengerProfileScreenState extends ConsumerState<PassengerProfileScreen>
                     title: Text(l10n.settingsLogout,
                       style: const TextStyle(color: Color(0xFFDC2626), fontWeight: FontWeight.w600)),
                     trailing: const Icon(Icons.chevron_right, color: Color(0xFFDC2626)),
-                    onTap: () => _confirmLogout(context, ref, l10n),
+                    onTap: () => ref.read(authProvider.notifier).logout(),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -195,31 +201,6 @@ class _PassengerProfileScreenState extends ConsumerState<PassengerProfileScreen>
     );
   }
 
-  void _confirmLogout(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(l10n.settingsLogout, style: const TextStyle(fontWeight: FontWeight.w800)),
-        content: Text(l10n.settingsLogoutBody),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(l10n.settingsLogoutCancel)),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
-              minimumSize: Size.zero,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            ),
-            onPressed: () {
-              Navigator.pop(context);
-              ref.read(authProvider.notifier).logout();
-            },
-            child: Text(l10n.settingsLogoutConfirm),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
 // ── Profile hero background ───────────────────────────────────────────────────
@@ -634,10 +615,10 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
   @override
   void initState() {
     super.initState();
-    final user = widget.ref.read(authProvider).user!;
-    _firstName = TextEditingController(text: user.firstName);
-    _lastName  = TextEditingController(text: user.lastName);
-    _phone     = TextEditingController(text: user.phone ?? '');
+    final user = widget.ref.read(authProvider).user;
+    _firstName = TextEditingController(text: user?.firstName ?? '');
+    _lastName  = TextEditingController(text: user?.lastName ?? '');
+    _phone     = TextEditingController(text: user?.phone ?? '');
   }
 
   @override
