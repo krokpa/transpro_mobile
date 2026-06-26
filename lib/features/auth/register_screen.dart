@@ -474,6 +474,7 @@ class _PhoneStepState extends State<_PhoneStep> {
   final _phoneCtrl = TextEditingController();
   String? _phoneError;
   bool _otpStarted = false;
+  bool _checking = false;
   String? _verifiedToken;
 
   @override
@@ -487,6 +488,85 @@ class _PhoneStepState extends State<_PhoneStep> {
     }
     setState(() => _phoneError = null);
     return true;
+  }
+
+  /// Avant d'envoyer l'OTP d'inscription : si le numéro a déjà un compte
+  /// (ex. créé lors d'une vente guichet), on propose la connexion par OTP
+  /// plutôt qu'une inscription vouée à l'échec (numéro unique).
+  Future<void> _onReceiveCode() async {
+    if (!_validatePhone()) return;
+    final phone = _phoneCtrl.text.trim();
+    setState(() => _checking = true);
+    try {
+      final res = await widget.dio.post('/auth/check-phone', data: {'phone': phone});
+      final exists = (extractData(res.data) as Map?)?['exists'] == true;
+      if (!mounted) return;
+      if (exists) {
+        setState(() => _checking = false);
+        _showExistingAccountSheet(phone);
+        return;
+      }
+    } catch (_) {
+      // Échec de la vérification (réseau) → on n'empêche pas l'inscription.
+    }
+    if (mounted) setState(() { _checking = false; _otpStarted = true; });
+  }
+
+  void _showExistingAccountSheet(String phone) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetCtx) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          child: Column(mainAxisSize: MainAxisSize.min, children: [
+            Container(
+              width: 40, height: 4,
+              decoration: BoxDecoration(
+                color: sheetCtx.divider, borderRadius: BorderRadius.circular(2)),
+            ),
+            const SizedBox(height: 20),
+            const Icon(Icons.info_outline_rounded, color: brandOrange, size: 40),
+            const SizedBox(height: 12),
+            Text('Ce numéro a déjà un compte',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 17, fontWeight: FontWeight.w800, color: sheetCtx.textPrimary)),
+            const SizedBox(height: 8),
+            Text(
+              'Connectez-vous directement avec votre numéro et un code reçu par SMS — pas besoin de créer un nouveau compte.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 13, color: sheetCtx.textMuted),
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(sheetCtx).pop();
+                  context.go('/login?phone=${Uri.encodeComponent(phone)}');
+                },
+                icon: const Icon(Icons.login_rounded, size: 18),
+                label: const Text('Se connecter avec ce numéro'),
+              ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: OutlinedButton(
+                onPressed: () => Navigator.of(sheetCtx).pop(),
+                child: const Text('Utiliser un autre numéro'),
+              ),
+            ),
+          ]),
+        ),
+      ),
+    );
   }
 
   @override
@@ -545,14 +625,16 @@ class _PhoneStepState extends State<_PhoneStep> {
           if (!_otpStarted || _verifiedToken == null) ...[
             if (!_otpStarted)
               ElevatedButton(
-                onPressed: () {
-                  if (_validatePhone()) setState(() => _otpStarted = true);
-                },
-                child: Row(mainAxisAlignment: MainAxisAlignment.center, children: const [
-                  Icon(Icons.sms_outlined, size: 18),
-                  SizedBox(width: 8),
-                  Text('Recevoir le code'),
-                ]),
+                onPressed: _checking ? null : _onReceiveCode,
+                child: _checking
+                    ? const SizedBox(
+                        height: 20, width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                    : Row(mainAxisAlignment: MainAxisAlignment.center, children: const [
+                        Icon(Icons.sms_outlined, size: 18),
+                        SizedBox(width: 8),
+                        Text('Recevoir le code'),
+                      ]),
               ),
             const SizedBox(height: 12),
             OutlinedButton(

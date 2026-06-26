@@ -18,7 +18,10 @@ enum _LoginMode { email, phone }
 // ── Screen ────────────────────────────────────────────────────────────────────
 
 class LoginScreen extends ConsumerStatefulWidget {
-  const LoginScreen({super.key});
+  /// Numéro pré-rempli — ouvre directement l'onglet « Téléphone »
+  /// (ex. depuis l'inscription quand le numéro a déjà un compte).
+  final String? initialPhone;
+  const LoginScreen({super.key, this.initialPhone});
   @override
   ConsumerState<LoginScreen> createState() => _LoginScreenState();
 }
@@ -39,6 +42,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   // ── Common ──
   bool _loading = false;
   String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    final phone = widget.initialPhone?.trim();
+    if (phone != null && phone.isNotEmpty) {
+      _mode = _LoginMode.phone;
+      _phoneCtrl.text = phone;
+    }
+  }
 
   @override
   void dispose() {

@@ -217,7 +217,10 @@ final _routerProvider = Provider<GoRouter>((ref) {
         roleKey: 'agent', homeRoute: '/agent', slides: kAgentSlides)),
 
       // ── Auth ──────────────────────────────────────────────────────────────
-      GoRoute(path: '/login',           builder: (_, _) => const LoginScreen()),
+      GoRoute(
+        path: '/login',
+        builder: (_, s) => LoginScreen(initialPhone: s.uri.queryParameters['phone']),
+      ),
       GoRoute(path: '/register',        builder: (_, _) => const RegisterScreen()),
       GoRoute(path: '/forgot-password', builder: (_, _) => const ForgotPasswordScreen()),
       GoRoute(path: '/pin-setup',       builder: (_, _) => const PinSetupScreen()),
