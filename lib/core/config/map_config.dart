@@ -1,3 +1,4 @@
+import 'package:flutter/painting.dart';
 import 'app_constants.dart';
 
 // ── Map provider configuration ────────────────────────────────────────────────
@@ -9,6 +10,10 @@ enum MapProvider { mapbox, openStreetMap }
 // ── Active provider ───────────────────────────────────────────────────────────
 // Changer ici pour basculer sur openStreetMap (gratuit, aucune clé requise)
 const kMapProvider = MapProvider.mapbox;
+
+// ── Route polyline ────────────────────────────────────────────────────────────
+const kRoutePolylineColor = Color(0xFF1A73E8); // bleu Google Maps-style
+const kRoutePolylineWidth = 4.5;
 
 // ── Tile URL helpers ──────────────────────────────────────────────────────────
 

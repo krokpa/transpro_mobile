@@ -28,17 +28,29 @@ class StaffScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(_staffProvider);
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Personnel'),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
+        title: const Text('Personnel',
+          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: brandDark)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded, color: brandDark),
             onPressed: () => ref.invalidate(_staffProvider),
           ),
-          IconButton(
-            icon: const Icon(Icons.person_add_outlined),
-            tooltip: 'Inviter un agent',
-            onPressed: () => _showInviteSheet(context, ref),
+          Container(
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(color: brandOrange, borderRadius: BorderRadius.circular(10)),
+            child: IconButton(
+              icon: const Icon(Icons.person_add_outlined, color: Colors.white, size: 20),
+              tooltip: 'Inviter un agent',
+              onPressed: () => _showInviteSheet(context, ref),
+              padding: const EdgeInsets.all(8),
+              constraints: const BoxConstraints(),
+            ),
           ),
         ],
       ),
@@ -122,10 +134,15 @@ class _StaffCard extends StatelessWidget {
     final roleCfg = _roleCfg[role] ?? _roleCfg['COMPANY_AGENT']!;
     final initials = '${firstName.isNotEmpty ? firstName[0] : ''}${lastName.isNotEmpty ? lastName[0] : ''}'.toUpperCase();
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 3))],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         child: Row(children: [
           CircleAvatar(
             backgroundColor: isActive ? roleCfg.$1 : Colors.grey[100],

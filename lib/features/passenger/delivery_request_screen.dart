@@ -5,6 +5,7 @@ import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/shimmer.dart';
 
 // ── Provider ──────────────────────────────────────────────────────────────────
 
@@ -169,7 +170,7 @@ class _State extends ConsumerState<DeliveryRequestScreen> {
         centerTitle: false,
       ),
       body: existingAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => AppShimmer.listTiles(count: 3),
         error: (_, _) => _buildForm(),
         data: (existing) {
           if (existing != null && !['CANCELLED', 'FAILED'].contains(existing.status)) {

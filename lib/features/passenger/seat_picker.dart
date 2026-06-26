@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/shimmer.dart';
 import '../../l10n/app_localizations.dart';
 
 final _seatsProvider = FutureProvider.autoDispose
@@ -159,7 +160,7 @@ class _SeatPickerSheetState extends ConsumerState<SeatPickerSheet> {
           // Seat grid
           Expanded(
             child: seatsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => Shimmer(child: Wrap(spacing: 8, runSpacing: 8, children: List.generate(24, (_) => const ShimmerBox(width: 44, height: 44, radius: 8)))),
               error: (e, _) => Center(child: Text('$e')),
               data: (seats) => _SeatGrid(
                 seats: seats,

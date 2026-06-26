@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/shimmer.dart';
 
 // ── Providers ─────────────────────────────────────────────────────────────────
 
@@ -117,7 +118,7 @@ class _FuelTab extends ConsumerWidget {
           ),
           Expanded(
             child: logsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => AppShimmer.listTiles(),
               error: (e, _) => Center(child: Text('Erreur: $e')),
               data: (logs) => logs.isEmpty
                   ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -284,7 +285,7 @@ class _MaintenanceTab extends ConsumerWidget {
           ),
           Expanded(
             child: logsAsync.when(
-              loading: () => const Center(child: CircularProgressIndicator()),
+              loading: () => AppShimmer.listTiles(),
               error: (e, _) => Center(child: Text('Erreur: $e')),
               data: (logs) => logs.isEmpty
                   ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [

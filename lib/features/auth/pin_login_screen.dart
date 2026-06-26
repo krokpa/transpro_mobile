@@ -33,7 +33,6 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
 
 
     _biometricEnabled = ref.read(authProvider).biometricEnabled;
-    _biometricEnabled = true;
 
     debugPrint('=== [PinLoginScreen] INIT ===');
     debugPrint('[PinLoginScreen] Biométrie activée dans le provider: $_biometricEnabled');
@@ -196,6 +195,9 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
     } else if (user.isAgent) {
       debugPrint('[PinLoginScreen] Redirection vers l\'espace AGENT (/agent)');
       context.go('/agent');
+    } else if (user.isDriver) {
+      debugPrint('[PinLoginScreen] Redirection vers l\'espace CHAUFFEUR (/driver)');
+      context.go('/driver');
     } else {
       debugPrint('[PinLoginScreen] Redirection vers l\'espace PROPRIÉTAIRE (/owner)');
       context.go('/owner');

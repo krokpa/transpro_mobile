@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/payment_logo.dart';
+import '../../core/widgets/shimmer.dart';
 
 final _revenueProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, String>((ref, period) async {
   final dio = ref.read(dioProvider);
@@ -67,11 +68,17 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
     final bookingsAsync = ref.watch(_bookingsReportProvider(_period));
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Rapports'),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
+        title: const Text('Rapports',
+          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: brandDark)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded, color: brandDark),
             onPressed: () {
               ref.invalidate(_revenueProvider(_period));
               ref.invalidate(_bookingsReportProvider(_period));
@@ -329,10 +336,22 @@ class _StatusBreakdown extends StatelessWidget {
 class _SkeletonCard extends StatelessWidget {
   const _SkeletonCard();
   @override
-  Widget build(BuildContext context) => Container(
-    height: 100,
-    decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(14)),
-    child: const Center(child: CircularProgressIndicator()),
+  Widget build(BuildContext context) => Shimmer(
+    child: Container(
+      height: 100,
+      decoration: BoxDecoration(
+        color: const Color(0xFFE8ECF0),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      padding: const EdgeInsets.all(16),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: const [
+        ShimmerBox(height: 14, radius: 7),
+        SizedBox(height: 10),
+        ShimmerBox(width: 80, height: 28, radius: 8),
+        SizedBox(height: 6),
+        ShimmerBox(width: 120, height: 11, radius: 6),
+      ]),
+    ),
   );
 }
 

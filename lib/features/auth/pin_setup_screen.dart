@@ -80,6 +80,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
       final auth = ref.read(authProvider);
       if (auth.user!.isPassenger) context.go('/passenger');
       else if (auth.user!.isAgent) context.go('/agent');
+      else if (auth.user!.isDriver) context.go('/driver');
       else context.go('/owner');
     } catch (_) {
       if (mounted) setState(() { _loading = false; _error = l10n.error; });

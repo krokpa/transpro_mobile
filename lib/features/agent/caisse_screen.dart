@@ -5,6 +5,8 @@ import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/payment_logo.dart';
+import '../../core/widgets/shimmer.dart';
+import '../../core/widgets/user_avatar.dart';
 import '../../l10n/app_localizations.dart';
 
 final _caisseProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, String>((ref, dateStr) async {
@@ -33,37 +35,76 @@ class _State extends ConsumerState<CaisseScreen> {
     final locale  = Localizations.localeOf(context).toString();
     final async   = ref.watch(_caisseProvider(_dateStr));
     final isToday = DateFormat('yyyy-MM-dd').format(DateTime.now()) == _dateStr;
+    final user    = ref.read(authProvider).user;
 
     return Scaffold(
       appBar: AppBar(
-        title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Text(l10n.caisseDailyReport),
-          Text(ref.read(authProvider).user?.stationName ?? '',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w400, color: context.textMuted)),
-        ]),
+        title: Row(
+          children: [
+            if (user != null) ...[
+              UserAvatarWidget(
+                firstName: user.firstName,
+                lastName: user.lastName,
+                avatar: user.avatar,
+                size: 34,
+              ),
+              const SizedBox(width: 10),
+            ],
+            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text(l10n.caisseDailyReport),
+              if (user?.stationName != null)
+                Text(
+                  user!.stationName!,
+                  style: TextStyle(fontSize: 11, fontWeight: FontWeight.w400, color: context.textMuted),
+                ),
+            ]),
+          ],
+        ),
       ),
       body: Column(children: [
+        // ── Date navigator ────────────────────────────────────────────────────
         Container(
           color: context.cardBg,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           child: Row(children: [
-            IconButton(icon: const Icon(Icons.chevron_left), onPressed: () => _changeDay(-1)),
-            Expanded(child: Text(
-              isToday
-                  ? '${l10n.caisseTodayLabel} — ${DateFormat('d MMM', locale).format(_date)}'
-                  : DateFormat('EEEE d MMMM yyyy', locale).format(_date),
-              textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 15, color: context.textPrimary),
-            )),
             IconButton(
-              icon: const Icon(Icons.chevron_right),
+              icon: const Icon(Icons.chevron_left),
+              onPressed: () => _changeDay(-1),
+              style: IconButton.styleFrom(minimumSize: const Size(40, 40)),
+            ),
+            Expanded(
+              child: Column(
+                children: [
+                  Text(
+                    isToday ? l10n.caisseTodayLabel : DateFormat('EEEE', locale).format(_date),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                      color: isToday ? brandOrange : context.textPrimary,
+                    ),
+                  ),
+                  Text(
+                    isToday
+                        ? DateFormat('d MMMM yyyy', locale).format(_date)
+                        : DateFormat('d MMMM yyyy', locale).format(_date),
+                    style: TextStyle(fontSize: 12, color: context.textMuted),
+                  ),
+                ],
+              ),
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.chevron_right,
+                color: isToday ? context.divider : null,
+              ),
               onPressed: isToday ? null : () => _changeDay(1),
+              style: IconButton.styleFrom(minimumSize: const Size(40, 40)),
             ),
           ]),
         ),
         const Divider(height: 1),
         Expanded(child: async.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => AppShimmer.listTiles(),
           error: (e, _) => Center(child: Text('${l10n.error}: $e')),
           data: (data) => _CaisseContent(data: data),
         )),

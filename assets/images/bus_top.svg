@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+
+  <!-- ── Shadow ──────────────────────────────────────────────── -->
+  <rect x="38" y="20" width="50" height="92" rx="12" fill="#000000" opacity="0.18"/>
+
+  <!-- ── Wheels ──────────────────────────────────────────────── -->
+  <!-- front-left -->
+  <rect x="24" y="21" width="13" height="19" rx="3.5" fill="#111122"/>
+  <ellipse cx="30.5" cy="30.5" rx="4.5" ry="3.5" fill="#252540"/>
+  <circle  cx="30.5" cy="30.5" r="1.8" fill="#38385E"/>
+  <!-- front-right -->
+  <rect x="83" y="21" width="13" height="19" rx="3.5" fill="#111122"/>
+  <ellipse cx="89.5" cy="30.5" rx="4.5" ry="3.5" fill="#252540"/>
+  <circle  cx="89.5" cy="30.5" r="1.8" fill="#38385E"/>
+  <!-- rear-left -->
+  <rect x="24" y="82" width="13" height="19" rx="3.5" fill="#111122"/>
+  <ellipse cx="30.5" cy="91.5" rx="4.5" ry="3.5" fill="#252540"/>
+  <circle  cx="30.5" cy="91.5" r="1.8" fill="#38385E"/>
+  <!-- rear-right -->
+  <rect x="83" y="82" width="13" height="19" rx="3.5" fill="#111122"/>
+  <ellipse cx="89.5" cy="91.5" rx="4.5" ry="3.5" fill="#252540"/>
+  <circle  cx="89.5" cy="91.5" r="1.8" fill="#38385E"/>
+
+  <!-- ── Main body ───────────────────────────────────────────── -->
+  <rect x="35" y="11" width="50" height="98" rx="13" fill="#FF6B00"/>
+
+  <!-- Body left-side shine -->
+  <rect x="35" y="11" width="25" height="49" rx="13" fill="#FFFFFF" opacity="0.07"/>
+
+  <!-- ── Front fascia ─────────────────────────────────────────── -->
+  <rect x="37" y="11" width="46" height="10" rx="9" fill="#CC5200"/>
+
+  <!-- Headlights (amber) -->
+  <rect x="37" y="12" width="13" height="6" rx="3" fill="#FFEA00"/>
+  <rect x="70" y="12" width="13" height="6" rx="3" fill="#FFEA00"/>
+  <!-- Headlight inner glow -->
+  <rect x="38" y="12.5" width="7" height="3.5" rx="1.5" fill="#FFFFFF" opacity="0.55"/>
+  <rect x="71" y="12.5" width="7" height="3.5" rx="1.5" fill="#FFFFFF" opacity="0.55"/>
+
+  <!-- ── Front windshield ────────────────────────────────────── -->
+  <rect x="39" y="21" width="42" height="21" rx="6" fill="#7EC8E3" opacity="0.90"/>
+  <!-- Glass reflection -->
+  <rect x="40" y="22" width="19" height="7" rx="3.5" fill="#FFFFFF" opacity="0.28"/>
+  <!-- Wiper marks -->
+  <path d="M41 39 Q52 34 63 39" stroke="#000000" stroke-width="0.9" stroke-opacity="0.12" fill="none"/>
+  <path d="M79 39 Q68 34 57 39" stroke="#000000" stroke-width="0.9" stroke-opacity="0.12" fill="none"/>
+
+  <!-- Hood / fascia divider -->
+  <line x1="36" y1="43" x2="84" y2="43" stroke="#CC5200" stroke-width="1.5"/>
+
+  <!-- ── Side windows LEFT (3 windows) ──────────────────────── -->
+  <rect x="36" y="48" width="11" height="13" rx="2.5" fill="#7EC8E3" opacity="0.82"/>
+  <rect x="36" y="65" width="11" height="13" rx="2.5" fill="#7EC8E3" opacity="0.82"/>
+  <rect x="36" y="82" width="11" height="11" rx="2.5" fill="#7EC8E3" opacity="0.82"/>
+  <!-- reflections -->
+  <rect x="37" y="49" width="5.5" height="4" rx="1.5" fill="#FFFFFF" opacity="0.22"/>
+  <rect x="37" y="66" width="5.5" height="4" rx="1.5" fill="#FFFFFF" opacity="0.22"/>
+  <rect x="37" y="83" width="5.5" height="4" rx="1.5" fill="#FFFFFF" opacity="0.22"/>
+
+  <!-- ── Side windows RIGHT (3 windows) ─────────────────────── -->
+  <rect x="73" y="48" width="11" height="13" rx="2.5" fill="#7EC8E3" opacity="0.82"/>
+  <rect x="73" y="65" width="11" height="13" rx="2.5" fill="#7EC8E3" opacity="0.82"/>
+  <rect x="73" y="82" width="11" height="11" rx="2.5" fill="#7EC8E3" opacity="0.82"/>
+  <!-- reflections -->
+  <rect x="74" y="49" width="5.5" height="4" rx="1.5" fill="#FFFFFF" opacity="0.22"/>
+  <rect x="74" y="66" width="5.5" height="4" rx="1.5" fill="#FFFFFF" opacity="0.22"/>
+  <rect x="74" y="83" width="5.5" height="4" rx="1.5" fill="#FFFFFF" opacity="0.22"/>
+
+  <!-- ── Roof details ─────────────────────────────────────────── -->
+  <!-- Center seam -->
+  <line x1="60" y1="45" x2="60" y2="92" stroke="#CC5200" stroke-width="1" opacity="0.35"/>
+  <!-- Roof hatches -->
+  <rect x="53" y="53" width="14" height="9" rx="2.5" fill="#E05500" opacity="0.50"/>
+  <rect x="53" y="67" width="14" height="9" rx="2.5" fill="#E05500" opacity="0.50"/>
+  <!-- Hatch highlight -->
+  <rect x="54" y="54" width="6" height="2.5" rx="1" fill="#FFFFFF" opacity="0.15"/>
+  <rect x="54" y="68" width="6" height="2.5" rx="1" fill="#FFFFFF" opacity="0.15"/>
+
+  <!-- ── Rear ─────────────────────────────────────────────────── -->
+  <!-- Rear separator -->
+  <line x1="36" y1="93" x2="84" y2="93" stroke="#CC5200" stroke-width="1.5"/>
+
+  <!-- Rear window -->
+  <rect x="41" y="93" width="38" height="12" rx="4" fill="#7EC8E3" opacity="0.75"/>
+  <rect x="42" y="94" width="16" height="5" rx="2" fill="#FFFFFF" opacity="0.18"/>
+
+  <!-- Rear fascia -->
+  <rect x="37" y="103" width="46" height="5.5" rx="5" fill="#CC5200"/>
+
+  <!-- Tail lights (red) -->
+  <rect x="37" y="103" width="13" height="5" rx="2.5" fill="#FF2222"/>
+  <rect x="70" y="103" width="13" height="5" rx="2.5" fill="#FF2222"/>
+  <!-- Tail light glow -->
+  <rect x="38" y="103.5" width="7" height="3" rx="1.5" fill="#FFFFFF" opacity="0.28"/>
+  <rect x="71" y="103.5" width="7" height="3" rx="1.5" fill="#FFFFFF" opacity="0.28"/>
+
+  <!-- ── Body outline ─────────────────────────────────────────── -->
+  <rect x="35" y="11" width="50" height="98" rx="13" fill="none" stroke="#FFFFFF" stroke-width="1.5" opacity="0.20"/>
+
+</svg>

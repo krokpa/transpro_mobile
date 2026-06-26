@@ -1,3 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">TransPro CI</string>
+    <string name="default_web_client_id">1082349534340-1r236528oc2ee8res4ca2oap7mjhk30s.apps.googleusercontent.com</string>
+    <string name="facebook_app_id">975526058703735</string>
+    <string name="facebook_client_token">4bdf8a2b2b784800f3f21c638b1863d0</string>
+    <string name="fb_login_protocol_scheme">fb1234567890123456</string>
 </resources>

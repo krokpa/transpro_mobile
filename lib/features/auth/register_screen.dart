@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/api/api_client.dart';
+import '../../core/services/social_auth_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../l10n/app_localizations.dart';
 import '_auth_shared.dart';
@@ -212,6 +213,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       0 => _IdentityStep(
           key: const ValueKey(0),
           initial: _data,
+          onSocialLogin: _socialLogin,
           onNext: (d) {
             _data
               ..firstName = d.firstName
@@ -240,6 +242,24 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     };
   }
 
+  Future<void> _socialLogin(String provider) async {
+    try {
+      final token = provider == 'google'
+          ? await SocialAuthService.signInWithGoogle()
+          : await SocialAuthService.signInWithFacebook();
+      if (token == null) return;
+      final dio = ref.read(dioProvider);
+      final res = await dio.post('/auth/social', data: {'provider': provider, 'idToken': token});
+      await ref.read(authProvider.notifier).setFromSocialLogin(extractData(res.data));
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(extractAuthError(e)), backgroundColor: Colors.red.shade600),
+        );
+      }
+    }
+  }
+
   Future<void> _submit() async {
     try {
       await ref.read(authProvider.notifier).register(
@@ -265,8 +285,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 class _IdentityStep extends StatefulWidget {
   final _WizardData initial;
   final void Function(_WizardData d) onNext;
+  final Future<void> Function(String provider) onSocialLogin;
 
-  const _IdentityStep({super.key, required this.initial, required this.onNext});
+  const _IdentityStep({super.key, required this.initial, required this.onNext, required this.onSocialLogin});
 
   @override
   State<_IdentityStep> createState() => _IdentityStepState();
@@ -334,7 +355,33 @@ class _IdentityStepState extends State<_IdentityStep> {
           const SizedBox(height: 4),
           Text('Étape 1 / 3 — Créez votre compte passager',
               style: TextStyle(color: context.textMuted, fontSize: 13)),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
+
+          // Social signup
+          Row(children: [
+            Expanded(child: SocialBtn(
+              onTap: () => widget.onSocialLogin('google'),
+              icon: const GoogleIcon(),
+              label: 'Google',
+            )),
+            const SizedBox(width: 10),
+            Expanded(child: SocialBtn(
+              onTap: () => widget.onSocialLogin('facebook'),
+              icon: const FacebookIcon(),
+              label: 'Facebook',
+            )),
+          ]),
+          const SizedBox(height: 16),
+          Row(children: [
+            Expanded(child: Divider(color: context.divider)),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Text('ou créer un compte',
+                style: TextStyle(color: context.textMuted, fontSize: 12)),
+            ),
+            Expanded(child: Divider(color: context.divider)),
+          ]),
+          const SizedBox(height: 16),
 
           Row(children: [
             Expanded(child: TextField(

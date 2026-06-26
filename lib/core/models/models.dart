@@ -58,6 +58,7 @@ class User {
   bool get isPassenger => role == 'PASSENGER';
   bool get isAgent => role == 'COMPANY_AGENT';
   bool get isOwner => role == 'COMPANY_OWNER' || role == 'COMPANY_ADMIN';
+  bool get isDriver => role == 'DRIVER';
   bool get isSuperAdmin => role == 'SUPER_ADMIN';
 }
 
@@ -118,9 +119,13 @@ class Trip {
   final String? departureStationId;
   final String? departureStationName;
   final String? departureStationAddress;
+  final double? departureStationLat;
+  final double? departureStationLng;
   final String? arrivalStationId;
   final String? arrivalStationName;
   final String? arrivalStationAddress;
+  final double? arrivalStationLat;
+  final double? arrivalStationLng;
   final List<RouteStop> stops;
 
   const Trip({
@@ -145,11 +150,32 @@ class Trip {
     this.departureStationId,
     this.departureStationName,
     this.departureStationAddress,
+    this.departureStationLat,
+    this.departureStationLng,
     this.arrivalStationId,
     this.arrivalStationName,
     this.arrivalStationAddress,
+    this.arrivalStationLat,
+    this.arrivalStationLng,
     this.stops = const [],
   });
+
+  Trip copyWithStatus(String newStatus) => Trip(
+    id: id, routeName: routeName, originCity: originCity, destinationCity: destinationCity,
+    departureAt: departureAt, estimatedArrivalAt: estimatedArrivalAt,
+    status: newStatus, tripClass: tripClass, price: price,
+    availableSeats: availableSeats, totalSeats: totalSeats, amenities: amenities,
+    vehiclePlate: vehiclePlate, driverName: driverName,
+    advancedSeatManagement: advancedSeatManagement,
+    tenantName: tenantName, tenantLogo: tenantLogo, tenantSlug: tenantSlug,
+    departureStationId: departureStationId, departureStationName: departureStationName,
+    departureStationAddress: departureStationAddress,
+    departureStationLat: departureStationLat, departureStationLng: departureStationLng,
+    arrivalStationId: arrivalStationId, arrivalStationName: arrivalStationName,
+    arrivalStationAddress: arrivalStationAddress,
+    arrivalStationLat: arrivalStationLat, arrivalStationLng: arrivalStationLng,
+    stops: stops,
+  );
 
   factory Trip.fromJson(Map<String, dynamic> j) => Trip(
     id: j['id'],
@@ -176,9 +202,13 @@ class Trip {
     departureStationId: j['departureStation']?['id'],
     departureStationName: j['departureStation']?['name'],
     departureStationAddress: j['departureStation']?['address'],
+    departureStationLat: (j['departureStation']?['latitude'] as num?)?.toDouble(),
+    departureStationLng: (j['departureStation']?['longitude'] as num?)?.toDouble(),
     arrivalStationId: j['arrivalStation']?['id'],
     arrivalStationName: j['arrivalStation']?['name'],
     arrivalStationAddress: j['arrivalStation']?['address'],
+    arrivalStationLat: (j['arrivalStation']?['latitude'] as num?)?.toDouble(),
+    arrivalStationLng: (j['arrivalStation']?['longitude'] as num?)?.toDouble(),
     stops: (j['route']?['stops'] as List?)
             ?.map((s) => RouteStop.fromJson(s as Map<String, dynamic>))
             .toList() ??

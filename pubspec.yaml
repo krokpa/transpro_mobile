@@ -65,6 +65,7 @@ dependencies:
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
   url_launcher: ^6.3.1
+  flutter_svg: ^2.0.17
 
   # Driver GPS
   geolocator: ^13.0.2
@@ -78,6 +79,10 @@ dependencies:
 
   # Image picker (avatar upload)
   image_picker: ^1.1.2
+
+  # Social login
+  google_sign_in: ^6.2.2
+  flutter_facebook_auth: ^7.1.1
 
   # PIN hashing
   crypto: ^3.0.3
@@ -116,10 +121,7 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/images/transpro-logo.png
-    - assets/images/transpro-logo-transparent.png
-    - assets/images/transpro-horizontal.png
-    - assets/images/transpro-story.png
+    - assets/images/
     - assets/images/payments/
 
 # ── Launcher icon ──────────────────────────────────────────────────────────────
@@ -128,22 +130,22 @@ flutter_launcher_icons:
   ios: true
   image_path: assets/images/transpro-logo.png
   min_sdk_android: 21
-  adaptive_icon_background: "#F97316"
-  adaptive_icon_foreground: assets/images/transpro-logo-transparent.png
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: assets/images/transpro-logo.png
   web:
     generate: false
 
 # ── Splash screen ──────────────────────────────────────────────────────────────
 flutter_native_splash:
-  color: "#F97316"
-  image: assets/images/transpro-logo-transparent.png
-  color_dark: "#0F172A"
-  image_dark: assets/images/transpro-logo-transparent.png
+  color: "#FFFFFF"
+  image: assets/images/transpro-logo.png
+  color_dark: "#FFFFFF"
+  image_dark: assets/images/transpro-logo.png
   android: true
   ios: true
   web: false
   android_12:
-    image: assets/images/transpro-logo-transparent.png
-    icon_background_color: "#F97316"
-    image_dark: assets/images/transpro-logo-transparent.png
-    icon_background_color_dark: "#0F172A"
+    image: assets/images/transpro-logo.png
+    icon_background_color: "#FFFFFF"
+    image_dark: assets/images/transpro-logo.png
+    icon_background_color_dark: "#FFFFFF"

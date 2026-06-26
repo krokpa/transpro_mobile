@@ -45,19 +45,29 @@ class _State extends ConsumerState<ScannerScreen> {
     if (code == null) return;
 
     setState(() { _paused = true; _loading = true; });
+    await _ctrl.stop();
     HapticFeedback.mediumImpact();
 
     try {
       final dio = ref.read(dioProvider);
       final res = await dio.post('/payments/tickets/scan', data: {'qrData': code});
-      final data = extractData(res.data);
-      final booking = data['booking'];
-      final user    = booking?['user'];
-      final route   = booking?['trip']?['route'];
+      final data      = extractData(res.data);
+      final booking   = data['booking']   as Map<String, dynamic>?;
+      final passenger = booking?['passenger'] as Map<String, dynamic>?;
+      final route     = booking?['trip']?['route'] as Map<String, dynamic>?;
+
+      final origin = route?['originCity']?['name'] as String?;
+      final dest   = route?['destinationCity']?['name'] as String?;
+      final routeStr = (origin != null && dest != null)
+          ? '$origin → $dest'
+          : (route?['name'] as String?) ?? '—';
+
       setState(() => _result = _ScanResult(
         ok:        true,
-        passenger: user != null ? '${user['firstName']} ${user['lastName']}' : '—',
-        route:     route != null ? '${route['originCity']?['name']} → ${route['destinationCity']?['name']}' : '—',
+        passenger: passenger != null
+            ? '${passenger['firstName'] ?? ''} ${passenger['lastName'] ?? ''}'.trim()
+            : '—',
+        route:     routeStr,
         seat:      (booking?['seatNumbers'] as List?)?.join(', ') ?? '—',
         isOffline: false,
       ));
@@ -141,7 +151,9 @@ class _State extends ConsumerState<ScannerScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(children: [
-        if (!_paused) MobileScanner(controller: _ctrl, onDetect: _onDetect),
+        // Toujours dans le tree pour éviter la re-création de la texture native.
+        // Le controller gère pause/reprise via stop()/start().
+        MobileScanner(controller: _ctrl, onDetect: _onDetect),
 
         if (_result == null && !_loading) ...[
           Container(color: Colors.black45),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_client.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/shimmer.dart';
 
 // ── Provider ──────────────────────────────────────────────────────────────────
 
@@ -53,7 +54,7 @@ class PassengerLuggageScreen extends ConsumerWidget {
         centerTitle: false,
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => AppShimmer.listTiles(count: 3),
         error: (_, _) => const Center(child: Text('Erreur lors du chargement')),
         data: (luggage) {
           if (luggage == null) {

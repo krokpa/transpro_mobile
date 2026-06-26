@@ -28,13 +28,25 @@ class OwnerRoutesScreen extends ConsumerWidget {
     final routesAsync = ref.watch(_routesProvider);
 
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Réseau'),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
+        title: const Text('Réseau',
+          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: brandDark)),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: 'Ajouter un itinéraire',
-            onPressed: () => _showAddRouteSheet(context, ref),
+          Container(
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(color: brandOrange, borderRadius: BorderRadius.circular(10)),
+            child: IconButton(
+              icon: const Icon(Icons.add, color: Colors.white, size: 20),
+              tooltip: 'Ajouter un itinéraire',
+              onPressed: () => _showAddRouteSheet(context, ref),
+              padding: const EdgeInsets.all(8),
+              constraints: const BoxConstraints(),
+            ),
           ),
         ],
       ),
@@ -111,10 +123,15 @@ class _RouteCard extends StatelessWidget {
     final duration = route['durationMinutes'] as num?;
     final schedules = (route['schedules'] as List?)?.length ?? 0;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 3))],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         child: Column(children: [
           Row(children: [
             Container(

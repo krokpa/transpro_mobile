@@ -227,6 +227,10 @@ class AuthNotifier extends Notifier<AuthState> {
     await _applyLoginResponse(extractData(response.data) as Map<String, dynamic>);
   }
 
+  Future<void> setFromSocialLogin(dynamic data) async {
+    await _applyLoginResponse(data as Map<String, dynamic>);
+  }
+
   Future<void> setupPin(String pin, {bool biometric = false}) async {
     final hash = sha256.convert(utf8.encode(pin)).toString();
     await Future.wait([
@@ -321,6 +325,19 @@ class AuthNotifier extends Notifier<AuthState> {
       'currentPassword': currentPassword,
       'newPassword': newPassword,
     });
+  }
+
+  /// Pour les comptes créés via téléphone (guichet) : définir un vrai email
+  /// et/ou un mot de passe sans connaître le mot de passe actuel aléatoire.
+  Future<void> setCredentials({ String? email, String? password }) async {
+    final dio = ref.read(dioProvider);
+    final res = await dio.patch('/users/set-credentials', data: {
+      if (email    != null) 'email':    email,
+      if (password != null) 'password': password,
+    });
+    final updated = User.fromJson(extractData(res.data));
+    await _storage.write(key: 'user', value: jsonEncode(updated.toJson()));
+    state = state.copyWith(user: updated);
   }
 
   Future<void> logout() async {

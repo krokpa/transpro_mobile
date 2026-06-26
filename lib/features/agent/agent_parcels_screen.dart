@@ -7,6 +7,7 @@ import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/photo_capture.dart';
+import '../../core/widgets/shimmer.dart';
 
 // ── Provider ──────────────────────────────────────────────────────────────────
 
@@ -107,7 +108,7 @@ class _State extends ConsumerState<AgentParcelsScreen> {
         ],
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => AppShimmer.parcelTiles(),
         error: (e, _) {
           final is403 = e is DioException && e.response?.statusCode == 403;
           if (is403) return const _PlanUpgradePrompt();

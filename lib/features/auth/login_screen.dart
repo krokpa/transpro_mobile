@@ -7,6 +7,7 @@ import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/phone_input_field.dart';
+import '../../core/services/social_auth_service.dart';
 import '../../l10n/app_localizations.dart';
 import '_auth_shared.dart';
 
@@ -99,147 +100,187 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   void _resetPhone() => setState(() { _otpStarted = false; _error = null; });
 
+  // ── Social login ───────────────────────────────────────────────────────────
+
+  Future<void> _socialLogin(String provider) async {
+    setState(() { _loading = true; _error = null; });
+    try {
+      final token = provider == 'google'
+          ? await SocialAuthService.signInWithGoogle()
+          : await SocialAuthService.signInWithFacebook();
+      if (token == null) { setState(() => _loading = false); return; }
+      final dio = ref.read(dioProvider);
+      final res = await dio.post('/auth/social', data: {'provider': provider, 'idToken': token});
+      await ref.read(authProvider.notifier).setFromSocialLogin(extractData(res.data));
+    } catch (e) {
+      setState(() => _error = extractAuthError(e));
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
   // ── Build ─────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
-    final l10n    = AppLocalizations.of(context);
-    final mq      = MediaQuery.of(context);
-    final heroH   = mq.size.height * 0.38;
-    final safeBot = mq.padding.bottom;
+    final l10n       = AppLocalizations.of(context);
+    final mq         = MediaQuery.of(context);
+    final safeBot    = mq.padding.bottom;
+    final kbOpen     = mq.viewInsets.bottom > 0;
+    final showFooter = !_otpStarted || _mode == _LoginMode.email;
 
     return Scaffold(
       backgroundColor: brandCanvas,
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: true,
       body: Stack(children: [
-        const AuthBackground(),
-        Positioned(
-          top: 0, left: 0, right: 0,
-          height: heroH,
-          child: SafeArea(
-            bottom: false,
-            child: const Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [AuthLogoBlock()],
-            ),
-          ),
-        ),
-        Positioned(
-          top: heroH - 24,
-          bottom: 0, left: 0, right: 0,
-          child: Container(
-            decoration: BoxDecoration(
-              color: context.cardBg,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(32),
-                topRight: Radius.circular(32),
+        // ── Background ──────────────────────────────────────────────────
+        const Positioned.fill(child: AuthBackground()),
+
+        // ── Layout ──────────────────────────────────────────────────────
+        SafeArea(
+          bottom: false,
+          child: Column(children: [
+
+            // Hero : se rétracte quand le clavier s'ouvre
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.easeInOut,
+              height: kbOpen ? 0 : mq.size.height * 0.22,
+              clipBehavior: Clip.hardEdge,
+              decoration: const BoxDecoration(),
+              child: OverflowBox(
+                maxHeight: double.infinity,
+                alignment: Alignment.center,
+                child: const AuthLogoBlock(compact: true),
               ),
-              boxShadow: const [
-                BoxShadow(color: Color(0x33000000), blurRadius: 32, offset: Offset(0, -8)),
-              ],
             ),
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(28, 18, 28, safeBot + 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const AuthDragHandle(),
-                  const SizedBox(height: 16),
 
-                  Text(
-                    l10n.loginTitle,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: context.textPrimary,
-                    ),
+            // Card : remplit tout l'espace restant
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  color: context.cardBg,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    topRight: Radius.circular(32),
                   ),
-                  const SizedBox(height: 3),
-                  Text(
-                    l10n.loginSubtitle,
-                    style: TextStyle(color: context.textMuted, fontSize: 13.5),
-                  ),
-                  const SizedBox(height: 14),
-
-                  // ── Toggle Email / Téléphone ──────────────────────────────
-                  _ModeToggle(
-                    current: _mode,
-                    onChanged: (m) => setState(() {
-                      _mode = m;
-                      _error = null;
-                      _otpStarted = false;
-                    }),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // ── Error ─────────────────────────────────────────────────
-                  if (_error != null) ...[
-                    AuthErrorBanner(message: _error!),
-                    const SizedBox(height: 12),
+                  boxShadow: const [
+                    BoxShadow(color: Color(0x33000000), blurRadius: 32, offset: Offset(0, -8)),
                   ],
+                ),
+                child: Column(children: [
 
-                  // ── Content ───────────────────────────────────────────────
+                  // ── Contenu scrollable ────────────────────────────────
                   Expanded(
                     child: SingleChildScrollView(
-                      child: _mode == _LoginMode.email
-                          ? _EmailPanel(
-                              emailCtrl:       _emailCtrl,
-                              passwordCtrl:    _passwordCtrl,
-                              obscure:         _obscure,
-                              loading:         _loading,
-                              onToggleObscure: () => setState(() => _obscure = !_obscure),
-                              onLogin:         _loginEmail,
-                              l10n:            l10n,
-                            )
-                          : _otpStarted
-                              ? _PhoneOtpPanel(
-                                  phone:  _phoneCtrl.text.trim(),
-                                  onBack: _resetPhone,
-                                )
-                              : _PhoneEnterPanel(
-                                  phoneCtrl: _phoneCtrl,
-                                  loading:   _loading,
-                                  onSend:    _sendOtp,
-                                  l10n:      l10n,
-                                ),
+                      padding: const EdgeInsets.fromLTRB(28, 12, 28, 8),
+                      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        const AuthDragHandle(),
+                        const SizedBox(height: 10),
+
+                        Text(l10n.loginTitle,
+                          style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: context.textPrimary)),
+                        const SizedBox(height: 2),
+                        Text(l10n.loginSubtitle,
+                          style: TextStyle(color: context.textMuted, fontSize: 13)),
+                        const SizedBox(height: 12),
+
+                        _ModeToggle(
+                          current: _mode,
+                          onChanged: (m) => setState(() {
+                            _mode = m; _error = null; _otpStarted = false;
+                          }),
+                        ),
+                        const SizedBox(height: 12),
+
+                        if (_error != null) ...[
+                          AuthErrorBanner(message: _error!),
+                          const SizedBox(height: 12),
+                        ],
+
+                        _mode == _LoginMode.email
+                            ? _EmailPanel(
+                                emailCtrl:       _emailCtrl,
+                                passwordCtrl:    _passwordCtrl,
+                                obscure:         _obscure,
+                                loading:         _loading,
+                                onToggleObscure: () => setState(() => _obscure = !_obscure),
+                                onLogin:         _loginEmail,
+                                l10n:            l10n,
+                              )
+                            : _otpStarted
+                                ? _PhoneOtpPanel(phone: _phoneCtrl.text.trim(), onBack: _resetPhone)
+                                : _PhoneEnterPanel(
+                                    phoneCtrl: _phoneCtrl,
+                                    loading:   _loading,
+                                    onSend:    _sendOtp,
+                                    l10n:      l10n,
+                                  ),
+                      ]),
                     ),
                   ),
 
-                  // ── Footer ────────────────────────────────────────────────
-                  if (!_otpStarted || _mode == _LoginMode.email) ...[
-                    Row(children: [
-                      Expanded(child: Divider(color: context.divider)),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        child: Text(
-                          l10n.loginOr,
-                          style: TextStyle(color: context.textMuted, fontSize: 13),
-                        ),
-                      ),
-                      Expanded(child: Divider(color: context.divider)),
-                    ]),
-                    const SizedBox(height: 10),
-                    Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                      Text(
-                        l10n.noAccountText,
-                        style: TextStyle(color: context.textSecondary, fontSize: 13.5),
-                      ),
-                      TextButton(
-                        onPressed: () => context.push('/register'),
-                        style: TextButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                        ),
-                        child: Text(
-                          l10n.registerLink,
-                          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5),
-                        ),
-                      ),
-                    ]),
-                  ],
-                ],
+                  // ── Footer ancré en bas ───────────────────────────────
+                  if (showFooter)
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(28, 0, 28, safeBot + 12),
+                      child: Column(children: [
+                        // Social buttons (email mode only)
+                        if (_mode == _LoginMode.email && !_loading) ...[
+                          Row(children: [
+                            Expanded(child: Divider(color: context.divider)),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
+                              child: Text('ou continuer avec',
+                                style: TextStyle(color: context.textMuted, fontSize: 12)),
+                            ),
+                            Expanded(child: Divider(color: context.divider)),
+                          ]),
+                          const SizedBox(height: 8),
+                          Row(children: [
+                            Expanded(child: SocialBtn(
+                              onTap: () => _socialLogin('google'),
+                              icon: const GoogleIcon(),
+                              label: 'Google',
+                            )),
+                            const SizedBox(width: 10),
+                            Expanded(child: SocialBtn(
+                              onTap: () => _socialLogin('facebook'),
+                              icon: const FacebookIcon(),
+                              label: 'Facebook',
+                            )),
+                          ]),
+                          const SizedBox(height: 8),
+                        ],
+                        Row(children: [
+                          Expanded(child: Divider(color: context.divider)),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 14),
+                            child: Text(l10n.loginOr,
+                              style: TextStyle(color: context.textMuted, fontSize: 13)),
+                          ),
+                          Expanded(child: Divider(color: context.divider)),
+                        ]),
+                        const SizedBox(height: 4),
+                        Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                          Text(l10n.noAccountText,
+                            style: TextStyle(color: context.textSecondary, fontSize: 13.5)),
+                          TextButton(
+                            onPressed: () => context.push('/register'),
+                            style: TextButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                            ),
+                            child: Text(l10n.registerLink,
+                              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13.5)),
+                          ),
+                        ]),
+                      ]),
+                    ),
+                ]),
               ),
             ),
-          ),
+          ]),
         ),
       ]),
     );
@@ -255,53 +296,133 @@ class _ModeToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 42,
-      padding: const EdgeInsets.all(3),
-      decoration: BoxDecoration(
-        color: context.inputFill,
-        borderRadius: BorderRadius.circular(14),
+    return Row(children: [
+      Expanded(
+        child: _ChoiceCard(
+          label: 'Email',
+          hint: 'Mot de passe',
+          icon: Icons.email_rounded,
+          selected: current == _LoginMode.email,
+          onTap: () => onChanged(_LoginMode.email),
+        ),
       ),
-      child: Row(children: [
-        _Tab(label: 'Email',     icon: Icons.email_outlined,    selected: current == _LoginMode.email,
-             onTap: () => onChanged(_LoginMode.email)),
-        _Tab(label: 'Téléphone', icon: Icons.phone_android_outlined, selected: current == _LoginMode.phone,
-             onTap: () => onChanged(_LoginMode.phone)),
-      ]),
-    );
+      const SizedBox(width: 10),
+      Expanded(
+        child: _ChoiceCard(
+          label: 'Téléphone',
+          hint: 'Code SMS',
+          icon: Icons.smartphone_rounded,
+          selected: current == _LoginMode.phone,
+          onTap: () => onChanged(_LoginMode.phone),
+        ),
+      ),
+    ]);
   }
 }
 
-class _Tab extends StatelessWidget {
+class _ChoiceCard extends StatelessWidget {
   final String label;
+  final String hint;
   final IconData icon;
   final bool selected;
   final VoidCallback onTap;
-  const _Tab({required this.label, required this.icon, required this.selected, required this.onTap});
+
+  const _ChoiceCard({
+    required this.label,
+    required this.hint,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          decoration: BoxDecoration(
-            color:        selected ? brandOrange : Colors.transparent,
-            borderRadius: BorderRadius.circular(11),
-          ),
-          child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Icon(icon, size: 14, color: selected ? Colors.white : context.textMuted),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize:   13,
-                fontWeight: FontWeight.w600,
-                color:      selected ? Colors.white : context.textMuted,
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 260),
+      curve: Curves.easeInOut,
+      decoration: BoxDecoration(
+        gradient: selected
+            ? const LinearGradient(
+                colors: [Color(0xFFFF8C00), brandOrange],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : null,
+        color: selected ? null : context.inputFill,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: selected ? Colors.transparent : context.divider,
+          width: 1,
+        ),
+        boxShadow: selected
+            ? [
+                BoxShadow(
+                  color: brandOrange.withValues(alpha: 0.32),
+                  blurRadius: 14,
+                  spreadRadius: 0,
+                  offset: const Offset(0, 6),
+                ),
+              ]
+            : [],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          splashColor: Colors.white.withValues(alpha: 0.15),
+          highlightColor: Colors.white.withValues(alpha: 0.08),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            child: Row(children: [
+              // Icon bubble
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 260),
+                width: 38,
+                height: 38,
+                decoration: BoxDecoration(
+                  color: selected
+                      ? Colors.white.withValues(alpha: 0.22)
+                      : brandOrange.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: Icon(
+                  icon,
+                  size: 19,
+                  color: selected ? Colors.white : brandOrange,
+                ),
               ),
-            ),
-          ]),
+              const SizedBox(width: 10),
+              // Labels
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 200),
+                    style: TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: selected ? Colors.white : context.textPrimary,
+                    ),
+                    child: Text(label),
+                  ),
+                  const SizedBox(height: 2),
+                  AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 200),
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: selected
+                          ? Colors.white.withValues(alpha: 0.75)
+                          : context.textMuted,
+                    ),
+                    child: Text(hint),
+                  ),
+                ],
+              ),
+            ]),
+          ),
         ),
       ),
     );
@@ -356,11 +477,10 @@ class _EmailPanel extends StatelessWidget {
         alignment: Alignment.centerRight,
         child: TextButton(
           onPressed: () => GoRouter.of(context).push('/forgot-password'),
-          style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6)),
+          style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4)),
           child: Text(l10n.forgotPasswordLink),
         ),
       ),
-      const SizedBox(height: 4),
 
       SizedBox(
         width: double.infinity,
@@ -376,7 +496,7 @@ class _EmailPanel extends StatelessWidget {
                 ]),
         ),
       ),
-      const SizedBox(height: 16),
+      const SizedBox(height: 8),
     ]);
   }
 }
@@ -683,3 +803,4 @@ class _PhoneOtpPanelState extends ConsumerState<_PhoneOtpPanel>
     );
   }
 }
+

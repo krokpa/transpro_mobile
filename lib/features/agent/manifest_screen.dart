@@ -8,6 +8,7 @@ import '../../core/api/api_client.dart';
 import '../../core/models/models.dart';
 import '../../core/offline/manifest_cache.dart';
 import '../../core/theme/app_theme.dart';
+import '../../core/widgets/shimmer.dart';
 import '../../l10n/app_localizations.dart';
 
 // ── Models ────────────────────────────────────────────────────────────────────
@@ -205,7 +206,7 @@ class _ManifestScreenState extends ConsumerState<ManifestScreen> {
             icon: const Icon(Icons.qr_code_scanner_rounded),
             tooltip: l10n.navScanner,
             onPressed: () =>
-                context.push('/agent/scanner?tripId=${widget.tripId}'),
+                context.push('/agent/scan-ticket?tripId=${widget.tripId}'),
           ),
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -217,7 +218,7 @@ class _ManifestScreenState extends ConsumerState<ManifestScreen> {
         ],
       ),
       body: manifestAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
+        loading: () => AppShimmer.manifestTiles(),
         error: (e, _) => Center(child: Text('${l10n.error}: $e')),
         data: (entries) {
           final filtered = _filter.isEmpty

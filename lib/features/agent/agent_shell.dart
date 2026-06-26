@@ -5,7 +5,8 @@ import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/providers/notification_providers.dart';
-import '../../core/theme/app_theme.dart';
+import '../../core/theme/space_theme.dart';
+import '../../core/widgets/user_avatar.dart';
 import '../../l10n/app_localizations.dart';
 
 class AgentShell extends ConsumerStatefulWidget {
@@ -19,12 +20,12 @@ class AgentShell extends ConsumerStatefulWidget {
 class _AgentShellState extends ConsumerState<AgentShell> {
   io.Socket? _socket;
 
-  static const _tabDefs = [
-    ('/agent',         Icons.departure_board_outlined, Icons.departure_board),
-    ('/agent/scanner', Icons.qr_code_scanner_outlined, Icons.qr_code_scanner),
-    ('/agent/guichet', Icons.point_of_sale_outlined,   Icons.point_of_sale_rounded),
-    ('/agent/caisse',  Icons.bar_chart_outlined,        Icons.bar_chart_rounded),
-    ('/agent/profile', Icons.person_outline_rounded,   Icons.person_rounded),
+  static const _tabRoutes = [
+    '/agent',
+    '/agent/scanner',
+    '/agent/guichet',
+    '/agent/caisse',
+    '/agent/profile',
   ];
 
   @override
@@ -62,7 +63,7 @@ class _AgentShellState extends ConsumerState<AgentShell> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         duration: const Duration(seconds: 5),
-        backgroundColor: isAlert ? const Color(0xFFDC2626) : brandOrange,
+        backgroundColor: isAlert ? const Color(0xFFDC2626) : kAgentColors.primary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -90,21 +91,112 @@ class _AgentShellState extends ConsumerState<AgentShell> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final labels = [l10n.navDepartures, l10n.navScanner, l10n.navGuichet, l10n.navCaisse, l10n.navProfile];
+    final user = ref.watch(authProvider).user;
 
     final location = GoRouterState.of(context).matchedLocation;
-    final idx = _tabDefs.indexWhere((t) => location == t.$1);
-    final current = idx == -1 ? 0 : idx;
+    int current = 0;
+    int bestLen = -1;
+    for (int i = 0; i < _tabRoutes.length; i++) {
+      final path = _tabRoutes[i];
+      if (location == path || location.startsWith('$path/')) {
+        if (path.length > bestLen) { bestLen = path.length; current = i; }
+      }
+    }
 
-    return Scaffold(
-      body: widget.child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: current,
-        onDestinationSelected: (i) => context.go(_tabDefs[i].$1),
-        destinations: List.generate(_tabDefs.length, (i) => NavigationDestination(
-          icon: Icon(_tabDefs[i].$2),
-          selectedIcon: Icon(_tabDefs[i].$3),
-          label: labels[i],
-        )),
+    final destinations = <NavigationDestination>[
+      const NavigationDestination(
+        icon: Icon(Icons.departure_board_outlined),
+        selectedIcon: Icon(Icons.departure_board),
+        label: '',
+      ),
+      const NavigationDestination(
+        icon: Icon(Icons.qr_code_scanner_outlined),
+        selectedIcon: Icon(Icons.qr_code_scanner),
+        label: '',
+      ),
+      const NavigationDestination(
+        icon: Icon(Icons.point_of_sale_outlined),
+        selectedIcon: Icon(Icons.point_of_sale_rounded),
+        label: '',
+      ),
+      const NavigationDestination(
+        icon: Icon(Icons.bar_chart_outlined),
+        selectedIcon: Icon(Icons.bar_chart_rounded),
+        label: '',
+      ),
+      // Profile tab: shows agent avatar
+      NavigationDestination(
+        icon: user != null
+            ? _AvatarIcon(
+                firstName: user.firstName,
+                lastName: user.lastName,
+                avatar: user.avatar,
+                selected: false,
+              )
+            : const Icon(Icons.person_outline_rounded),
+        selectedIcon: user != null
+            ? _AvatarIcon(
+                firstName: user.firstName,
+                lastName: user.lastName,
+                avatar: user.avatar,
+                selected: true,
+              )
+            : const Icon(Icons.person_rounded),
+        label: '',
+      ),
+    ];
+
+    return SpaceTheme.wrap(
+      context: context,
+      colors: kAgentColors,
+      child: Scaffold(
+        body: widget.child,
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: current,
+          onDestinationSelected: (i) => context.go(_tabRoutes[i]),
+          destinations: List.generate(destinations.length, (i) => NavigationDestination(
+            icon: destinations[i].icon,
+            selectedIcon: destinations[i].selectedIcon,
+            label: labels[i],
+          )),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Avatar icon for profile tab ───────────────────────────────────────────────
+
+class _AvatarIcon extends StatelessWidget {
+  final String firstName;
+  final String lastName;
+  final String? avatar;
+  final bool selected;
+
+  const _AvatarIcon({
+    required this.firstName,
+    required this.lastName,
+    this.avatar,
+    required this.selected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: selected
+          ? BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: kAgentColors.primary, width: 2),
+            )
+          : null,
+      child: Padding(
+        padding: EdgeInsets.all(selected ? 1.0 : 0.0),
+        child: UserAvatarWidget(
+          firstName: firstName,
+          lastName: lastName,
+          avatar: avatar,
+          size: 24,
+        ),
       ),
     );
   }

@@ -5,7 +5,7 @@ import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/providers/notification_providers.dart';
-import '../../core/theme/app_theme.dart';
+import '../../core/theme/space_theme.dart';
 import '../../l10n/app_localizations.dart';
 
 class OwnerShell extends ConsumerStatefulWidget {
@@ -62,7 +62,7 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         duration: const Duration(seconds: 5),
-        backgroundColor: isAlert ? const Color(0xFFDC2626) : brandOrange,
+        backgroundColor: isAlert ? const Color(0xFFDC2626) : kOwnerColors.primary,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         content: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -92,19 +92,30 @@ class _OwnerShellState extends ConsumerState<OwnerShell> {
     final labels = [l10n.navDashboard, l10n.navTrips, l10n.navFleet, l10n.navRoutes, l10n.navProfile];
 
     final location = GoRouterState.of(context).matchedLocation;
-    final idx = _tabDefs.indexWhere((t) => location == t.$1);
-    final current = idx == -1 ? 0 : idx;
+    int current = 0;
+    int bestLen = -1;
+    for (int i = 0; i < _tabDefs.length; i++) {
+      final path = _tabDefs[i].$1;
+      if (location == path || location.startsWith('$path/')) {
+        if (path.length > bestLen) { bestLen = path.length; current = i; }
+      }
+    }
 
-    return Scaffold(
-      body: widget.child,
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: current,
-        onDestinationSelected: (i) => context.go(_tabDefs[i].$1),
-        destinations: List.generate(_tabDefs.length, (i) => NavigationDestination(
-          icon: Icon(_tabDefs[i].$2),
-          selectedIcon: Icon(_tabDefs[i].$3),
-          label: labels[i],
-        )),
+    return SpaceTheme.wrap(
+      context: context,
+      colors: kOwnerColors,
+      child: Scaffold(
+        body: widget.child,
+        bottomNavigationBar: NavigationBar(
+          selectedIndex: current,
+          onDestinationSelected: (i) => context.go(_tabDefs[i].$1),
+          labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+          destinations: List.generate(_tabDefs.length, (i) => NavigationDestination(
+            icon: Icon(_tabDefs[i].$2),
+            selectedIcon: Icon(_tabDefs[i].$3),
+            label: labels[i],
+          )),
+        ),
       ),
     );
   }

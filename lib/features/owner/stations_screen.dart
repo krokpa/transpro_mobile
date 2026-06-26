@@ -27,17 +27,29 @@ class StationsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(_stationsProvider);
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text('Gares'),
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.white,
+        scrolledUnderElevation: 0,
+        elevation: 0,
+        title: const Text('Gares',
+          style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: brandDark)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded, color: brandDark),
             onPressed: () => ref.invalidate(_stationsProvider),
           ),
-          IconButton(
-            icon: const Icon(Icons.add_location_alt_outlined),
-            tooltip: 'Ajouter une gare',
-            onPressed: () => _showAddSheet(context, ref),
+          Container(
+            margin: const EdgeInsets.only(right: 12),
+            decoration: BoxDecoration(color: brandOrange, borderRadius: BorderRadius.circular(10)),
+            child: IconButton(
+              icon: const Icon(Icons.add_location_alt_outlined, color: Colors.white, size: 20),
+              tooltip: 'Ajouter une gare',
+              onPressed: () => _showAddSheet(context, ref),
+              padding: const EdgeInsets.all(8),
+              constraints: const BoxConstraints(),
+            ),
           ),
         ],
       ),
@@ -138,10 +150,15 @@ class _StationCard extends StatelessWidget {
         ?? station['cityName'] as String? ?? '';
     final agentCount = (station['_count']?['userStations'] as num?)?.toInt() ?? 0;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 10),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 10, offset: const Offset(0, 3))],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(14),
+        padding: const EdgeInsets.all(16),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
             Container(
