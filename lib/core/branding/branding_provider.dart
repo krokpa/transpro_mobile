@@ -21,6 +21,7 @@ class BrandingNotifier extends Notifier<Branding> {
   /// Re-synchronise la marque depuis l'API (ex. après changement admin).
   Future<void> refresh() => _fetch();
 
+  /// Pousse les couleurs d'espace résolues dans les globals runtime du thème.
   void _applySpaces(Branding b) {
     applyBrandSpaces(
       passenger: b.passengerColor,

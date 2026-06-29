@@ -65,13 +65,13 @@ extension AppColors on BuildContext {
   Color get spaceLight    => SpaceTheme.of(this).light;
 }
 
-// Couleur d'accent de marque (white-label). Constante → configurable AU BUILD
-// via --dart-define=BRAND_COLOR_ARGB=0xFF2563EB (valeur ARGB 32 bits). Reste
-// const, donc utilisable dans les ~400 widgets `const` sans churn. La couleur
-// admin runtime (/platform-settings) pilote, elle, le seed du thème + splash/auth.
-const brandOrange = Color(int.fromEnvironment('BRAND_COLOR_ARGB', defaultValue: 0xFFF97316));
-const brandDark   = Color(0xFF0F172A);
+// Accent de marque — configurable AU BUILD via --dart-define=BRAND_COLOR_ARGB.
+// Const → utilisable dans les ~400 widgets `const` sans churn. (Le passage en
+// runtime nécessiterait de « dé-const-ifier » ~100 widgets — voir note projet.)
+const _kBrandPrimaryDefault = Color(int.fromEnvironment('BRAND_COLOR_ARGB', defaultValue: 0xFFF97316));
+const brandOrange = _kBrandPrimaryDefault;
 const brandLight  = Color(int.fromEnvironment('BRAND_LIGHT_ARGB', defaultValue: 0xFFFFF7ED));
+const brandDark   = Color(0xFF0F172A);
 const brandCanvas = Color(0xFF0C1425);
 
 // Dark palette
@@ -79,7 +79,7 @@ const darkSurface  = Color(0xFF1E293B);
 const darkCanvas   = Color(0xFF0F172A);
 const darkDivider  = Color(0xFF334155);
 
-ThemeData appDarkTheme([Color brand = brandOrange, Color? secondary, Color? tertiary]) {
+ThemeData appDarkTheme([Color brand = _kBrandPrimaryDefault, Color? secondary, Color? tertiary]) {
   // Surcharge la couleur de marque à l'exécution : le nom local masque la
   // constante pour toute la fonction, sans toucher aux usages internes.
   // ignore: unused_local_variable
@@ -213,7 +213,7 @@ ThemeData appDarkTheme([Color brand = brandOrange, Color? secondary, Color? tert
   );
 }
 
-ThemeData appTheme([Color brand = brandOrange, Color? secondary, Color? tertiary]) {
+ThemeData appTheme([Color brand = _kBrandPrimaryDefault, Color? secondary, Color? tertiary]) {
   // Voir appDarkTheme : masquage local pour surcharger la marque au runtime.
   // ignore: unused_local_variable
   final brandOrange = brand;
