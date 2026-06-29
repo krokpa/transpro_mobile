@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../l10n/app_localizations.dart';
+import '../branding/branding_provider.dart';
 import 'connectivity_provider.dart';
 
 /// Enveloppe l'application entière (via `MaterialApp.builder`) et superpose un
@@ -19,14 +20,32 @@ class ConnectivityBanner extends ConsumerStatefulWidget {
   ConsumerState<ConnectivityBanner> createState() => _ConnectivityBannerState();
 }
 
-class _ConnectivityBannerState extends ConsumerState<ConnectivityBanner> {
+class _ConnectivityBannerState extends ConsumerState<ConnectivityBanner>
+    with WidgetsBindingObserver {
   bool _showRestored = false;
   Timer? _restoreTimer;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _restoreTimer?.cancel();
     super.dispose();
+  }
+
+  // Au retour de l'app au premier plan : re-synchronise la marque (couleur/logo
+  // changés côté admin) et re-vérifie la connectivité — effet sans redémarrage.
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      ref.read(brandingProvider.notifier).refresh();
+      ref.read(connectivityProvider.notifier).recheck();
+    }
   }
 
   @override
