@@ -47,21 +47,39 @@ class SettingsCache {
     return v == null || v.isEmpty ? null : v;
   }
 
-  static String? get brandName    => _read('brand_name');
-  static String? get brandTagline => _read('brand_tagline');
-  static String? get brandColor   => _read('brand_color');
-  static String? get brandLogo    => _read('brand_logo');
+  static String? get brandName            => _read('brand_name');
+  static String? get brandTagline         => _read('brand_tagline');
+  static String? get brandColor           => _read('brand_color');
+  static String? get brandSecondaryColor  => _read('brand_secondary');
+  static String? get brandTertiaryColor   => _read('brand_tertiary');
+  static String? get brandPassengerColor  => _read('brand_passenger');
+  static String? get brandAgentColor      => _read('brand_agent');
+  static String? get brandOwnerColor      => _read('brand_owner');
+  static String? get brandDriverColor     => _read('brand_driver');
+  static String? get brandLogo            => _read('brand_logo');
 
   /// Persiste les champs fournis (les `null` sont ignorés).
   static Future<void> setBrand({
     String? name,
     String? tagline,
     String? colorHex,
+    String? secondaryHex,
+    String? tertiaryHex,
+    String? passengerHex,
+    String? agentHex,
+    String? ownerHex,
+    String? driverHex,
     String? logo,
   }) async {
-    if (name != null)     await _box.put('brand_name', name);
-    if (tagline != null)  await _box.put('brand_tagline', tagline);
-    if (colorHex != null) await _box.put('brand_color', colorHex);
-    if (logo != null)     await _box.put('brand_logo', logo);
+    if (name != null)         await _box.put('brand_name', name);
+    if (tagline != null)      await _box.put('brand_tagline', tagline);
+    if (colorHex != null)     await _box.put('brand_color', colorHex);
+    if (secondaryHex != null) await _box.put('brand_secondary', secondaryHex);
+    if (tertiaryHex != null)  await _box.put('brand_tertiary', tertiaryHex);
+    if (passengerHex != null) await _box.put('brand_passenger', passengerHex);
+    if (agentHex != null)     await _box.put('brand_agent', agentHex);
+    if (ownerHex != null)     await _box.put('brand_owner', ownerHex);
+    if (driverHex != null)    await _box.put('brand_driver', driverHex);
+    if (logo != null)         await _box.put('brand_logo', logo);
   }
 }

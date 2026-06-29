@@ -79,7 +79,7 @@ const darkSurface  = Color(0xFF1E293B);
 const darkCanvas   = Color(0xFF0F172A);
 const darkDivider  = Color(0xFF334155);
 
-ThemeData appDarkTheme([Color brand = brandOrange]) {
+ThemeData appDarkTheme([Color brand = brandOrange, Color? secondary, Color? tertiary]) {
   // Surcharge la couleur de marque à l'exécution : le nom local masque la
   // constante pour toute la fonction, sans toucher aux usages internes.
   // ignore: unused_local_variable
@@ -91,6 +91,9 @@ ThemeData appDarkTheme([Color brand = brandOrange]) {
     surface: darkSurface,
     onSurface: const Color(0xFFF1F5F9),
     surfaceContainerHighest: const Color(0xFF1E293B),
+  ).copyWith(
+    secondary: secondary,
+    tertiary: tertiary,
   );
   return ThemeData(
     useMaterial3: true,
@@ -210,7 +213,7 @@ ThemeData appDarkTheme([Color brand = brandOrange]) {
   );
 }
 
-ThemeData appTheme([Color brand = brandOrange]) {
+ThemeData appTheme([Color brand = brandOrange, Color? secondary, Color? tertiary]) {
   // Voir appDarkTheme : masquage local pour surcharger la marque au runtime.
   // ignore: unused_local_variable
   final brandOrange = brand;
@@ -218,6 +221,9 @@ ThemeData appTheme([Color brand = brandOrange]) {
     seedColor: brandOrange,
     primary: brandOrange,
     brightness: Brightness.light,
+  ).copyWith(
+    secondary: secondary,
+    tertiary: tertiary,
   );
   return ThemeData(
     useMaterial3: true,

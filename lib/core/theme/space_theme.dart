@@ -10,25 +10,38 @@ class SpaceColors {
   const SpaceColors({required this.primary, required this.light});
 }
 
-const kPassengerColors = SpaceColors(
-  primary: Color(0xFF0EA5E9), // sky-500    — ciel, horizon, voyage
-  light:   Color(0xFFE0F2FE), // sky-100
-);
+// ── Palettes d'espace — runtime (configurables par l'admin via la marque) ─────
+// Non-const : mises à jour par [applyBrandSpaces] quand la marque est résolue.
+// Le `light` (fond subtil) est dérivé automatiquement de la couleur d'espace.
 
-const kDriverColors = SpaceColors(
-  primary: Color(0xFFF97316), // orange-500 — panneaux, énergie, route
-  light:   Color(0xFFFFF7ED), // orange-50
-);
+SpaceColors kPassengerColors = const SpaceColors(
+  primary: Color(0xFF0EA5E9), light: Color(0xFFE0F2FE)); // sky
 
-const kOwnerColors = SpaceColors(
-  primary: Color(0xFF6366F1), // indigo-500 — gestion, autorité, stratégie
-  light:   Color(0xFFEEF2FF), // indigo-50
-);
+SpaceColors kDriverColors = const SpaceColors(
+  primary: Color(0xFFF97316), light: Color(0xFFFFF7ED)); // orange
 
-const kAgentColors = SpaceColors(
-  primary: Color(0xFF10B981), // emerald-500 — opérations, flux, logistique
-  light:   Color(0xFFECFDF5), // emerald-50
-);
+SpaceColors kOwnerColors = const SpaceColors(
+  primary: Color(0xFF6366F1), light: Color(0xFFEEF2FF)); // indigo
+
+SpaceColors kAgentColors = const SpaceColors(
+  primary: Color(0xFF10B981), light: Color(0xFFECFDF5)); // emerald
+
+/// Teinte claire dérivée d'une couleur d'espace (fond des pills/indicateurs).
+Color _spaceLight(Color c) => Color.lerp(c, Colors.white, 0.88)!;
+
+/// Applique les couleurs d'espace configurées (admin). À appeler au démarrage
+/// et à chaque rafraîchissement de la marque.
+void applyBrandSpaces({
+  required Color passenger,
+  required Color agent,
+  required Color owner,
+  required Color driver,
+}) {
+  kPassengerColors = SpaceColors(primary: passenger, light: _spaceLight(passenger));
+  kAgentColors     = SpaceColors(primary: agent,     light: _spaceLight(agent));
+  kOwnerColors     = SpaceColors(primary: owner,     light: _spaceLight(owner));
+  kDriverColors    = SpaceColors(primary: driver,    light: _spaceLight(driver));
+}
 
 // ── InheritedWidget — donne accès à context.spacePrimary dans toute la tree ───
 

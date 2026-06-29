@@ -484,8 +484,8 @@ class TransProApp extends ConsumerWidget {
     return MaterialApp.router(
       title: branding.appName,
       debugShowCheckedModeBanner: false,
-      theme: appTheme(branding.primaryColor),
-      darkTheme: appDarkTheme(branding.primaryColor),
+      theme: appTheme(branding.primaryColor, branding.secondaryColor, branding.tertiaryColor),
+      darkTheme: appDarkTheme(branding.primaryColor, branding.secondaryColor, branding.tertiaryColor),
       themeMode: themeMode,
       locale: locale,
       supportedLocales: supportedLocales,
