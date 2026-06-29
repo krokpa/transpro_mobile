@@ -122,6 +122,12 @@ abstract class AppLocalizations {
   /// **'Connection restored'**
   String get connectivityRestored;
 
+  /// No description provided for @connectivityActionOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'This action requires an internet connection'**
+  String get connectivityActionOffline;
+
   /// No description provided for @save.
   ///
   /// In en, this message translates to:

@@ -9,6 +9,7 @@ import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/phone_input_field.dart';
 import '../../core/widgets/shimmer.dart';
+import '../../core/connectivity/require_online.dart';
 import '../../l10n/app_localizations.dart';
 import 'ticket_actions.dart';
 
@@ -54,6 +55,7 @@ class _State extends ConsumerState<QuickSaleScreen> {
 
   Future<void> _sell() async {
     if (_trip == null) return;
+    if (!requireOnline(context, ref)) return;
     final user = ref.read(authProvider).user!;
     setState(() => _loading = true);
     HapticFeedback.mediumImpact();

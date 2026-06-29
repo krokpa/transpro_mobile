@@ -7,6 +7,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/connectivity/require_online.dart';
 import '../../core/models/models.dart';
 import '../../core/offline/ticket_cache.dart';
 import '../../core/theme/app_theme.dart';
@@ -127,6 +128,7 @@ class _BookingDetailState extends ConsumerState<_BookingDetail> {
   }
 
   Future<void> _initiatePayment() async {
+    if (!requireOnline(context, ref)) return;
     final booking  = Booking.fromJson(widget.data);
     final authUser = ref.read(authProvider);
     setState(() => _payLoading = true);
@@ -1363,6 +1365,7 @@ class _CreateState extends ConsumerState<BookingCreateScreen> {
   }
 
   Future<void> _book(Trip trip) async {
+    if (!requireOnline(context, ref)) return;
     setState(() => _loading = true);
     String? bookingId;
     try {

@@ -6,6 +6,7 @@
   "connectivityOffline": "No internet connection",
   "connectivityNoInternet": "No internet access",
   "connectivityRestored": "Connection restored",
+  "connectivityActionOffline": "This action requires an internet connection",
 
   "save": "Save",
   "cancel": "Cancel",

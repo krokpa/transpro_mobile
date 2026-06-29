@@ -11,6 +11,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/widgets/payment_logo.dart';
 import '../../core/widgets/phone_input_field.dart';
 import '../../l10n/app_localizations.dart';
+import '../../core/connectivity/require_online.dart';
 import '../passenger/seat_picker.dart';
 import 'ticket_actions.dart';
 
@@ -132,6 +133,7 @@ class _GuichetState extends ConsumerState<GuichetScreen> {
 
   Future<void> _sell() async {
     if (_trip == null) return;
+    if (!requireOnline(context, ref)) return;
     final user = ref.read(authProvider).user!;
     setState(() => _loading = true);
     HapticFeedback.mediumImpact();

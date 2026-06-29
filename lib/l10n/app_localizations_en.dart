@@ -21,6 +21,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get connectivityRestored => 'Connection restored';
 
   @override
+  String get connectivityActionOffline =>
+      'This action requires an internet connection';
+
+  @override
   String get save => 'Save';
 
   @override

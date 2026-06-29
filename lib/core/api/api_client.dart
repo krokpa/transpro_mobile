@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../config/app_constants.dart';
+import '../connectivity/connectivity_provider.dart';
 
 const _baseUrl = kApiBaseUrl;
 const socketBaseUrl = kSocketUrl;
@@ -46,6 +47,14 @@ final dioProvider = Provider<Dio>((ref) {
         return handler.next(response);
       },
       onError: (error, handler) {
+        // Échec réseau → re-vérifie la connectivité immédiatement (le bandeau
+        // global reflète l'état réel sans attendre le prochain heartbeat).
+        if (error.type == DioExceptionType.connectionError ||
+            error.type == DioExceptionType.connectionTimeout ||
+            error.type == DioExceptionType.receiveTimeout ||
+            error.type == DioExceptionType.sendTimeout) {
+          ref.read(connectivityProvider.notifier).recheck();
+        }
         if (kDebugMode) {
           debugPrint(
             '[API] !!! ERROR ${error.response?.statusCode} ${error.requestOptions.uri}',
