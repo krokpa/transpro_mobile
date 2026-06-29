@@ -66,7 +66,7 @@ class _State extends ConsumerState<OwnerDashboardScreen> {
             SliverAppBar(
               expandedHeight: 210,
               pinned: true,
-              backgroundColor: brandOrange,
+              backgroundColor: ref.watch(brandingProvider).primaryColor,
               scrolledUnderElevation: 0,
               elevation: 0,
               automaticallyImplyLeading: false,
@@ -261,17 +261,19 @@ class _State extends ConsumerState<OwnerDashboardScreen> {
 
 // ── Hero background ────────────────────────────────────────────────────────────
 
-class _HeroBackground extends StatelessWidget {
+class _HeroBackground extends ConsumerWidget {
   final User user;
   final AsyncValue<Map<String, dynamic>> statsAsync;
   const _HeroBackground({required this.user, required this.statsAsync});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // Dégradé piloté par la couleur de marque admin (runtime).
+    final brand = ref.watch(brandingProvider).primaryColor;
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [Color(0xFFFF8C00), brandOrange],
+          colors: [Color.lerp(brand, Colors.white, 0.16)!, brand],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

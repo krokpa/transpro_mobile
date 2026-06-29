@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/branding/branding_provider.dart';
 import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/phone_input_field.dart';
@@ -452,7 +453,7 @@ class _State extends ConsumerState<QuickSaleScreen> {
                   child: ElevatedButton(
                     onPressed: _loading ? null : _sell,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: brandOrange,
+                      backgroundColor: ref.watch(brandingProvider).primaryColor,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16)),
                       textStyle: const TextStyle(
