@@ -65,9 +65,13 @@ extension AppColors on BuildContext {
   Color get spaceLight    => SpaceTheme.of(this).light;
 }
 
-const brandOrange = Color(0xFFF97316);
+// Couleur d'accent de marque (white-label). Constante → configurable AU BUILD
+// via --dart-define=BRAND_COLOR_ARGB=0xFF2563EB (valeur ARGB 32 bits). Reste
+// const, donc utilisable dans les ~400 widgets `const` sans churn. La couleur
+// admin runtime (/platform-settings) pilote, elle, le seed du thème + splash/auth.
+const brandOrange = Color(int.fromEnvironment('BRAND_COLOR_ARGB', defaultValue: 0xFFF97316));
 const brandDark   = Color(0xFF0F172A);
-const brandLight  = Color(0xFFFFF7ED);
+const brandLight  = Color(int.fromEnvironment('BRAND_LIGHT_ARGB', defaultValue: 0xFFFFF7ED));
 const brandCanvas = Color(0xFF0C1425);
 
 // Dark palette
