@@ -66,8 +66,9 @@ extension AppColors on BuildContext {
 }
 
 // Accent de marque — configurable AU BUILD via --dart-define=BRAND_COLOR_ARGB.
-// Const → utilisable dans les ~400 widgets `const` sans churn. (Le passage en
-// runtime nécessiterait de « dé-const-ifier » ~100 widgets — voir note projet.)
+// Const → utilisable dans les ~400 widgets `const`. (Passage runtime = 125
+// retraits de `const` ; voir note projet branding.) La couleur primaire admin
+// pilote le seed du thème + splash/auth ; les 4 couleurs d'espace sont runtime.
 const _kBrandPrimaryDefault = Color(int.fromEnvironment('BRAND_COLOR_ARGB', defaultValue: 0xFFF97316));
 const brandOrange = _kBrandPrimaryDefault;
 const brandLight  = Color(int.fromEnvironment('BRAND_LIGHT_ARGB', defaultValue: 0xFFFFF7ED));
