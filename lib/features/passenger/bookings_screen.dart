@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/models/models.dart';
 import '../../core/offline/ticket_cache.dart';
+import '../../core/connectivity/offline_badge.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/company_logo.dart';
 import '../../core/widgets/fade_slide.dart';
@@ -176,27 +177,7 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
             onRefresh: () => ref.refresh(_myBookingsProvider.future),
             child: Column(children: [
               // ── Offline banner ──────────────────────────────────────────
-              if (isOffline)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16, vertical: 10),
-                  color: const Color(0xFFFEF9C3),
-                  child: Row(children: [
-                    const Icon(Icons.wifi_off_rounded,
-                        size: 16, color: Color(0xFFCA8A04)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        l10n.bookingsOfflineMode,
-                        style: const TextStyle(
-                            color: Color(0xFF92400E),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500),
-                      ),
-                    ),
-                  ]),
-                ),
+              OfflineBadge(offline: isOffline, message: l10n.bookingsOfflineMode),
 
               // ── Status chips ────────────────────────────────────────────
               _StatusChipsRow(

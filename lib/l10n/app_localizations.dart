@@ -128,6 +128,12 @@ abstract class AppLocalizations {
   /// **'This action requires an internet connection'**
   String get connectivityActionOffline;
 
+  /// No description provided for @offlineDataNotice.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline — showing saved data'**
+  String get offlineDataNotice;
+
   /// No description provided for @save.
   ///
   /// In en, this message translates to:

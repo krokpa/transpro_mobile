@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../core/api/api_client.dart';
 import '../../core/models/models.dart';
 import '../../core/offline/manifest_cache.dart';
+import '../../core/connectivity/offline_badge.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/shimmer.dart';
 import '../../l10n/app_localizations.dart';
@@ -245,6 +246,7 @@ class _ManifestScreenState extends ConsumerState<ManifestScreen> {
 
           return Column(
             children: [
+              const OfflineBadge(),
               Container(
                 color: context.cardBg,
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),

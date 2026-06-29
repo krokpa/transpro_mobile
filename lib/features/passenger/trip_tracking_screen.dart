@@ -10,6 +10,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:socket_io_client/socket_io_client.dart' as io;
 import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
+import '../../core/connectivity/connectivity_provider.dart';
 import '../../core/config/app_constants.dart';
 import '../../core/config/map_config.dart';
 import '../../core/models/models.dart';
@@ -72,6 +73,16 @@ class _TripTrackingScreenState extends ConsumerState<TripTrackingScreen>
 
     _fetchInitial();
     _connectSocket();
+
+    // Reconnexion automatique quand la connectivité revient (offline → online).
+    ref.listenManual<ConnectivityStatus>(connectivityProvider, (prev, next) {
+      if (_disposed || !mounted) return;
+      final recovered = prev != null && !prev.isOnline && next.isOnline;
+      if (recovered && _socketStatus != _SocketStatus.connected) {
+        setState(() => _socketStatus = _SocketStatus.reconnecting);
+        _socket?.connect();
+      }
+    });
   }
 
   // Reconnexion automatique quand l'app revient au premier plan

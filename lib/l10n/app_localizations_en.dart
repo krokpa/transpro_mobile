@@ -25,6 +25,9 @@ class AppLocalizationsEn extends AppLocalizations {
       'This action requires an internet connection';
 
   @override
+  String get offlineDataNotice => 'Offline — showing saved data';
+
+  @override
   String get save => 'Save';
 
   @override

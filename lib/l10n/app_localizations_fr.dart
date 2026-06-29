@@ -25,6 +25,9 @@ class AppLocalizationsFr extends AppLocalizations {
       'Cette action nécessite une connexion internet';
 
   @override
+  String get offlineDataNotice => 'Hors-ligne — données enregistrées';
+
+  @override
   String get save => 'Enregistrer';
 
   @override
