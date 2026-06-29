@@ -104,6 +104,24 @@ abstract class AppLocalizations {
   /// **'TransPro CI'**
   String get appName;
 
+  /// No description provided for @connectivityOffline.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet connection'**
+  String get connectivityOffline;
+
+  /// No description provided for @connectivityNoInternet.
+  ///
+  /// In en, this message translates to:
+  /// **'No internet access'**
+  String get connectivityNoInternet;
+
+  /// No description provided for @connectivityRestored.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection restored'**
+  String get connectivityRestored;
+
   /// No description provided for @save.
   ///
   /// In en, this message translates to:

@@ -3,6 +3,10 @@
 
   "appName": "TransPro CI",
 
+  "connectivityOffline": "Pas de connexion internet",
+  "connectivityNoInternet": "Aucun accès à internet",
+  "connectivityRestored": "Connexion rétablie",
+
   "save": "Enregistrer",
   "cancel": "Annuler",
   "confirm": "Confirmer",

@@ -12,6 +12,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get appName => 'TransPro CI';
 
   @override
+  String get connectivityOffline => 'No internet connection';
+
+  @override
+  String get connectivityNoInternet => 'No internet access';
+
+  @override
+  String get connectivityRestored => 'Connection restored';
+
+  @override
   String get save => 'Save';
 
   @override

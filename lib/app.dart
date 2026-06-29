@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'l10n/app_localizations.dart';
 import 'core/auth/auth_provider.dart';
 import 'core/branding/branding_provider.dart';
+import 'core/connectivity/connectivity_banner.dart';
 import 'core/l10n/locale_provider.dart';
 import 'core/settings/settings_cache.dart';
 import 'core/theme/app_theme.dart';
@@ -494,6 +495,8 @@ class TransProApp extends ConsumerWidget {
         GlobalWidgetsLocalizations.delegate,
         GlobalCupertinoLocalizations.delegate,
       ],
+      // Bandeau de connectivité temps réel superposé à toute l'app.
+      builder: (context, child) => ConnectivityBanner(child: child!),
       routerConfig: router,
     );
   }
