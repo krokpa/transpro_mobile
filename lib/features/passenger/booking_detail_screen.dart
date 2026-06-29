@@ -8,6 +8,7 @@ import 'package:share_plus/share_plus.dart';
 import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/connectivity/require_online.dart';
+import '../../core/widgets/app_error_view.dart';
 import '../../core/models/models.dart';
 import '../../core/offline/ticket_cache.dart';
 import '../../core/theme/app_theme.dart';
@@ -47,7 +48,7 @@ class BookingDetailScreen extends ConsumerWidget {
       appBar: AppBar(title: Text(l10n.bookingDetailTitle)),
       body: async.when(
         loading: () => AppShimmer.listTiles(count: 6),
-        error: (e, _) => Center(child: Text('$e')),
+        error: (e, _) => AppErrorView(error: e),
         data: (data) => _BookingDetail(data: data, bookingId: bookingId),
       ),
     );
@@ -103,7 +104,7 @@ class _BookingDetailState extends ConsumerState<_BookingDetail> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('$e'), backgroundColor: Colors.red),
+          SnackBar(content: Text(apiErrorMessage(e)), backgroundColor: Colors.red),
         );
       }
     } finally {
@@ -1444,7 +1445,7 @@ class _CreateState extends ConsumerState<BookingCreateScreen> {
       appBar: AppBar(title: Text(l10n.tripBook)),
       body: tripAsync.when(
         loading: () => AppShimmer.tripCards(count: 2),
-        error: (e, _) => Center(child: Text('$e')),
+        error: (e, _) => AppErrorView(error: e),
         data: (trip) {
           final locale = Localizations.localeOf(context).toString();
           final fmt = NumberFormat('#,###', 'fr_FR');

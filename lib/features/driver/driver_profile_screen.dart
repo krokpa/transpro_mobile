@@ -7,6 +7,7 @@ import '../../core/theme/app_theme.dart';
 import '../../core/theme/space_theme.dart';
 import '../../core/widgets/shimmer.dart';
 import '../../core/widgets/user_avatar.dart';
+import '../../core/widgets/app_error_view.dart';
 
 final _driverProfileProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) async {
   final res = await ref.read(dioProvider).get('/driver-space/me');
@@ -58,7 +59,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen>
       backgroundColor: const Color(0xFFF8FAFC),
       body: meAsync.when(
         loading: () => AppShimmer.listTiles(),
-        error: (e, _) => Center(child: Text('Erreur: $e')),
+        error: (e, _) => AppErrorView(error: e),
         data: (data) {
           final driver = data['driver'] as Map<String, dynamic>?;
           final stats  = data['stats'] as Map<String, dynamic>?;
@@ -256,7 +257,7 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen>
                     // Évaluations
                     evalsAsync.when(
                       loading: () => AppShimmer.listTiles(),
-                      error: (e, _) => Center(child: Text('Erreur: $e')),
+                      error: (e, _) => AppErrorView(error: e),
                       data: (edata) {
                         final avg   = (edata['averageRating'] as num?)?.toDouble();
                         final evals = (edata['evaluations'] as List?)?.cast<Map<String, dynamic>>() ?? [];
@@ -417,7 +418,7 @@ class _AbsencesTab extends StatelessWidget {
     )),
     body: absAsync.when(
       loading: () => AppShimmer.listTiles(),
-      error: (e, _) => Center(child: Text('Erreur: $e')),
+      error: (e, _) => AppErrorView(error: e),
       data: (absences) => absences.isEmpty
           ? Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
               Icon(Icons.event_busy_outlined, size: 56, color: Colors.grey[300]),
@@ -526,7 +527,7 @@ class _AbsenceSheetState extends ConsumerState<_AbsenceSheet> {
       if (mounted) Navigator.pop(context);
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
+        SnackBar(content: Text(apiErrorMessage(e)), backgroundColor: Colors.red),
       );
     } finally {
       if (mounted) setState(() => _loading = false);

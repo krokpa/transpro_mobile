@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/shimmer.dart';
+import '../../core/widgets/app_error_view.dart';
 import 'location_sharing_widget.dart';
 
 final _driverScheduleProvider = FutureProvider.autoDispose
@@ -128,7 +129,7 @@ class _DriverTripsScreenState extends ConsumerState<DriverTripsScreen> {
           const LocationSharingBanner(),
           Expanded(child: async.when(
         loading: () => AppShimmer.listTiles(),
-        error: (e, _) => Center(child: Text('Erreur: $e')),
+        error: (e, _) => AppErrorView(error: e),
         data: (trips) {
           if (trips.isEmpty) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
             Icon(Icons.directions_bus_outlined, size: 64, color: Colors.grey[300]),

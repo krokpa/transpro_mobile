@@ -12,6 +12,7 @@ import '../../core/offline/manifest_cache.dart';
 import '../../core/services/permission_service.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/fade_slide.dart';
+import '../../core/widgets/app_error_view.dart';
 import '../../core/widgets/notification_bell.dart';
 import '../../core/widgets/shimmer.dart';
 import '../../core/widgets/user_avatar.dart';
@@ -106,12 +107,7 @@ class DeparturesScreen extends ConsumerWidget {
                 error: (e, _) => SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(vertical: 40),
-                    child: Center(
-                      child: Text(
-                        '${l10n.error}: $e',
-                        style: TextStyle(color: context.textMuted),
-                      ),
-                    ),
+                    child: AppErrorView(error: e),
                   ),
                 ),
                 data: (trips) {

@@ -8,6 +8,7 @@ import '../../core/api/api_client.dart';
 import '../../core/models/models.dart';
 import '../../core/offline/manifest_cache.dart';
 import '../../core/connectivity/offline_badge.dart';
+import '../../core/widgets/app_error_view.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/shimmer.dart';
 import '../../l10n/app_localizations.dart';
@@ -220,7 +221,7 @@ class _ManifestScreenState extends ConsumerState<ManifestScreen> {
       ),
       body: manifestAsync.when(
         loading: () => AppShimmer.manifestTiles(),
-        error: (e, _) => Center(child: Text('${l10n.error}: $e')),
+        error: (e, _) => AppErrorView(error: e),
         data: (entries) {
           final filtered = _filter.isEmpty
               ? entries

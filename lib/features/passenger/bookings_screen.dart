@@ -6,6 +6,7 @@ import '../../core/api/api_client.dart';
 import '../../core/models/models.dart';
 import '../../core/offline/ticket_cache.dart';
 import '../../core/connectivity/offline_badge.dart';
+import '../../core/widgets/app_error_view.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/company_logo.dart';
 import '../../core/widgets/fade_slide.dart';
@@ -164,7 +165,8 @@ class _BookingsScreenState extends ConsumerState<BookingsScreen> {
       ),
       body: async.when(
         loading: () => AppShimmer.bookingCards(),
-        error: (e, _) => Center(child: Text('$e')),
+        error: (e, _) => AppErrorView(
+            error: e, onRetry: () => ref.invalidate(_myBookingsProvider)),
         data: (result) {
           final allBookings = result.bookings;
           final isOffline   = result.isOffline;

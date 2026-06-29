@@ -6,6 +6,7 @@ import '../../core/models/models.dart';
 import '../../core/providers/notification_providers.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/shimmer.dart';
+import '../../core/widgets/app_error_view.dart';
 import '../../l10n/app_localizations.dart';
 
 export '../../core/providers/notification_providers.dart'
@@ -40,7 +41,7 @@ class NotificationsScreen extends ConsumerWidget {
       ),
       body: notifAsync.when(
         loading: () => AppShimmer.listTiles(),
-        error: (e, _) => Center(child: Text('$e')),
+        error: (e, _) => AppErrorView(error: e),
         data: (notifications) {
           if (notifications.isEmpty) {
             return Center(

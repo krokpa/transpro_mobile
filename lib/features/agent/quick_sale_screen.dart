@@ -9,6 +9,7 @@ import '../../core/models/models.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/phone_input_field.dart';
 import '../../core/widgets/shimmer.dart';
+import '../../core/widgets/app_error_view.dart';
 import '../../core/connectivity/require_online.dart';
 import '../../l10n/app_localizations.dart';
 import 'ticket_actions.dart';
@@ -133,8 +134,10 @@ class _State extends ConsumerState<QuickSaleScreen> {
                       final async = ref.watch(_quickTripsProvider);
                       return async.when(
                         loading: () => AppShimmer.tripCards(count: 3),
-                        error: (e, _) => Text('${l10n.error}: $e',
-                            style: const TextStyle(color: Color(0xFFDC2626))),
+                        error: (e, _) => AppErrorView(
+                          error: e,
+                          onRetry: () => ref.invalidate(_quickTripsProvider),
+                        ),
                         data: (trips) {
                           if (trips.isEmpty) {
                             return Padding(

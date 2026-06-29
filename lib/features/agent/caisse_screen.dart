@@ -5,6 +5,7 @@ import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/payment_logo.dart';
+import '../../core/widgets/app_error_view.dart';
 import '../../core/widgets/shimmer.dart';
 import '../../core/widgets/user_avatar.dart';
 import '../../l10n/app_localizations.dart';
@@ -105,7 +106,7 @@ class _State extends ConsumerState<CaisseScreen> {
         const Divider(height: 1),
         Expanded(child: async.when(
           loading: () => AppShimmer.listTiles(),
-          error: (e, _) => Center(child: Text('${l10n.error}: $e')),
+          error: (e, _) => AppErrorView(error: e),
           data: (data) => _CaisseContent(data: data),
         )),
       ]),
