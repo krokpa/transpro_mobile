@@ -83,7 +83,7 @@ class _AgentProfileScreenState extends ConsumerState<AgentProfileScreen> {
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(color: Colors.white.withValues(alpha: 0.4), width: 3),
-                                boxShadow: [BoxShadow(color: brandOrange.withValues(alpha: 0.4), blurRadius: 20, offset: const Offset(0, 8))],
+                                boxShadow: [BoxShadow(color: brandOrange.withValues(alpha: 0.4), blurRadius: 20, offset: Offset(0, 8))],
                               ),
                               child: UserAvatarWidget(
                                 firstName: user.firstName,
@@ -127,7 +127,7 @@ class _AgentProfileScreenState extends ConsumerState<AgentProfileScreen> {
                                 border: Border.all(color: brandOrange.withValues(alpha: 0.4)),
                               ),
                               child: Text(l10n.agentRole,
-                                style: const TextStyle(color: brandOrange, fontWeight: FontWeight.w600, fontSize: 12)),
+                                style: TextStyle(color: brandOrange, fontWeight: FontWeight.w600, fontSize: 12)),
                             ),
                             if (user.stationName != null) ...[
                               const SizedBox(width: 8),
@@ -292,7 +292,7 @@ class _AppearanceTiles extends StatelessWidget {
         leading: Container(
           width: 36, height: 36,
           decoration: BoxDecoration(color: context.tagBg, borderRadius: BorderRadius.circular(10)),
-          child: const Icon(Icons.palette_outlined, color: brandOrange, size: 18),
+          child: Icon(Icons.palette_outlined, color: brandOrange, size: 18),
         ),
         title: Text(l10n.settingsTheme,
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.textPrimary)),
@@ -314,7 +314,7 @@ class _AppearanceTiles extends StatelessWidget {
         leading: Container(
           width: 36, height: 36,
           decoration: BoxDecoration(color: context.tagBg, borderRadius: BorderRadius.circular(10)),
-          child: const Icon(Icons.language_outlined, color: brandOrange, size: 18),
+          child: Icon(Icons.language_outlined, color: brandOrange, size: 18),
         ),
         title: Text(l10n.settingsLanguage,
           style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.textPrimary)),

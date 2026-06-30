@@ -184,7 +184,7 @@ class _VehicleGridCard extends StatelessWidget {
               Container(
                 width: 40, height: 40,
                 decoration: BoxDecoration(color: brandLight, borderRadius: BorderRadius.circular(10)),
-                child: const Icon(Icons.directions_bus_outlined, color: brandOrange, size: 20),
+                child: Icon(Icons.directions_bus_outlined, color: brandOrange, size: 20),
               ),
               const Spacer(),
               Container(
@@ -295,7 +295,7 @@ class _VehicleCard extends StatelessWidget {
                     color: context.tagBg,
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.directions_bus_outlined,
                     color: brandOrange,
                     size: 24,

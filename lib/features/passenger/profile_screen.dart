@@ -345,7 +345,7 @@ class _ProfileHeroBackground extends StatelessWidget {
                       ),
                       child: Text(
                         l10n.passengerRole,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: brandOrange,
                           fontWeight: FontWeight.w600,
                           fontSize: 12,
@@ -436,7 +436,7 @@ class _ThemeToggleTile extends StatelessWidget {
       leading: Container(
         width: 36, height: 36,
         decoration: BoxDecoration(color: context.tagBg, borderRadius: BorderRadius.circular(10)),
-        child: const Icon(Icons.palette_outlined, color: brandOrange, size: 18),
+        child: Icon(Icons.palette_outlined, color: brandOrange, size: 18),
       ),
       title: Text(l10n.settingsTheme, style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.textPrimary)),
       trailing: DropdownButton<ThemeMode>(
@@ -474,7 +474,7 @@ class _LanguageTile extends StatelessWidget {
       leading: Container(
         width: 36, height: 36,
         decoration: BoxDecoration(color: context.tagBg, borderRadius: BorderRadius.circular(10)),
-        child: const Icon(Icons.language_outlined, color: brandOrange, size: 18),
+        child: Icon(Icons.language_outlined, color: brandOrange, size: 18),
       ),
       title: Text(l10n.settingsLanguage,
         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: context.textPrimary)),

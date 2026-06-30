@@ -328,7 +328,7 @@ class _ProfileHeader extends StatelessWidget {
                     boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 12, offset: const Offset(0, 4))],
                   ),
                   child: Center(child: Text(initials,
-                    style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: brandOrange))),
+                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: brandOrange))),
                 ),
                 const SizedBox(width: 14),
                 Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -684,7 +684,7 @@ class _SectionHeader extends StatelessWidget {
     if (actionLabel != null && onAction != null)
       GestureDetector(
         onTap: onAction,
-        child: Text(actionLabel!, style: const TextStyle(fontSize: 12, color: brandOrange, fontWeight: FontWeight.w600)),
+        child: Text(actionLabel!, style: TextStyle(fontSize: 12, color: brandOrange, fontWeight: FontWeight.w600)),
       ),
   ]);
 }
@@ -745,9 +745,9 @@ class _TripCard extends StatelessWidget {
           ),
           child: Column(children: [
             Text(_fmtDay(dept),
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: brandOrange)),
+              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: brandOrange)),
             Text(dept != null ? DateTime.parse(dept).toLocal().day.toString() : '—',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: brandOrange, height: 1.1)),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: brandOrange, height: 1.1)),
             Text(_fmtTime(dept),
               style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
           ]),
@@ -1302,10 +1302,10 @@ class _AddAbsenceSheetState extends State<_AddAbsenceSheet> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 10),
                     decoration: BoxDecoration(
-                      color: _type == entry.key ? brandOrange : const Color(0xFFF8FAFC),
+                      color: _type == entry.key ? brandOrange : Color(0xFFF8FAFC),
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                        color: _type == entry.key ? brandOrange : const Color(0xFFE2E8F0)),
+                        color: _type == entry.key ? brandOrange : Color(0xFFE2E8F0)),
                     ),
                     child: Center(child: Text(entry.value,
                       style: TextStyle(

@@ -322,7 +322,7 @@ class _State extends ConsumerState<ParcelScanScreen> {
             onPressed: () => setState(() => _manualEntry = !_manualEntry),
             child: Text(
               _manualEntry ? 'Scanner QR' : 'Code manuel',
-              style: const TextStyle(color: brandOrange, fontWeight: FontWeight.w600),
+              style: TextStyle(color: brandOrange, fontWeight: FontWeight.w600),
             ),
           ),
         ],

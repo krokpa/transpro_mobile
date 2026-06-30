@@ -339,7 +339,7 @@ class _State extends ConsumerState<QuickSaleScreen> {
                         const SizedBox(width: 16),
                         Text(
                           '= ${(_trip!.price * _pax).toStringAsFixed(0)} F',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontWeight: FontWeight.w800,
                             fontSize: 20,
                             color: brandOrange,
@@ -495,7 +495,7 @@ class _AsmBanner extends StatelessWidget {
       border: Border.all(color: brandOrange.withValues(alpha: 0.3)),
     ),
     child: Column(children: [
-      const Icon(Icons.event_seat_outlined, color: brandOrange, size: 32),
+      Icon(Icons.event_seat_outlined, color: brandOrange, size: 32),
       const SizedBox(height: 8),
       const Text(
         'Tous les voyages disponibles ont des sièges numérotés.',

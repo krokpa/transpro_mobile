@@ -47,7 +47,7 @@ class _BannerCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: brandOrange.withValues(alpha: 0.3)),
           boxShadow: [
-            BoxShadow(color: brandOrange.withValues(alpha: 0.08), blurRadius: 12, offset: const Offset(0, 3)),
+            BoxShadow(color: brandOrange.withValues(alpha: 0.08), blurRadius: 12, offset: Offset(0, 3)),
           ],
         ),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -56,7 +56,7 @@ class _BannerCard extends StatelessWidget {
             Container(
               width: 32, height: 32,
               decoration: BoxDecoration(color: brandOrange.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(8)),
-              child: const Icon(Icons.rocket_launch_rounded, size: 16, color: brandOrange),
+              child: Icon(Icons.rocket_launch_rounded, size: 16, color: brandOrange),
             ),
             const SizedBox(width: 10),
             Expanded(child: Column(
@@ -72,7 +72,7 @@ class _BannerCard extends StatelessWidget {
                 ),
               ],
             )),
-            const Icon(Icons.chevron_right_rounded, color: brandOrange, size: 20),
+            Icon(Icons.chevron_right_rounded, color: brandOrange, size: 20),
           ]),
 
           const SizedBox(height: 10),
@@ -88,7 +88,7 @@ class _BannerCard extends StatelessWidget {
                 value: v,
                 minHeight: 6,
                 backgroundColor: brandOrange.withValues(alpha: 0.15),
-                valueColor: const AlwaysStoppedAnimation(brandOrange),
+                valueColor: AlwaysStoppedAnimation(brandOrange),
               ),
             ),
           ),
@@ -116,7 +116,7 @@ class _NextStepChip extends StatelessWidget {
       Icon(
         isBlocked ? Icons.lock_outline_rounded : Icons.arrow_circle_right_outlined,
         size: 13,
-        color: isBlocked ? const Color(0xFFDC2626) : brandOrange,
+        color: isBlocked ? Color(0xFFDC2626) : brandOrange,
       ),
       const SizedBox(width: 5),
       Expanded(child: Text(

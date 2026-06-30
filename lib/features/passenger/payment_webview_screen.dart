@@ -72,7 +72,7 @@ class _State extends State<PaymentWebViewScreen> {
         if (_loading)
           Center(
             child: Column(mainAxisSize: MainAxisSize.min, children: [
-              const CircularProgressIndicator(color: brandOrange),
+              CircularProgressIndicator(color: brandOrange),
               const SizedBox(height: 12),
               Text(l10n.paymentLoadingWebview,
                   style: TextStyle(color: context.textSecondary, fontSize: 13)),

@@ -213,7 +213,7 @@ class _PlanUpgradePrompt extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: brandOrange.withValues(alpha: 0.25), width: 2),
               ),
-              child: const Icon(Icons.workspace_premium_rounded,
+              child: Icon(Icons.workspace_premium_rounded,
                 size: 38, color: brandOrange),
             ),
             const SizedBox(height: 20),
@@ -242,7 +242,7 @@ class _PlanUpgradePrompt extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.check_circle_outline, size: 16, color: brandOrange),
+                  Icon(Icons.check_circle_outline, size: 16, color: brandOrange),
                   const SizedBox(width: 8),
                   Text(
                     'Plans Professional & Enterprise',
@@ -562,7 +562,7 @@ class _ParcelPhotoSheetState extends State<_ParcelPhotoSheet> {
                     color: brandOrange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.inventory_2_outlined, color: brandOrange, size: 18),
+                  child: Icon(Icons.inventory_2_outlined, color: brandOrange, size: 18),
                 ),
                 const SizedBox(width: 12),
                 Expanded(

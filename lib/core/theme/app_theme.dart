@@ -65,15 +65,23 @@ extension AppColors on BuildContext {
   Color get spaceLight    => SpaceTheme.of(this).light;
 }
 
-// Accent de marque — configurable AU BUILD via --dart-define=BRAND_COLOR_ARGB.
-// Const → utilisable dans les ~400 widgets `const`. (Passage runtime = 125
-// retraits de `const` ; voir note projet branding.) La couleur primaire admin
-// pilote le seed du thème + splash/auth ; les 4 couleurs d'espace sont runtime.
+// Défauts d'accent (build-time via --dart-define=BRAND_COLOR_ARGB).
 const _kBrandPrimaryDefault = Color(int.fromEnvironment('BRAND_COLOR_ARGB', defaultValue: 0xFFF97316));
-const brandOrange = _kBrandPrimaryDefault;
-const brandLight  = Color(int.fromEnvironment('BRAND_LIGHT_ARGB', defaultValue: 0xFFFFF7ED));
+const _kBrandLightDefault   = Color(int.fromEnvironment('BRAND_LIGHT_ARGB', defaultValue: 0xFFFFF7ED));
+
+// Accent de marque — RUNTIME : piloté par la couleur primaire admin
+// (/platform-settings) via [applyBrandPrimary]. Reflété par tous les widgets
+// au prochain rebuild (app.dart reconstruit le thème au changement de marque).
+Color brandOrange = _kBrandPrimaryDefault;
+Color brandLight  = _kBrandLightDefault;
 const brandDark   = Color(0xFF0F172A);
 const brandCanvas = Color(0xFF0C1425);
+
+/// Met à jour l'accent de marque runtime (couleur primaire admin).
+void applyBrandPrimary(Color primary) {
+  brandOrange = primary;
+  brandLight  = Color.lerp(primary, Colors.white, 0.90)!;
+}
 
 // Dark palette
 const darkSurface  = Color(0xFF1E293B);

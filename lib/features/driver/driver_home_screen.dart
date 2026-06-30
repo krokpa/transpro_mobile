@@ -192,7 +192,7 @@ class DriverHomeScreen extends ConsumerWidget {
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(16, 20, 16, 8),
                 child: Row(children: [
-                  const Icon(Icons.wb_sunny_outlined, size: 16, color: brandOrange),
+                  Icon(Icons.wb_sunny_outlined, size: 16, color: brandOrange),
                   const SizedBox(width: 6),
                   const Text("Aujourd'hui", style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15, color: brandDark)),
                   const Spacer(),
@@ -371,7 +371,7 @@ class _TripCardState extends State<_TripCard> {
           child: Row(children: [
             // Time
             Column(crossAxisAlignment: CrossAxisAlignment.center, mainAxisSize: MainAxisSize.min, children: [
-              Text(_fmtTime(dept), style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: brandOrange, height: 1)),
+              Text(_fmtTime(dept), style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900, color: brandOrange, height: 1)),
               Text(_fmtShortDate(dept), style: const TextStyle(fontSize: 10, color: Color(0xFF94A3B8))),
             ]),
             const SizedBox(width: 16),

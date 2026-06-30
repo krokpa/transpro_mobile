@@ -319,7 +319,7 @@ class _State extends ConsumerState<DeliveryRequestScreen> {
                 border: Border.all(color: brandOrange.withValues(alpha: 0.2)),
               ),
               child: Row(children: [
-                const Icon(Icons.home_outlined, color: brandOrange, size: 20),
+                Icon(Icons.home_outlined, color: brandOrange, size: 20),
                 const SizedBox(width: 10),
                 const Expanded(child: Text(
                   'Renseignez l\'adresse où vous souhaitez recevoir votre colis. '
@@ -504,7 +504,7 @@ class _Row extends StatelessWidget {
         style: TextStyle(
           fontSize: 13,
           fontWeight: FontWeight.w600,
-          color: highlight ? brandOrange : const Color(0xFF0F172A),
+          color: highlight ? brandOrange : Color(0xFF0F172A),
         ),
       )),
     ]),

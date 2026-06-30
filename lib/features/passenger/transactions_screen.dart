@@ -199,7 +199,7 @@ class _SummaryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [brandOrange, Color(0xFFE8430E)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,

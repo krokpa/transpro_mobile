@@ -73,10 +73,10 @@ class _TicketView extends StatelessWidget {
                             style: TextStyle(
                                 fontSize: 17, fontWeight: FontWeight.w800, color: context.textPrimary)),
                         Row(children: [
-                          const Icon(Icons.arrow_forward, size: 13, color: brandOrange),
+                          Icon(Icons.arrow_forward, size: 13, color: brandOrange),
                           const SizedBox(width: 4),
                           Text('${trip['destinationCity'] ?? '—'}',
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 14, fontWeight: FontWeight.w600, color: brandOrange)),
                         ]),
                       ],
@@ -85,7 +85,7 @@ class _TicketView extends StatelessWidget {
                   if (depAt != null)
                     Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                       Text(DateFormat('HH:mm').format(depAt.toLocal()),
-                          style: const TextStyle(
+                          style: TextStyle(
                               fontSize: 24, fontWeight: FontWeight.w900, color: brandOrange)),
                       Text(DateFormat('EEE d MMM', locale).format(depAt.toLocal()),
                           style: TextStyle(fontSize: 11, color: context.textMuted)),

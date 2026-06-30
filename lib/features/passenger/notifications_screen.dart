@@ -31,7 +31,7 @@ class NotificationsScreen extends ConsumerWidget {
                     onPressed: () => _markAllRead(ref),
                     child: Text(
                       l10n.notificationsMarkAllRead,
-                      style: const TextStyle(color: brandOrange),
+                      style: TextStyle(color: brandOrange),
                     ),
                   );
                 },
@@ -152,7 +152,7 @@ class _NotificationTile extends StatelessWidget {
             : Container(
                 width: 8,
                 height: 8,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: brandOrange,
                   shape: BoxShape.circle,
                 ),

@@ -343,7 +343,7 @@ class _State extends ConsumerState<SendParcelScreen> {
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.receipt_outlined, color: brandOrange, size: 18),
+                  Icon(Icons.receipt_outlined, color: brandOrange, size: 18),
                   const SizedBox(width: 10),
                   _feeLoading
                       ? Text(
@@ -634,7 +634,7 @@ class _TripPicker extends ConsumerWidget {
                         ),
                       ],
                       if (isSel)
-                        const Padding(
+                        Padding(
                           padding: EdgeInsets.only(left: 8),
                           child: Icon(Icons.check_circle, color: brandOrange, size: 18),
                         ),

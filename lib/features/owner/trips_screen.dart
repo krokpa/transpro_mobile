@@ -176,7 +176,7 @@ class _TripRow extends StatelessWidget {
         child: Column(children: [
           Row(children: [
             Text(DateFormat('HH:mm').format(trip.departureAt.toLocal()),
-              style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: brandOrange)),
+              style: TextStyle(fontWeight: FontWeight.w800, fontSize: 18, color: brandOrange)),
             const SizedBox(width: 10),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('${trip.originCity} → ${trip.destinationCity}',

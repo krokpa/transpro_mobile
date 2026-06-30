@@ -169,7 +169,7 @@ class _StationCard extends StatelessWidget {
               ),
               child: Icon(
                 Icons.store_outlined,
-                color: isPrimary ? brandOrange : const Color(0xFF94A3B8),
+                color: isPrimary ? brandOrange : Color(0xFF94A3B8),
                 size: 22,
               ),
             ),
@@ -182,7 +182,7 @@ class _StationCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(color: brandLight, borderRadius: BorderRadius.circular(8)),
-                    child: const Text('Principale',
+                    child: Text('Principale',
                       style: TextStyle(color: brandOrange, fontWeight: FontWeight.w600, fontSize: 11)),
                   ),
               ]),

@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/api/api_client.dart';
@@ -150,7 +150,7 @@ class _DriversScreenState extends ConsumerState<DriversScreen> {
                       fillColor: Colors.white,
                       border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
                       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
-                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: brandOrange, width: 1.5)),
+                      focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide(color: brandOrange, width: 1.5)),
                       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     ),
                   ),
@@ -182,7 +182,7 @@ class _DriversScreenState extends ConsumerState<DriversScreen> {
                             onSelected: (_) => setState(() => _filter = f.$1),
                             selectedColor: brandOrange,
                             backgroundColor: const Color(0xFFF8FAFC),
-                            side: BorderSide(color: _filter == f.$1 ? brandOrange : const Color(0xFFE2E8F0)),
+                            side: BorderSide(color: _filter == f.$1 ? brandOrange : Color(0xFFE2E8F0)),
                             showCheckmark: false,
                           ),
                         ),
@@ -562,7 +562,7 @@ class _DriverCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(color: const Color(0xFFFED7AA)),
                   ),
-                  child: const Text('Voir →',
+                  child: Text('Voir →',
                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: brandOrange)),
                 ),
               ),
@@ -687,7 +687,7 @@ class _AddDriverSheetState extends ConsumerState<_AddDriverSheet> {
                 ),
                 child: Row(children: [
                   Icon(Icons.calendar_today_outlined, size: 16,
-                    color: _licenseExpiry != null ? brandOrange : const Color(0xFF94A3B8)),
+                    color: _licenseExpiry != null ? brandOrange : Color(0xFF94A3B8)),
                   const SizedBox(width: 10),
                   Text(
                     _licenseExpiry != null
@@ -747,7 +747,7 @@ class _Field extends StatelessWidget {
       enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
         borderSide: const BorderSide(color: Color(0xFFE2E8F0))),
       focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-        borderSide: const BorderSide(color: brandOrange, width: 1.5)),
+        borderSide: BorderSide(color: brandOrange, width: 1.5)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
     ),
   );

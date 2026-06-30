@@ -66,7 +66,7 @@ class _OwnerProfileScreenState extends ConsumerState<OwnerProfileScreen> {
           flexibleSpace: FlexibleSpaceBar(
             collapseMode: CollapseMode.pin,
             background: Container(
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [Color(0xFFFF8C00), brandOrange],
                   begin: Alignment.topLeft, end: Alignment.bottomRight,
@@ -161,7 +161,7 @@ class _OwnerProfileScreenState extends ConsumerState<OwnerProfileScreen> {
           Card(
             child: Column(children: [
               ListTile(
-                leading: const Icon(Icons.palette_outlined, color: brandOrange),
+                leading: Icon(Icons.palette_outlined, color: brandOrange),
                 title: Text(l10n.settingsTheme, style: const TextStyle(fontWeight: FontWeight.w500)),
                 trailing: DropdownButton<ThemeMode>(
                   value: themeMode,
@@ -179,7 +179,7 @@ class _OwnerProfileScreenState extends ConsumerState<OwnerProfileScreen> {
               ),
               const Divider(height: 1, indent: 56),
               ListTile(
-                leading: const Icon(Icons.language_outlined, color: brandOrange),
+                leading: Icon(Icons.language_outlined, color: brandOrange),
                 title: Text(l10n.settingsLanguage, style: const TextStyle(fontWeight: FontWeight.w500)),
                 trailing: DropdownButton<String>(
                   value: locale?.languageCode ?? '',

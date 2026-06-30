@@ -390,7 +390,7 @@ class _ParcelCard extends ConsumerWidget {
               if (fee > 0)
                 Text(
                   '$fmtFee FCFA',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
                     color: brandOrange,
@@ -433,7 +433,7 @@ class _MiniProgress extends StatelessWidget {
           value:           progress,
           backgroundColor: context.divider,
           valueColor:      AlwaysStoppedAnimation<Color>(
-            status == 'DELIVERED' ? const Color(0xFF16A34A) : brandOrange,
+            status == 'DELIVERED' ? Color(0xFF16A34A) : brandOrange,
           ),
           minHeight: 4,
         ),

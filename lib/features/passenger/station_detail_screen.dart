@@ -346,12 +346,12 @@ class _StationBody extends StatelessWidget {
                         child: OutlinedButton.icon(
                           onPressed: () =>
                               _openMap(lat, lng, station['name'] ?? ''),
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.map_outlined,
                             color: brandOrange,
                             size: 18,
                           ),
-                          label: const Text(
+                          label: Text(
                             'Google Maps',
                             style: TextStyle(
                               color: brandOrange,
@@ -360,7 +360,7 @@ class _StationBody extends StatelessWidget {
                           ),
                           style: OutlinedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
-                            side: const BorderSide(color: brandOrange),
+                            side: BorderSide(color: brandOrange),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
@@ -458,7 +458,7 @@ class _StationBody extends StatelessWidget {
                                 ),
                                 Text(
                                   '${NumberFormat('#,###', locale).format(price)} F',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 14,
                                     fontWeight: FontWeight.w800,
                                     color: brandOrange,

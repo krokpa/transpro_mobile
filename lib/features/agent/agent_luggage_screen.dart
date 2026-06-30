@@ -235,7 +235,7 @@ class _PlanUpgradePrompt extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(color: brandOrange.withValues(alpha: 0.25), width: 2),
               ),
-              child: const Icon(Icons.workspace_premium_rounded,
+              child: Icon(Icons.workspace_premium_rounded,
                 size: 38, color: brandOrange),
             ),
             const SizedBox(height: 20),
@@ -268,7 +268,7 @@ class _PlanUpgradePrompt extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.check_circle_outline,
+                  Icon(Icons.check_circle_outline,
                     size: 16, color: brandOrange),
                   const SizedBox(width: 8),
                   Text(
@@ -311,7 +311,7 @@ class _LuggageCard extends ConsumerWidget {
             color: brandOrange.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Icon(Icons.person_outline, color: brandOrange, size: 20),
+          child: Icon(Icons.person_outline, color: brandOrange, size: 20),
         ),
         title: Text(
           '${luggage.bagCount} sac(s) · ${luggage.totalWeightKg} kg',

@@ -125,7 +125,7 @@ class _SeatPickerSheetState extends ConsumerState<SeatPickerSheet> {
                     ),
                     child: Text(
                       '${_selected.length}/${widget.maxSeats}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: brandOrange,
                         fontWeight: FontWeight.w700,
                         fontSize: 13,

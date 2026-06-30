@@ -529,7 +529,7 @@ class _PhoneStepState extends State<_PhoneStep> {
                 color: sheetCtx.divider, borderRadius: BorderRadius.circular(2)),
             ),
             const SizedBox(height: 20),
-            const Icon(Icons.info_outline_rounded, color: brandOrange, size: 40),
+            Icon(Icons.info_outline_rounded, color: brandOrange, size: 40),
             const SizedBox(height: 12),
             Text('Ce numéro a déjà un compte',
                 textAlign: TextAlign.center,

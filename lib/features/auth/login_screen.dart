@@ -355,7 +355,7 @@ class _ChoiceCard extends StatelessWidget {
       curve: Curves.easeInOut,
       decoration: BoxDecoration(
         gradient: selected
-            ? const LinearGradient(
+            ? LinearGradient(
                 colors: [Color(0xFFFF8C00), brandOrange],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,

@@ -647,7 +647,7 @@ class _NextBookingCardState extends State<_NextBookingCard> {
                           ),
                         ),
                       ),
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.symmetric(horizontal: 8),
                         child: Icon(
                           Icons.directions_bus_rounded,
@@ -955,7 +955,7 @@ class _TripCard extends StatelessWidget {
                     children: [
                       Text(
                         '${trip.price.toStringAsFixed(0)} F',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 17,
                           color: brandOrange,

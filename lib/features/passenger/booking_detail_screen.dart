@@ -665,12 +665,12 @@ class _TrackTripButton extends StatelessWidget {
           gradient: LinearGradient(
             colors: isEnRoute
                 ? [const Color(0xFF16A34A), const Color(0xFF15803D)]
-                : [brandOrange, const Color(0xFFE04A10)],
+                : [brandOrange, Color(0xFFE04A10)],
           ),
           borderRadius: BorderRadius.circular(14),
           boxShadow: [
             BoxShadow(
-              color: (isEnRoute ? const Color(0xFF16A34A) : brandOrange)
+              color: (isEnRoute ? Color(0xFF16A34A) : brandOrange)
                   .withAlpha(60),
               blurRadius: 12,
               offset: const Offset(0, 4),
@@ -1041,11 +1041,11 @@ class _TimelinePoint extends StatelessWidget {
                 height: dotSize,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isFirst || isLast ? brandOrange : const Color(0xFF3B82F6),
+                  color: isFirst || isLast ? brandOrange : Color(0xFF3B82F6),
                   border: Border.all(color: Colors.white, width: 2),
                   boxShadow: [
                     BoxShadow(
-                      color: (isFirst || isLast ? brandOrange : const Color(0xFF3B82F6))
+                      color: (isFirst || isLast ? brandOrange : Color(0xFF3B82F6))
                           .withValues(alpha: 0.3),
                       blurRadius: 4,
                     ),
@@ -1155,7 +1155,7 @@ class _TappableInfoRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
         children: [
-          const Icon(Icons.location_on_outlined, size: 16, color: brandOrange),
+          Icon(Icons.location_on_outlined, size: 16, color: brandOrange),
           const SizedBox(width: 8),
           Text(
             '$label : ',
@@ -1164,14 +1164,14 @@ class _TappableInfoRow extends StatelessWidget {
           Expanded(
             child: Text(
               value,
-              style: const TextStyle(
+              style: TextStyle(
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
                 color: brandOrange,
               ),
             ),
           ),
-          const Icon(Icons.chevron_right, size: 14, color: brandOrange),
+          Icon(Icons.chevron_right, size: 14, color: brandOrange),
         ],
       ),
     ),
@@ -1200,7 +1200,7 @@ class _TicketCard extends StatelessWidget {
           // Header
           Container(
             padding: const EdgeInsets.all(16),
-            decoration: const BoxDecoration(
+            decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [brandOrange, Color(0xFFE04A10)],
                 begin: Alignment.topLeft,
@@ -1501,7 +1501,7 @@ class _CreateState extends ConsumerState<BookingCreateScreen> {
                                     l10n.bookingPricePerSeat(
                                       fmt.format(trip.price.toInt()),
                                     ),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.w700,
                                       color: brandOrange,
                                     ),
@@ -1553,14 +1553,14 @@ class _CreateState extends ConsumerState<BookingCreateScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.event_seat_outlined,
                                     color: brandOrange,
                                   ),
                                   const SizedBox(width: 8),
                                   Text(
                                     l10n.bookingChooseSeats,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: brandOrange,
                                       fontWeight: FontWeight.w600,
                                       fontSize: 15,
@@ -1624,7 +1624,7 @@ class _CreateState extends ConsumerState<BookingCreateScreen> {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      const Icon(
+                                      Icon(
                                         Icons.add,
                                         size: 14,
                                         color: brandOrange,
@@ -1632,7 +1632,7 @@ class _CreateState extends ConsumerState<BookingCreateScreen> {
                                       const SizedBox(width: 4),
                                       Text(
                                         l10n.bookingModifySeats,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           color: brandOrange,
                                           fontWeight: FontWeight.w600,
                                           fontSize: 13,
@@ -1681,7 +1681,7 @@ class _CreateState extends ConsumerState<BookingCreateScreen> {
                             const Spacer(),
                             Text(
                               '= ${fmt.format((_passengerCount * trip.price).toInt())} F',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 18,
                                 color: brandOrange,

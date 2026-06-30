@@ -29,7 +29,7 @@ class SetupStepperScreen extends ConsumerWidget {
         ),
       ),
       body: progressAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: brandOrange)),
+        loading: () => Center(child: CircularProgressIndicator(color: brandOrange)),
         error: (e, _) => _ErrorView(onRetry: () => ref.invalidate(setupProgressProvider)),
         data: (progress) => _StepperBody(progress: progress),
       ),
@@ -76,13 +76,13 @@ class _ProgressHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
+        gradient: LinearGradient(
           colors: [brandOrange, Color(0xFFFF6B00)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: brandOrange.withValues(alpha: 0.25), blurRadius: 16, offset: const Offset(0, 6))],
+        boxShadow: [BoxShadow(color: brandOrange.withValues(alpha: 0.25), blurRadius: 16, offset: Offset(0, 6))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

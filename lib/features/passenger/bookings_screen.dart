@@ -450,7 +450,7 @@ class _FilterBadgeButton extends StatelessWidget {
               child: Container(
                 width: 16,
                 height: 16,
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: brandOrange,
                   shape: BoxShape.circle,
                 ),
@@ -574,7 +574,7 @@ class _FilterSheetState extends State<_FilterSheet> {
             const Spacer(),
             TextButton(
               onPressed: _reset,
-              child: const Text('Réinitialiser',
+              child: Text('Réinitialiser',
                   style: TextStyle(color: brandOrange, fontSize: 13)),
             ),
           ]),
@@ -841,7 +841,7 @@ class _NoFilterResults extends StatelessWidget {
           const SizedBox(height: 16),
           TextButton(
             onPressed: onReset,
-            child: const Text('Réinitialiser les filtres',
+            child: Text('Réinitialiser les filtres',
                 style: TextStyle(color: brandOrange)),
           ),
         ]),
@@ -952,7 +952,7 @@ class _BookingGridCard extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   '${booking.totalAmount.toStringAsFixed(0)} F',
-                  style: const TextStyle(fontWeight: FontWeight.w800, color: brandOrange, fontSize: 14),
+                  style: TextStyle(fontWeight: FontWeight.w800, color: brandOrange, fontSize: 14),
                 ),
               ]),
             ),
@@ -1085,7 +1085,7 @@ class _BookingCard extends StatelessWidget {
                 const Spacer(),
                 Text(
                   '${booking.totalAmount.toStringAsFixed(0)} F',
-                  style: const TextStyle(
+                  style: TextStyle(
                       fontWeight: FontWeight.w800,
                       color: brandOrange,
                       fontSize: 15),

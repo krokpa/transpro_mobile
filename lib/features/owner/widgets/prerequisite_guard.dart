@@ -77,7 +77,7 @@ class PrerequisiteBlockedScreen extends StatelessWidget {
             const SizedBox(height: 12),
             TextButton(
               onPressed: () => context.push('/owner/setup'),
-              child: const Text('Voir le guide de démarrage',
+              child: Text('Voir le guide de démarrage',
                 style: TextStyle(color: brandOrange, fontWeight: FontWeight.w600)),
             ),
           ]),

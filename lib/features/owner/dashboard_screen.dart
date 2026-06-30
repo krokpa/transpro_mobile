@@ -187,7 +187,7 @@ class _State extends ConsumerState<OwnerDashboardScreen> {
                                       builder: (_, h, __) => Container(
                                         height: h,
                                         decoration: BoxDecoration(
-                                          gradient: const LinearGradient(
+                                          gradient: LinearGradient(
                                             colors: [brandOrange, Color(0xFFFF6B00)],
                                             begin: Alignment.bottomCenter,
                                             end: Alignment.topCenter,
@@ -480,14 +480,14 @@ class _RouteRow extends StatelessWidget {
       border: Border.all(color: context.divider),
     ),
     child: Row(children: [
-      Container(width: 8, height: 8, decoration: const BoxDecoration(color: brandOrange, shape: BoxShape.circle)),
+      Container(width: 8, height: 8, decoration: BoxDecoration(color: brandOrange, shape: BoxShape.circle)),
       const SizedBox(width: 10),
       Expanded(child: Text(route['name'] ?? '—',
         style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13, color: context.textPrimary))),
       Text('${route['trips'] ?? 0} voy.', style: TextStyle(color: context.textMuted, fontSize: 11)),
       const SizedBox(width: 10),
       Text('${NumberFormat('#,###', locale).format((route['revenue'] as num?)?.toInt() ?? 0)} F',
-        style: const TextStyle(fontWeight: FontWeight.w700, color: brandOrange, fontSize: 13)),
+        style: TextStyle(fontWeight: FontWeight.w700, color: brandOrange, fontSize: 13)),
     ]),
   );
 }

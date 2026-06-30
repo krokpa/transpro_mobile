@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../api/api_client.dart';
 import '../settings/settings_cache.dart';
+import '../theme/app_theme.dart';
 import '../theme/space_theme.dart';
 import 'branding.dart';
 
@@ -21,8 +22,10 @@ class BrandingNotifier extends Notifier<Branding> {
   /// Re-synchronise la marque depuis l'API (ex. après changement admin).
   Future<void> refresh() => _fetch();
 
-  /// Pousse les couleurs d'espace résolues dans les globals runtime du thème.
+  /// Pousse les couleurs résolues dans les globals runtime du thème
+  /// (accent `brandOrange` + palettes d'espace), lus par toute l'app.
   void _applySpaces(Branding b) {
+    applyBrandPrimary(b.primaryColor);
     applyBrandSpaces(
       passenger: b.passengerColor,
       agent: b.agentColor,

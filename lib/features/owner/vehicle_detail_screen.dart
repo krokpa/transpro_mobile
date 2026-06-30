@@ -202,7 +202,7 @@ class _FuelLogCard extends StatelessWidget {
           Container(
             width: 44, height: 44,
             decoration: BoxDecoration(color: brandLight, borderRadius: BorderRadius.circular(12)),
-            child: const Icon(Icons.local_gas_station_outlined, color: brandOrange, size: 22),
+            child: Icon(Icons.local_gas_station_outlined, color: brandOrange, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -211,7 +211,7 @@ class _FuelLogCard extends StatelessWidget {
                 style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: brandDark)),
               const Spacer(),
               Text('${totalCost.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]} ')} F CFA',
-                style: const TextStyle(fontWeight: FontWeight.w700, color: brandOrange)),
+                style: TextStyle(fontWeight: FontWeight.w700, color: brandOrange)),
             ]),
             const SizedBox(height: 4),
             Row(children: [
@@ -391,7 +391,7 @@ class _MaintenanceLogCard extends StatelessWidget {
               const Spacer(),
               if (cost != null)
                 Text('${cost.toString().replaceAllMapped(RegExp(r'(\d)(?=(\d{3})+$)'), (m) => '${m[1]} ')} F',
-                  style: const TextStyle(fontWeight: FontWeight.w700, color: brandOrange, fontSize: 13)),
+                  style: TextStyle(fontWeight: FontWeight.w700, color: brandOrange, fontSize: 13)),
             ]),
             const SizedBox(height: 6),
             Text(desc, style: const TextStyle(fontSize: 13, color: brandDark)),

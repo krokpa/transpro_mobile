@@ -205,7 +205,7 @@ class _State extends ConsumerState<SearchScreen> {
                         ),
                         const Spacer(),
                         if (citiesAsync.isLoading)
-                          const SizedBox(
+                          SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
@@ -252,7 +252,7 @@ class _State extends ConsumerState<SearchScreen> {
                                   ),
                                 ],
                               ),
-                              child: const Icon(
+                              child: Icon(
                                 Icons.swap_horiz_rounded,
                                 color: brandOrange,
                                 size: 18,
@@ -545,7 +545,7 @@ class _CompanyFilter extends StatelessWidget {
                         width: 18,
                         height: 18,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, _, _) => const Icon(
+                        errorBuilder: (_, _, _) => Icon(
                           Icons.business,
                           size: 14,
                           color: brandOrange,
@@ -554,7 +554,7 @@ class _CompanyFilter extends StatelessWidget {
                     ),
                     const SizedBox(width: 6),
                   ] else ...[
-                    const Icon(Icons.business, size: 14, color: brandOrange),
+                    Icon(Icons.business, size: 14, color: brandOrange),
                     const SizedBox(width: 6),
                   ],
                   Text(
@@ -739,7 +739,7 @@ class _CityPickerSheetState extends State<_CityPickerSheet> {
                     color: context.tagBg,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.location_city_outlined,
                     color: brandOrange,
                     size: 18,
@@ -821,7 +821,7 @@ class _SearchResultCard extends StatelessWidget {
                       ),
                       if (trip.tenantSlug != null) ...[
                         const SizedBox(width: 4),
-                        const Icon(
+                        Icon(
                           Icons.chevron_right,
                           size: 14,
                           color: brandOrange,
@@ -915,7 +915,7 @@ class _SearchResultCard extends StatelessWidget {
                     children: [
                       Text(
                         '${trip.price.toStringAsFixed(0)} F',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w800,
                           fontSize: 16,
                           color: brandOrange,

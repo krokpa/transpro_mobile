@@ -282,7 +282,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
                       ),
                     ),
                   ),
-                  if (_loading) const CircularProgressIndicator(color: brandOrange),
+                  if (_loading) CircularProgressIndicator(color: brandOrange),
                 ],
               ),
               const SizedBox(height: 16),
@@ -296,7 +296,7 @@ class _PinLoginScreenState extends ConsumerState<PinLoginScreen> {
                         : _biometricType == BiometricType.iris
                         ? "Utiliser la reconnaissance de l'iris"
                         : 'Utiliser mon empreinte',
-                    style: const TextStyle(color: brandOrange, fontWeight: FontWeight.w600),
+                    style: TextStyle(color: brandOrange, fontWeight: FontWeight.w600),
                   ),
                 ),
               const SizedBox(height: 16),

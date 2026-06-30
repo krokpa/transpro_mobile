@@ -16,10 +16,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final _controller = PageController();
   int _page = 0;
 
-  static const _slideColors = [
-    Color(0xFF3B82F6),
+  static final _slideColors = [
+    const Color(0xFF3B82F6),
     brandOrange,
-    Color(0xFF10B981),
+    const Color(0xFF10B981),
   ];
 
   static const _slideIcons = [

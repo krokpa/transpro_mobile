@@ -191,7 +191,7 @@ class PassengerLuggageScreen extends ConsumerWidget {
                                 return Expanded(
                                   child: Container(
                                     height: 2,
-                                    color: idx < stepIdx ? brandOrange : const Color(0xFFE2E8F0),
+                                    color: idx < stepIdx ? brandOrange : Color(0xFFE2E8F0),
                                   ),
                                 );
                               }

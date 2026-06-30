@@ -128,7 +128,7 @@ class _ScheduleCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(color: brandLight, borderRadius: BorderRadius.circular(10)),
-              child: const Icon(Icons.schedule, color: brandOrange, size: 20),
+              child: Icon(Icons.schedule, color: brandOrange, size: 20),
             ),
             const SizedBox(width: 12),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -137,7 +137,7 @@ class _ScheduleCard extends StatelessWidget {
                 maxLines: 1, overflow: TextOverflow.ellipsis),
               Row(children: [
                 Text(time,
-                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: brandOrange)),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: brandOrange)),
                 const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -167,7 +167,7 @@ class _ScheduleCard extends StatelessWidget {
               child: Container(
                 width: 28, height: 28,
                 decoration: BoxDecoration(
-                  color: active ? brandOrange : const Color(0xFFF1F5F9),
+                  color: active ? brandOrange : Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Center(child: Text(
@@ -302,7 +302,7 @@ class _AddScheduleSheetState extends ConsumerState<_AddScheduleSheet> {
                   child: Container(
                     width: 36, height: 36,
                     decoration: BoxDecoration(
-                      color: sel ? brandOrange : const Color(0xFFF1F5F9),
+                      color: sel ? brandOrange : Color(0xFFF1F5F9),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Center(child: Text(

@@ -129,7 +129,7 @@ class _EmptyCard extends StatelessWidget {
             onPressed: onAction,
             style: OutlinedButton.styleFrom(
               foregroundColor: brandOrange,
-              side: const BorderSide(color: brandOrange),
+              side: BorderSide(color: brandOrange),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(8),
               ),
@@ -229,7 +229,7 @@ class _StationTile extends StatelessWidget {
             color: brandOrange.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: const Icon(
+          child: Icon(
             Icons.location_city_outlined,
             size: 20,
             color: brandOrange,

@@ -566,7 +566,7 @@ class _CityPickerSheetState extends State<_CityPickerSheet> {
                           color: brandOrange.withValues(alpha: 0.08),
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        child: const Icon(Icons.location_city_outlined,
+                        child: Icon(Icons.location_city_outlined,
                             color: brandOrange, size: 18),
                       ),
                       title: Text(c.name,
@@ -841,7 +841,7 @@ class _SeatPickerCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(14),
             border: Border.all(color: brandOrange.withValues(alpha: 0.35)),
           ),
-          child: const Row(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Icon(Icons.event_seat_outlined, color: brandOrange),
@@ -866,14 +866,14 @@ class _SeatPickerCard extends StatelessWidget {
       ),
       child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
         Row(children: [
-          const Icon(Icons.event_seat_outlined, size: 16, color: brandOrange),
+          Icon(Icons.event_seat_outlined, size: 16, color: brandOrange),
           const SizedBox(width: 6),
           Text('${selectedSeats.length} siège${selectedSeats.length > 1 ? 's' : ''} sélectionné${selectedSeats.length > 1 ? 's' : ''}',
               style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
           const Spacer(),
           Text(
             '${NumberFormat('#,###', locale).format((trip.price * selectedSeats.length).toInt())} F',
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w900,
               fontSize: 16,
               color: brandOrange,
@@ -977,7 +977,7 @@ class _PaxCounter extends StatelessWidget {
           child: Column(children: [
             Text(
               '${NumberFormat('#,###', locale).format(total)} F',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w900,
                 color: brandOrange,
@@ -1438,11 +1438,11 @@ class _SuccessView extends StatelessWidget {
                           ),
                         ),
                         Row(children: [
-                          const Icon(Icons.arrow_forward,
+                          Icon(Icons.arrow_forward,
                               size: 12, color: brandOrange),
                           const SizedBox(width: 4),
                           Text(trip.destinationCity,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: brandOrange,
                                   fontWeight: FontWeight.w600,
                                   fontSize: 14)),
@@ -1453,7 +1453,7 @@ class _SuccessView extends StatelessWidget {
                       Text(
                         DateFormat('HH:mm')
                             .format(trip.departureAt.toLocal()),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w900,
                           color: brandOrange,
@@ -1506,7 +1506,7 @@ class _SuccessView extends StatelessWidget {
                       const Spacer(),
                       Text(
                         '${NumberFormat('#,###', locale).format(total)} F',
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontWeight: FontWeight.w900,
                           fontSize: 22,
                           color: brandOrange,

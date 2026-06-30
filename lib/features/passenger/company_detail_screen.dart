@@ -286,7 +286,7 @@ class _CompanyBody extends StatelessWidget {
                                   ),
                                   child: Text(
                                     '$price F',
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.w700,
                                       color: brandOrange,
@@ -427,7 +427,7 @@ class _StationTile extends StatelessWidget {
               color: brandOrange.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Icon(
+            child: Icon(
               Icons.location_city_outlined,
               size: 18,
               color: brandOrange,

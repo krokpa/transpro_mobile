@@ -284,7 +284,7 @@ class _ManifestScreenState extends ConsumerState<ManifestScreen> {
                               children: [
                                 Text(
                                   '${(checkedInTickets / totalTickets * 100).toStringAsFixed(0)}%',
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontWeight: FontWeight.w800,
                                     fontSize: 15,
                                     color: brandOrange,
@@ -298,7 +298,7 @@ class _ManifestScreenState extends ConsumerState<ManifestScreen> {
                                         ? checkedInTickets / totalTickets
                                         : 0,
                                     backgroundColor: context.divider,
-                                    valueColor: const AlwaysStoppedAnimation(
+                                    valueColor: AlwaysStoppedAnimation(
                                       brandOrange,
                                     ),
                                     minHeight: 5,
@@ -559,7 +559,7 @@ class _ManifestEntryTile extends StatelessWidget {
                       : '?',
                   style: TextStyle(
                     fontWeight: FontWeight.w700,
-                    color: allIn ? const Color(0xFF16A34A) : brandOrange,
+                    color: allIn ? Color(0xFF16A34A) : brandOrange,
                   ),
                 ),
               ),
@@ -638,7 +638,7 @@ class _ManifestEntryTile extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         if (loading)
-                          const SizedBox(
+                          SizedBox(
                             width: 12,
                             height: 12,
                             child: CircularProgressIndicator(

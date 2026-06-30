@@ -267,7 +267,7 @@ class _AgentHeader extends StatelessWidget {
                               border: Border.all(
                                   color: brandOrange.withValues(alpha: 0.35)),
                             ),
-                            child: const Text(
+                            child: Text(
                               'Agent',
                               style: TextStyle(
                                 color: brandOrange,
@@ -638,7 +638,7 @@ class _DepartureCardState extends ConsumerState<_DepartureCard> {
                             Container(
                               width: 7,
                               height: 7,
-                              decoration: const BoxDecoration(
+                              decoration: BoxDecoration(
                                   color: brandOrange,
                                   shape: BoxShape.circle),
                             ),
@@ -679,7 +679,7 @@ class _DepartureCardState extends ConsumerState<_DepartureCard> {
                     children: [
                       Text(
                         DateFormat('HH:mm').format(trip.departureAt.toLocal()),
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 28,
                           fontWeight: FontWeight.w800,
                           color: brandOrange,
@@ -1004,7 +1004,7 @@ class _DriverGpsBanner extends StatelessWidget {
         ),
         child: Row(
           children: [
-            const Icon(Icons.gps_fixed, color: brandOrange, size: 18),
+            Icon(Icons.gps_fixed, color: brandOrange, size: 18),
             const SizedBox(width: 8),
             Expanded(
               child: Column(
@@ -1026,7 +1026,7 @@ class _DriverGpsBanner extends StatelessWidget {
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: brandOrange, size: 18),
+            Icon(Icons.chevron_right, color: brandOrange, size: 18),
           ],
         ),
       ),

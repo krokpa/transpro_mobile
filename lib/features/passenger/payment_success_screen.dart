@@ -98,7 +98,7 @@ class _LoadingBody extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return Center(
       child: Column(mainAxisSize: MainAxisSize.min, children: [
-        const CircularProgressIndicator(color: brandOrange),
+        CircularProgressIndicator(color: brandOrange),
         const SizedBox(height: 20),
         Text(l10n.paymentConfirming,
             style: TextStyle(fontWeight: FontWeight.w700, fontSize: 16, color: context.textPrimary)),

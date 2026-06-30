@@ -172,7 +172,7 @@ class _StationNavigationScreenState extends State<StationNavigationScreen> {
                         ),
                         child: const Icon(Icons.location_city_rounded, color: Colors.white, size: 20),
                       ),
-                      CustomPaint(size: const Size(12, 8), painter: _TrianglePainter(brandOrange)),
+                      CustomPaint(size: Size(12, 8), painter: _TrianglePainter(brandOrange)),
                     ],
                   ),
                 ),
@@ -219,7 +219,7 @@ class _StationNavigationScreenState extends State<StationNavigationScreen> {
                       boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10)],
                     ),
                     child: Row(children: [
-                      const Icon(Icons.location_city_rounded, color: brandOrange, size: 18),
+                      Icon(Icons.location_city_rounded, color: brandOrange, size: 18),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
@@ -301,7 +301,7 @@ class _StationNavigationScreenState extends State<StationNavigationScreen> {
                         style: TextStyle(fontSize: 13, color: context.textMuted), textAlign: TextAlign.center)
                     : _userPos == null
                         ? Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-                            const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: brandOrange)),
+                            SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: brandOrange)),
                             const SizedBox(width: 10),
                             Text(l10n.navScreenLocating, style: TextStyle(fontSize: 14, color: context.textSecondary)),
                           ])

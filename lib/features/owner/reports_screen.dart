@@ -201,7 +201,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 label: const Text('CSV'),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: brandOrange,
-                  side: const BorderSide(color: brandOrange),
+                  side: BorderSide(color: brandOrange),
                   padding: const EdgeInsets.symmetric(vertical: 12),
                 ),
               )),

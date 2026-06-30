@@ -198,7 +198,7 @@ class _InfoBanner extends StatelessWidget {
           border: Border.all(color: brandOrange.withValues(alpha: 0.18)),
         ),
         child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          const Icon(Icons.campaign_outlined, color: brandOrange, size: 20),
+          Icon(Icons.campaign_outlined, color: brandOrange, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(text,
@@ -319,7 +319,7 @@ class _TimeRow extends StatelessWidget {
               border: Border.all(color: context.divider),
             ),
             child: Text(display,
-                style: const TextStyle(
+                style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 15,
                     color: brandOrange)),
@@ -410,7 +410,7 @@ class _SliderRow extends StatelessWidget {
                     fontWeight: FontWeight.w500)),
             const Spacer(),
             Text(format(value),
-                style: const TextStyle(
+                style: TextStyle(
                     fontWeight: FontWeight.w700,
                     fontSize: 13,
                     color: brandOrange)),

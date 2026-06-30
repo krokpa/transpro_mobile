@@ -61,7 +61,7 @@ class PhotoCapture extends StatelessWidget {
                     color: brandOrange.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: const Icon(Icons.camera_alt_rounded, color: brandOrange, size: 20),
+                  child: Icon(Icons.camera_alt_rounded, color: brandOrange, size: 20),
                 ),
                 title: const Text('Prendre une photo', style: TextStyle(fontWeight: FontWeight.w500)),
                 onTap: () { Navigator.pop(context); _pick(context, ImageSource.camera); },

@@ -141,7 +141,7 @@ class _RouteCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(Icons.alt_route,
-                color: isActive ? brandOrange : const Color(0xFF94A3B8), size: 24),
+                color: isActive ? brandOrange : Color(0xFF94A3B8), size: 24),
             ),
             const SizedBox(width: 12),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

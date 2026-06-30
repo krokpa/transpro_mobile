@@ -180,7 +180,7 @@ class _CaisseContent extends StatelessWidget {
                   child: LinearProgressIndicator(
                     value: pct, minHeight: 6,
                     backgroundColor: context.divider,
-                    valueColor: const AlwaysStoppedAnimation(brandOrange),
+                    valueColor: AlwaysStoppedAnimation(brandOrange),
                   ),
                 ),
               ]),

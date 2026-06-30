@@ -485,7 +485,7 @@ class _TripTrackingScreenState extends ConsumerState<TripTrackingScreen>
                       child: InkWell(
                         borderRadius: BorderRadius.circular(10),
                         onTap: _recenter,
-                        child: const Padding(
+                        child: Padding(
                           padding: EdgeInsets.all(10),
                           child: Icon(Icons.my_location, color: brandOrange, size: 22),
                         ),
@@ -812,7 +812,7 @@ class _BottomSheet extends StatelessWidget {
                               DateFormat(
                                 'HH:mm',
                               ).format(trip.estimatedArrivalAt!.toLocal()),
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.w800,
                                 fontSize: 18,
                                 color: brandOrange,
@@ -854,7 +854,7 @@ class _BottomSheet extends StatelessWidget {
                             ),
                             child: Text(
                               '${busSpeed.toStringAsFixed(0)} km/h',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 color: brandOrange,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,

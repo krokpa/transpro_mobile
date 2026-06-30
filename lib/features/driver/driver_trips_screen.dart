@@ -192,7 +192,7 @@ class _DriverTripsScreenState extends ConsumerState<DriverTripsScreen> {
                         padding: const EdgeInsets.all(14),
                         child: Row(children: [
                           Column(mainAxisSize: MainAxisSize.min, children: [
-                            Text(_fmtTime(dept), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: brandOrange)),
+                            Text(_fmtTime(dept), style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: brandOrange)),
                             Text('départ', style: TextStyle(fontSize: 10, color: Colors.grey[400])),
                           ]),
                           const SizedBox(width: 14),
