@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../core/api/api_client.dart';
 import '../../core/models/models.dart';
-import '../../core/models/setup_progress.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/fade_slide.dart';
 import '../../core/widgets/shimmer.dart';
@@ -104,9 +103,11 @@ class _State extends ConsumerState<OwnerTripsScreen> {
       await dio.patch('/trips/$tripId/status', data: {'status': status});
       ref.invalidate(_ownerTripsProvider(_date));
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('${AppLocalizations.of(context).error}: $e'), backgroundColor: Colors.red),
       );
+      }
     }
   }
 }

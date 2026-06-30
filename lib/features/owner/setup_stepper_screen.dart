@@ -112,7 +112,7 @@ class _ProgressHeader extends StatelessWidget {
               tween: Tween(begin: 0, end: progress.overall / 100),
               duration: const Duration(milliseconds: 900),
               curve: Curves.easeOutCubic,
-              builder: (_, v, __) => LinearProgressIndicator(
+              builder: (_, v, _) => LinearProgressIndicator(
                 value: v,
                 minHeight: 8,
                 backgroundColor: Colors.white.withValues(alpha: 0.25),
@@ -146,7 +146,7 @@ class _CircleProgress extends StatelessWidget {
         tween: Tween(begin: 0, end: value / 100),
         duration: const Duration(milliseconds: 900),
         curve: Curves.easeOutCubic,
-        builder: (_, v, __) => CircularProgressIndicator(
+        builder: (_, v, _) => CircularProgressIndicator(
           value: v,
           strokeWidth: 5,
           backgroundColor: Colors.white.withValues(alpha: 0.25),

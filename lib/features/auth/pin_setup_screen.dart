@@ -78,8 +78,9 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
       await ref.read(authProvider.notifier).setupPin(_currentPin, biometric: _enableBiometric);
       if (!mounted) return;
       final auth = ref.read(authProvider);
-      if (auth.user!.isPassenger) context.go('/passenger');
-      else if (auth.user!.isAgent) context.go('/agent');
+      if (auth.user!.isPassenger) {
+        context.go('/passenger');
+      } else if (auth.user!.isAgent) context.go('/agent');
       else if (auth.user!.isDriver) context.go('/driver');
       else context.go('/owner');
     } catch (_) {

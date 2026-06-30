@@ -600,8 +600,12 @@ class _PhoneOtpPanelState extends ConsumerState<_PhoneOtpPanel>
   void dispose() {
     _timer?.cancel();
     _shakeCtrl.dispose();
-    for (final c in _ctrl)  c.dispose();
-    for (final f in _focus) f.dispose();
+    for (final c in _ctrl) {
+      c.dispose();
+    }
+    for (final f in _focus) {
+      f.dispose();
+    }
     super.dispose();
   }
 
@@ -610,7 +614,11 @@ class _PhoneOtpPanelState extends ConsumerState<_PhoneOtpPanel>
     setState(() => _countdown = 60);
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (!mounted) { t.cancel(); return; }
-      setState(() { if (_countdown > 0) _countdown--; else t.cancel(); });
+      setState(() { if (_countdown > 0) {
+        _countdown--;
+      } else {
+        t.cancel();
+      } });
     });
   }
 
@@ -618,7 +626,9 @@ class _PhoneOtpPanelState extends ConsumerState<_PhoneOtpPanel>
     setState(() { _sending = true; _error = null; });
     try {
       await ref.read(dioProvider).post('/otp/send', data: {'phone': widget.phone});
-      for (final c in _ctrl) c.clear();
+      for (final c in _ctrl) {
+        c.clear();
+      }
       _focus[0].requestFocus();
       _startCountdown();
     } catch (e) {
@@ -632,7 +642,9 @@ class _PhoneOtpPanelState extends ConsumerState<_PhoneOtpPanel>
     final digit = value.replaceAll(RegExp(r'\D'), '');
     if (digit.length > 1) {
       final digits = digit.split('').take(6 - index).toList();
-      for (int i = 0; i < digits.length; i++) _ctrl[index + i].text = digits[i];
+      for (int i = 0; i < digits.length; i++) {
+        _ctrl[index + i].text = digits[i];
+      }
       final next = (index + digits.length).clamp(0, 5);
       _focus[next].requestFocus();
       _tryLogin();
@@ -640,8 +652,9 @@ class _PhoneOtpPanelState extends ConsumerState<_PhoneOtpPanel>
     }
     if (digit.isNotEmpty) {
       _ctrl[index].text = digit;
-      if (index < 5) _focus[index + 1].requestFocus();
-      else { _focus[index].unfocus(); _tryLogin(); }
+      if (index < 5) {
+        _focus[index + 1].requestFocus();
+      } else { _focus[index].unfocus(); _tryLogin(); }
     }
   }
 
@@ -669,7 +682,9 @@ class _PhoneOtpPanelState extends ConsumerState<_PhoneOtpPanel>
           _error  = extractAuthError(e);
           _loading = false;
         });
-        for (final c in _ctrl) c.clear();
+        for (final c in _ctrl) {
+          c.clear();
+        }
         _focus[0].requestFocus();
         _shakeCtrl.forward(from: 0);
       }

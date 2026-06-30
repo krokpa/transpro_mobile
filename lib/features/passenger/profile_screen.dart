@@ -31,13 +31,17 @@ class _PassengerProfileScreenState extends ConsumerState<PassengerProfileScreen>
       final bytes = await picked.readAsBytes();
       final b64 = 'data:image/jpeg;base64,${base64Encode(bytes)}';
       await ref.read(authProvider.notifier).updateAvatar(b64);
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Photo de profil mise à jour'), backgroundColor: Colors.green),
       );
+      }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _uploadingAvatar = false);
     }

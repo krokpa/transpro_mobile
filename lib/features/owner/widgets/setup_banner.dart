@@ -16,7 +16,7 @@ class SetupProgressBanner extends ConsumerWidget {
 
     return progressAsync.when(
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
       data: (progress) {
         if (progress.isComplete) return const SizedBox.shrink();
         return _BannerCard(progress: progress);
@@ -84,7 +84,7 @@ class _BannerCard extends StatelessWidget {
               tween: Tween(begin: 0, end: progress.overall / 100),
               duration: const Duration(milliseconds: 800),
               curve: Curves.easeOutCubic,
-              builder: (_, v, __) => LinearProgressIndicator(
+              builder: (_, v, _) => LinearProgressIndicator(
                 value: v,
                 minHeight: 6,
                 backgroundColor: brandOrange.withValues(alpha: 0.15),

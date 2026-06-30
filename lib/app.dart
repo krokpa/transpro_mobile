@@ -230,7 +230,7 @@ final _routerProvider = Provider<GoRouter>((ref) {
       // ── Passenger ─────────────────────────────────────────────────────────
       ShellRoute(
         navigatorKey: passengerShellKey,
-        builder: (_, __, child) => PassengerShell(child: child),
+        builder: (_, _, child) => PassengerShell(child: child),
         routes: [
           GoRoute(path: '/passenger',          builder: (_, _) => const HomeScreen()),
           GoRoute(
@@ -305,7 +305,7 @@ final _routerProvider = Provider<GoRouter>((ref) {
       // ── Agent ─────────────────────────────────────────────────────────────
       ShellRoute(
         navigatorKey: agentShellKey,
-        builder: (_, __, child) => AgentShell(child: child),
+        builder: (_, _, child) => AgentShell(child: child),
         routes: [
           GoRoute(path: '/agent',         builder: (_, _) => const DeparturesScreen()),
           GoRoute(path: '/agent/scanner', builder: (_, state) => ScannerScreen(tripId: state.uri.queryParameters['tripId'])),
@@ -425,7 +425,7 @@ final _routerProvider = Provider<GoRouter>((ref) {
       // ── Driver ────────────────────────────────────────────────────────────
       ShellRoute(
         navigatorKey: driverShellKey,
-        builder: (_, __, child) => DriverShell(child: child),
+        builder: (_, _, child) => DriverShell(child: child),
         routes: [
           GoRoute(path: '/driver',          builder: (_, _) => const DriverHomeScreen()),
           GoRoute(path: '/driver/trips',    builder: (_, _) => const DriverTripsScreen()),
@@ -437,7 +437,7 @@ final _routerProvider = Provider<GoRouter>((ref) {
       // ── Owner ─────────────────────────────────────────────────────────────
       ShellRoute(
         navigatorKey: ownerShellKey,
-        builder: (_, __, child) => OwnerShell(child: child),
+        builder: (_, _, child) => OwnerShell(child: child),
         routes: [
           GoRoute(path: '/owner',         builder: (_, _) => const OwnerDashboardScreen()),
           GoRoute(path: '/owner/trips',   builder: (_, _) => const OwnerTripsScreen()),
@@ -517,7 +517,7 @@ class _SplashScreen extends ConsumerWidget {
               Image.network(
                 branding.logoUrl!,
                 height: 88,
-                errorBuilder: (_, __, ___) => const Icon(
+                errorBuilder: (_, _, _) => const Icon(
                     Icons.directions_bus_rounded, size: 80, color: Colors.white),
               )
             else

@@ -344,9 +344,11 @@ class _EditTenantSheetState extends ConsumerState<_EditTenantSheet> {
       });
       widget.onSaved();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -441,9 +443,11 @@ class _ChangePasswordSheetState extends ConsumerState<_ChangePasswordSheet> {
         widget.onSaved();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }

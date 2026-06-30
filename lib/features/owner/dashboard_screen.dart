@@ -148,10 +148,12 @@ class _State extends ConsumerState<OwnerDashboardScreen> {
                   error: (e, _) => Text('${l10n.error}: $e'),
                   data: (analytics) {
                     final timeline = (analytics['timeline'] as List?) ?? [];
-                    if (timeline.isEmpty) return Padding(
+                    if (timeline.isEmpty) {
+                      return Padding(
                       padding: const EdgeInsets.symmetric(vertical: 24),
                       child: Center(child: Text(l10n.dashboardNoData, style: TextStyle(color: context.textMuted))),
                     );
+                    }
                     final maxRev = timeline.fold<double>(0, (m, t) {
                       final v = (t['revenue'] as num?)?.toDouble() ?? 0;
                       return v > m ? v : m;
@@ -184,7 +186,7 @@ class _State extends ConsumerState<OwnerDashboardScreen> {
                                       tween: Tween(begin: 0, end: targetH),
                                       duration: const Duration(milliseconds: 700),
                                       curve: Curves.easeOutCubic,
-                                      builder: (_, h, __) => Container(
+                                      builder: (_, h, _) => Container(
                                         height: h,
                                         decoration: BoxDecoration(
                                           gradient: LinearGradient(
@@ -306,7 +308,7 @@ class _HeroBackground extends ConsumerWidget {
               const SizedBox(height: 14),
               statsAsync.when(
                 loading: () => const SizedBox.shrink(),
-                error: (_, __) => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
                 data: (stats) {
                   final fmt = NumberFormat.compact(locale: 'fr');
                   return SingleChildScrollView(
@@ -372,7 +374,7 @@ class _SectionHeader extends StatelessWidget {
     const SizedBox(width: 10),
     Expanded(child: Text(title,
       style: TextStyle(fontWeight: FontWeight.w800, fontSize: 17, color: context.textPrimary))),
-    if (trailing != null) trailing!,
+    ?trailing,
   ]);
 }
 

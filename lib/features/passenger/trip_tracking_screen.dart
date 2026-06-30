@@ -127,11 +127,12 @@ class _TripTrackingScreenState extends ConsumerState<TripTrackingScreen>
         _fetchRoute(dep, arr);
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         setState(() {
           _error = e.toString();
           _initialLoading = false;
         });
+      }
     }
   }
 

@@ -44,7 +44,7 @@ class AgentLuggageScreen extends ConsumerStatefulWidget {
 class _State extends ConsumerState<AgentLuggageScreen>
     with SingleTickerProviderStateMixin {
   late final TabController _tabs;
-  bool _scanning      = false;
+  final bool _scanning      = false;
   bool _scanPaused    = false;
   bool _processing    = false;
   String? _scanResult;
@@ -490,11 +490,13 @@ class _BagPhotoSheetState extends State<_BagPhotoSheet> {
         ));
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(apiErrorMessage(e)),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
       ));
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }

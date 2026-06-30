@@ -467,9 +467,11 @@ class _AddFuelSheetState extends State<_AddFuelSheet> {
       widget.onSaved();
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -603,9 +605,11 @@ class _AddMaintenanceSheetState extends State<_AddMaintenanceSheet> {
       widget.onSaved();
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }

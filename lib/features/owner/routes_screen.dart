@@ -254,9 +254,11 @@ class _AddRouteSheetState extends ConsumerState<_AddRouteSheet> {
       });
       widget.onSaved();
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }

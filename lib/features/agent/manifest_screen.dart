@@ -165,13 +165,14 @@ class _ManifestScreenState extends ConsumerState<ManifestScreen> {
       await dio.patch('/payments/tickets/${ticket.id}/check-in');
       ref.invalidate(_manifestProvider(widget.tripId));
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${AppLocalizations.of(context).error}: $e'),
             backgroundColor: Colors.red,
           ),
         );
+      }
     } finally {
       if (mounted) setState(() => _checkingIn.remove(ticket.id));
     }
@@ -457,8 +458,9 @@ class _ManifestScreenState extends ConsumerState<ManifestScreen> {
                                                 scheme: 'tel',
                                                 path: e.phone,
                                               );
-                                              if (await canLaunchUrl(uri))
+                                              if (await canLaunchUrl(uri)) {
                                                 launchUrl(uri);
+                                              }
                                             },
                                             padding: EdgeInsets.zero,
                                             constraints: const BoxConstraints(),

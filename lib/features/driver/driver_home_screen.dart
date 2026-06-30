@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_client.dart';
 import '../../core/auth/auth_provider.dart';
@@ -56,15 +56,19 @@ class DriverHomeScreen extends ConsumerWidget {
       await ref.read(dioProvider).patch('/driver-space/trips/$tripId/status', data: {'status': status});
       ref.invalidate(_todayTripsProvider);
       ref.invalidate(_upcomingTripsProvider);
-      if (ctx.mounted) ScaffoldMessenger.of(ctx).showSnackBar(
+      if (ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(content: const Text('Statut mis à jour'), backgroundColor: const Color(0xFF22C55E),
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
       );
+      }
     } catch (e) {
-      if (ctx.mounted) ScaffoldMessenger.of(ctx).showSnackBar(
+      if (ctx.mounted) {
+        ScaffoldMessenger.of(ctx).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     }
   }
 
@@ -128,7 +132,7 @@ class DriverHomeScreen extends ConsumerWidget {
                         ]),
                         meAsync.when(
                           loading: () => const SizedBox.shrink(),
-                          error: (_, __) => const SizedBox.shrink(),
+                          error: (_, _) => const SizedBox.shrink(),
                           data: (data) {
                             final driver = data['driver'] as Map<String, dynamic>?;
                             final isAvail = driver?['isAvailable'] as bool? ?? true;
@@ -164,7 +168,7 @@ class DriverHomeScreen extends ConsumerWidget {
                       // Stats
                       meAsync.when(
                         loading: () => const SizedBox(height: 60),
-                        error: (_, __) => const SizedBox.shrink(),
+                        error: (_, _) => const SizedBox.shrink(),
                         data: (data) {
                           final stats = data['stats'] as Map<String, dynamic>?;
                           return Padding(
@@ -198,7 +202,7 @@ class DriverHomeScreen extends ConsumerWidget {
                   const Spacer(),
                   todayAsync.when(
                     loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
+                    error: (_, _) => const SizedBox.shrink(),
                     data: (t) => Text('${t.length} voyage${t.length != 1 ? "s" : ""}',
                       style: const TextStyle(fontSize: 12, color: Color(0xFF94A3B8))),
                   ),
@@ -245,7 +249,7 @@ class DriverHomeScreen extends ConsumerWidget {
             // ── Upcoming ──
             upcomingAsync.when(
               loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
-              error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+              error: (_, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
               data: (upcoming) {
                 if (upcoming.isEmpty) return const SliverToBoxAdapter(child: SizedBox.shrink());
                 return SliverList(

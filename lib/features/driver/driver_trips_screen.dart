@@ -79,14 +79,18 @@ class _DriverTripsScreenState extends ConsumerState<DriverTripsScreen> {
     try {
       await ref.read(dioProvider).patch('/driver-space/trips/$tripId/status', data: {'status': status});
       ref.invalidate(_driverScheduleProvider(_month));
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: const Text('Statut mis à jour'), backgroundColor: const Color(0xFF22C55E),
           behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
       );
+      }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     }
   }
 
@@ -131,11 +135,13 @@ class _DriverTripsScreenState extends ConsumerState<DriverTripsScreen> {
         loading: () => AppShimmer.listTiles(),
         error: (e, _) => AppErrorView(error: e),
         data: (trips) {
-          if (trips.isEmpty) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+          if (trips.isEmpty) {
+            return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
             Icon(Icons.directions_bus_outlined, size: 64, color: Colors.grey[300]),
             const SizedBox(height: 16),
             Text('Aucun voyage en $_monthLabel', style: TextStyle(color: Colors.grey[400], fontSize: 15)),
           ]));
+          }
 
           // Group by day
           final groups = <String, List<Map<String, dynamic>>>{};

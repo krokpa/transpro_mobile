@@ -6,7 +6,6 @@ import '../../core/auth/auth_provider.dart';
 import '../../core/api/api_client.dart';
 import '../../core/services/social_auth_service.dart';
 import '../../core/theme/app_theme.dart';
-import '../../l10n/app_localizations.dart';
 import '_auth_shared.dart';
 import 'otp_step_widget.dart';
 
@@ -59,10 +58,10 @@ class _SlideRoute extends PageRouteBuilder {
 
   _SlideRoute({required this.page, required this.direction})
       : super(
-          pageBuilder: (_, __, ___) => page,
+          pageBuilder: (_, _, _) => page,
           transitionDuration: const Duration(milliseconds: 350),
           reverseTransitionDuration: const Duration(milliseconds: 300),
-          transitionsBuilder: (_, anim, __, child) {
+          transitionsBuilder: (_, anim, _, child) {
             final begin = Offset(direction > 0 ? 1.0 : -1.0, 0);
             final curve = CurvedAnimation(parent: anim, curve: Curves.easeOutCubic);
             return SlideTransition(
@@ -315,7 +314,9 @@ class _IdentityStepState extends State<_IdentityStep> {
 
   @override
   void dispose() {
-    for (final c in [_firstName, _lastName, _email, _password, _confirm]) c.dispose();
+    for (final c in [_firstName, _lastName, _email, _password, _confirm]) {
+      c.dispose();
+    }
     super.dispose();
   }
 

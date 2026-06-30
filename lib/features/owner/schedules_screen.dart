@@ -72,9 +72,11 @@ class SchedulesScreen extends ConsumerWidget {
       await ref.read(dioProvider).patch('/schedules/$id', data: {'isActive': activate});
       ref.invalidate(_schedulesProvider);
     } catch (e) {
-      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     }
   }
 
@@ -226,9 +228,11 @@ class _AddScheduleSheetState extends ConsumerState<_AddScheduleSheet> {
       ref.invalidate(_schedulesProvider);
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }

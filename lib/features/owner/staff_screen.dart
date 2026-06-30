@@ -86,9 +86,11 @@ class StaffScreen extends ConsumerWidget {
       await ref.read(dioProvider).patch('/users/$id', data: {'isActive': activate});
       ref.invalidate(_staffProvider);
     } catch (e) {
-      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     }
   }
 
@@ -232,9 +234,11 @@ class _InviteStaffSheetState extends ConsumerState<_InviteStaffSheet> {
         );
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }

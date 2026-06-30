@@ -54,9 +54,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
         await Share.share(content, subject: 'Rapport TransPro ($format)');
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Export impossible: $e'), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _exporting = false);
     }

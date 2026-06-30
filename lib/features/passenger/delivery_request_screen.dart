@@ -108,9 +108,11 @@ class _State extends ConsumerState<DeliveryRequestScreen> {
         context.pop();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(apiErrorMessage(e)), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -147,9 +149,11 @@ class _State extends ConsumerState<DeliveryRequestScreen> {
         context.pop();
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(apiErrorMessage(e)), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _cancelling = false);
     }

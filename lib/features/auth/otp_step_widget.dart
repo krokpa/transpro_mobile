@@ -55,8 +55,12 @@ class _OtpStepWidgetState extends State<OtpStepWidget> with SingleTickerProvider
   void dispose() {
     _timer?.cancel();
     _shakeCtrl.dispose();
-    for (final c in _ctrl) c.dispose();
-    for (final f in _focus) f.dispose();
+    for (final c in _ctrl) {
+      c.dispose();
+    }
+    for (final f in _focus) {
+      f.dispose();
+    }
     super.dispose();
   }
 
@@ -144,7 +148,9 @@ class _OtpStepWidgetState extends State<OtpStepWidget> with SingleTickerProvider
       if (mounted) {
         final msg = e.response?.data?['message'] ?? 'Code incorrect';
         setState(() { _error = msg; _verifying = false; });
-        for (final c in _ctrl) c.clear();
+        for (final c in _ctrl) {
+          c.clear();
+        }
         _focus[0].requestFocus();
         _shakeCtrl.forward(from: 0);
       }

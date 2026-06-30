@@ -86,9 +86,11 @@ class StationsScreen extends ConsumerWidget {
       await ref.read(dioProvider).patch('/stations/$id', data: {'isPrimary': true});
       ref.invalidate(_stationsProvider);
     } catch (e) {
-      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     }
   }
 
@@ -113,9 +115,11 @@ class StationsScreen extends ConsumerWidget {
       await ref.read(dioProvider).delete('/stations/$id');
       ref.invalidate(_stationsProvider);
     } catch (e) {
-      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     }
   }
 
@@ -276,9 +280,11 @@ class _AddStationSheetState extends ConsumerState<_AddStationSheet> {
       ref.invalidate(_stationsProvider);
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }

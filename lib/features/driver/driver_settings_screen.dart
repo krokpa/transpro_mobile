@@ -187,8 +187,11 @@ class _DriverSettingsScreenState extends ConsumerState<DriverSettingsScreen> {
                     )),
                   ],
                   onChanged: (v) {
-                    if (v == null || v == 'system') ref.read(localeProvider.notifier).setLocale(null);
-                    else ref.read(localeProvider.notifier).setLocale(Locale(v));
+                    if (v == null || v == 'system') {
+                      ref.read(localeProvider.notifier).setLocale(null);
+                    } else {
+                      ref.read(localeProvider.notifier).setLocale(Locale(v));
+                    }
                   },
                 ),
                 contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 2),
@@ -383,9 +386,11 @@ class _SetCredentialsSheetState extends State<_SetCredentialsSheet> {
         );
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur : $e'), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -534,9 +539,11 @@ class _ChangePasswordSheetState extends State<_ChangePasswordSheet> {
         );
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur : $e'), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }

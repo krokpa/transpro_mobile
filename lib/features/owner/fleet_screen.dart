@@ -453,13 +453,14 @@ class _AddVehicleSheetState extends State<_AddVehicleSheet> {
       );
       widget.onSaved();
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('${AppLocalizations.of(context).error}: $e'),
             backgroundColor: Colors.red,
           ),
         );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }

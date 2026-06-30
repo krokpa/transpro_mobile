@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../core/api/api_client.dart';
@@ -261,11 +261,13 @@ class _DriverProfileScreenState extends ConsumerState<DriverProfileScreen>
                       data: (edata) {
                         final avg   = (edata['averageRating'] as num?)?.toDouble();
                         final evals = (edata['evaluations'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-                        if (evals.isEmpty) return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
+                        if (evals.isEmpty) {
+                          return Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
                           Icon(Icons.star_outline_rounded, size: 56, color: Colors.grey[300]),
                           const SizedBox(height: 12),
                           Text('Aucune évaluation', style: TextStyle(color: Colors.grey[400])),
                         ]));
+                        }
                         return ListView(
                           padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
                           children: [
@@ -510,7 +512,13 @@ class _AbsenceSheetState extends ConsumerState<_AbsenceSheet> {
       initialDate: isStart ? (_start ?? DateTime.now()) : (_end ?? DateTime.now()),
       firstDate: DateTime(2020), lastDate: DateTime(2030),
     );
-    if (picked != null) setState(() { if (isStart) _start = picked; else _end = picked; });
+    if (picked != null) {
+      setState(() { if (isStart) {
+      _start = picked;
+    } else {
+      _end = picked;
+    } });
+    }
   }
 
   Future<void> _submit() async {
@@ -526,9 +534,11 @@ class _AbsenceSheetState extends ConsumerState<_AbsenceSheet> {
       widget.onSaved();
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(apiErrorMessage(e)), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }

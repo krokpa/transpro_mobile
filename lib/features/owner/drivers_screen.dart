@@ -257,9 +257,11 @@ class _DriversScreenState extends ConsumerState<DriversScreen> {
       await ref.read(dioProvider).patch('/drivers/$id', data: {'isAvailable': val});
       ref.invalidate(_driversProvider);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     }
   }
 
@@ -630,9 +632,11 @@ class _AddDriverSheetState extends ConsumerState<_AddDriverSheet> {
       widget.onSaved();
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }

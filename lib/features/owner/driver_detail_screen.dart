@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/api_client.dart';
 import '../../core/theme/app_theme.dart';
@@ -394,7 +394,7 @@ class _ProfileHeader extends StatelessWidget {
                     height: 44, decoration: BoxDecoration(
                       color: Colors.white12, borderRadius: BorderRadius.circular(12)),
                   )))),
-                error: (_, __) => const SizedBox.shrink(),
+                error: (_, _) => const SizedBox.shrink(),
                 data: (stats) => Row(children: [
                   _StatChip(
                     icon: Icons.directions_bus_outlined,
@@ -496,7 +496,7 @@ class _OverviewTab extends ConsumerWidget {
         // Performance card
         statsAsync.when(
           loading: () => _shimmerCard(100),
-          error: (_, __) => const SizedBox.shrink(),
+          error: (_, _) => const SizedBox.shrink(),
           data: (stats) {
             final avg     = (stats['avgRating'] as num?)?.toDouble();
             final avgP    = (stats['avgPunctuality'] as num?);
@@ -614,7 +614,7 @@ class _OverviewTab extends ConsumerWidget {
         // Latest evaluations
         evalsAsync.when(
           loading: () => const SizedBox.shrink(),
-          error: (_, __) => const SizedBox.shrink(),
+          error: (_, _) => const SizedBox.shrink(),
           data: (data) {
             final evals = (data['evaluations'] as List?)?.cast<Map<String, dynamic>>() ?? [];
             if (evals.isEmpty) return const SizedBox.shrink();
@@ -966,13 +966,17 @@ class _AbsencesTab extends ConsumerWidget {
     try {
       await ref.read(dioProvider).patch('/drivers/$driverId/absences/$absenceId', data: {'approved': true});
       ref.invalidate(_absencesProvider(driverId));
-      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Absence approuvée'), backgroundColor: Color(0xFF22C55E)),
       );
+      }
     } catch (e) {
-      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     }
   }
 
@@ -995,9 +999,11 @@ class _AbsencesTab extends ConsumerWidget {
       await ref.read(dioProvider).delete('/drivers/$driverId/absences/$absenceId');
       ref.invalidate(_absencesProvider(driverId));
     } catch (e) {
-      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     }
   }
 
@@ -1219,9 +1225,11 @@ class _EvalCard extends ConsumerWidget {
       await ref.read(dioProvider).delete('/drivers/$driverId/evaluations/$evalId');
       onDeleted?.call();
     } catch (e) {
-      if (context.mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     }
   }
 }
@@ -1254,7 +1262,11 @@ class _AddAbsenceSheetState extends State<_AddAbsenceSheet> {
       lastDate: DateTime(2030),
     );
     if (picked == null) return;
-    setState(() { if (isStart) _start = picked; else _end = picked; });
+    setState(() { if (isStart) {
+      _start = picked;
+    } else {
+      _end = picked;
+    } });
   }
 
   Future<void> _submit(WidgetRef ref) async {
@@ -1270,9 +1282,11 @@ class _AddAbsenceSheetState extends State<_AddAbsenceSheet> {
       widget.onSaved();
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -1443,9 +1457,11 @@ class _AddEvaluationSheetState extends State<_AddEvaluationSheet> {
       widget.onSaved();
       if (mounted) Navigator.pop(context);
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Erreur: $e'), backgroundColor: Colors.red),
       );
+      }
     } finally {
       if (mounted) setState(() => _loading = false);
     }

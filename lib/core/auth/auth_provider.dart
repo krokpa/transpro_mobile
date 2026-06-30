@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -332,8 +331,8 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> setCredentials({ String? email, String? password }) async {
     final dio = ref.read(dioProvider);
     final res = await dio.patch('/users/set-credentials', data: {
-      if (email    != null) 'email':    email,
-      if (password != null) 'password': password,
+      'email':    ?email,
+      'password': ?password,
     });
     final updated = User.fromJson(extractData(res.data));
     await _storage.write(key: 'user', value: jsonEncode(updated.toJson()));

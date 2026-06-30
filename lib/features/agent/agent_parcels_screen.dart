@@ -527,11 +527,13 @@ class _ParcelPhotoSheetState extends State<_ParcelPhotoSheet> {
         ));
       }
     } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
         content: Text(apiErrorMessage(e)),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
       ));
+      }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
