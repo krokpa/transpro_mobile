@@ -65,6 +65,7 @@ dependencies:
   flutter_map: ^7.0.2
   latlong2: ^0.9.1
   url_launcher: ^6.3.1
+  webview_flutter: ^4.13.1   # utilisé directement par payment_webview_screen
   flutter_svg: ^2.0.17
 
   # Driver GPS

@@ -119,8 +119,8 @@ class _OtpStepWidgetState extends State<OtpStepWidget> with SingleTickerProvider
     }
   }
 
-  void _onKeyDown(int index, RawKeyEvent event) {
-    if (event is RawKeyDownEvent &&
+  void _onKeyDown(int index, KeyEvent event) {
+    if (event is KeyDownEvent &&
         event.logicalKey == LogicalKeyboardKey.backspace &&
         _ctrl[index].text.isEmpty &&
         index > 0) {
@@ -272,9 +272,9 @@ class _OtpStepWidgetState extends State<OtpStepWidget> with SingleTickerProvider
           width: 1.5,
         ),
       ),
-      child: RawKeyboardListener(
+      child: KeyboardListener(
         focusNode: FocusNode(),
-        onKey: (e) => _onKeyDown(i, e),
+        onKeyEvent: (e) => _onKeyDown(i, e),
         child: TextField(
           controller: _ctrl[i],
           focusNode: _focus[i],
